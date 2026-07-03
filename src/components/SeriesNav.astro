@@ -1,0 +1,41 @@
+---
+// A multi-part series index, shown above an article that belongs to one. Lists
+// every part in order with the current one marked, so a reader can move through
+// a sequence (e.g. a course log) without hunting the archive.
+import type { EntryItem } from '../lib/content';
+
+interface Props {
+  name: string;
+  parts: (EntryItem & { part?: number })[];
+  currentId: string;
+}
+
+const { name, parts, currentId } = Astro.props;
+---
+
+{
+  parts.length > 1 && (
+    <aside class="series" aria-label={`Series: ${name}`} data-pagefind-ignore>
+      <p class="series__title eyebrow">Series · {name}</p>
+      <ol class="series__list">
+        {parts.map((p, i) => {
+          const current = p.id === currentId;
+          return (
+            <li class:list={['series__item', current && 'series__item--current']}>
+              <span class="series__num tabular" aria-hidden="true">
+                {String(p.part ?? i + 1).padStart(2, '0')}
+              </span>
+              {current ? (
+                <span aria-current="true">{p.title}</span>
+              ) : (
+                <a class="link-quiet" href={p.url}>
+                  {p.title}
+                </a>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </aside>
+  )
+}

@@ -9,14 +9,14 @@ const posts = await getPosts();
 
 const heading = [
   { text: 'Writing', size: 'xl', weight: 580, rot: -1.5 },
-  { text: '&', size: 'l', weight: 340, italic: true, shift: '1rem' },
-  { text: 'thinking', size: 'l', weight: 620, shift: '4.5rem', rot: 2 },
+  { text: '&', size: 'l', weight: 340, italic: true, shift: '0.8rem', lift:'-1.2rem'},
+  { text: 'thinking', size: 'l', weight: 620, shift: '4rem', rot: 2, lift: '-3.2rem' },
 ] as const;
 ---
 
 <Base
-  title={`Blog — ${SITE_TITLE}`}
-  description="Longer writeups and essays — project retrospectives and things worth more than a TIL."
+  title={`Blog, ${SITE_TITLE}`}
+  description="Longer writeups and essays. Project retrospectives and things worth more than a TIL."
 >
   <PageHeader eyebrow="Longer form" lines={heading}>
     <p class="masthead__deck">

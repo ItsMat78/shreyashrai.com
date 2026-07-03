@@ -1,0 +1,29 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import StreamList from '../components/StreamList.astro';
+import { getStream } from '../lib/content';
+import { SITE_TITLE } from '../consts';
+
+// The firehose: every TIL, post, link, and quote in one reverse-chron river.
+const items = await getStream();
+
+const heading = [
+  { text: 'The', size: 'm', weight: 380, italic: true, rot: -2 },
+  { text: 'firehose', size: 'xl', weight: 660, shift: '2.5rem', rot: 1.5, lift: '-1.6rem' },
+] as const;
+---
+
+<Base
+  title={`Stream — ${SITE_TITLE}`}
+  description="Everything, newest first — TILs, posts, links, and quotes in one river."
+>
+  <PageHeader eyebrow="Everything, newest first" lines={heading}>
+    <p class="masthead__deck">
+      One river of everything I post — notes, essays, <a href="/links">links</a>,
+      and <a href="/quotes">quotes</a>. <a href="/rss.xml">Follow via RSS &rarr;</a>
+    </p>
+  </PageHeader>
+
+  {items.length === 0 ? <p>Nothing here yet.</p> : <StreamList items={items} />}
+</Base>

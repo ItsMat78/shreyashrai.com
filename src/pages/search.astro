@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { SITE_TITLE } from '../consts';
+
+// Full-text search over every TIL, post, and project. The index is built by
+// Pagefind AFTER `astro build` (see package.json) and served from /pagefind,
+// so search works in `astro preview` and production — not in `astro dev`.
+const heading = [
+  { text: 'Find', size: 'xl', weight: 640, rot: -1.5 },
+  { text: 'anything', size: 'l', weight: 380, italic: true, shift: '4rem', rot: 1.5, lift: '-1.6rem' },
+] as const;
+---
+
+<Base title={`Search — ${SITE_TITLE}`} description="Search every TIL, post, and project on the site.">
+  <PageHeader eyebrow="The whole archive" lines={heading}>
+    <p class="masthead__deck">Search across every note, essay, and writeup.</p>
+  </PageHeader>
+
+  <div id="search" class="search-ui"></div>
+  <noscript>
+    <p class="annotation">Search needs JavaScript. Browse the <a href="/til">TILs</a>, <a href="/blog">blog</a>, or <a href="/tags">tags</a> instead.</p>
+  </noscript>
+
+  <!-- Pagefind's bundle only exists in a built site; harmless 404 in dev. -->
+  <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+  <script is:inline src="/pagefind/pagefind-ui.js"></script>
+  <script is:inline>
+    window.addEventListener('DOMContentLoaded', function () {
+      var mount = document.getElementById('search');
+      // The Pagefind index is only built after `astro build`, so in `astro dev`
+      // the UI script 404s. Say so instead of leaving a dead empty box.
+      if (typeof PagefindUI === 'undefined') {
+        mount.innerHTML =
+          '<p class="search-missing annotation">Search runs on the built site. Locally, run <code>npm run build</code> then <code>npm run preview</code>.</p>';
+        return;
+      }
+      new PagefindUI({
+        element: '#search',
+        showSubResults: true,
+        showImages: false,
+        resetStyles: false,
+      });
+    });
+  </script>
+</Base>

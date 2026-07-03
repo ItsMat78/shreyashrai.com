@@ -1,0 +1,59 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import FrameField from '../../components/FrameField.astro';
+import Toc from '../../components/Toc.astro';
+import Backlinks from '../../components/Backlinks.astro';
+import Comments from '../../components/Comments.astro';
+import { getProjectEntries, getBacklinks } from '../../lib/content';
+import { SITE_TITLE } from '../../consts';
+
+// One page per project. Drafts never get a route (draft filter lives in the
+// content layer).
+export async function getStaticPaths() {
+  const entries = await getProjectEntries();
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const backlinks = await getBacklinks(entry.id);
+---
+
+<Base
+  title={`${entry.data.title} — ${SITE_TITLE}`}
+  description={entry.data.blurb}
+  type="article"
+  ogImage={`/og/projects/${entry.id}.png`}
+>
+  <article>
+    <header class="article__header">
+      <FrameField />
+      <p class="eyebrow">Selected work</p>
+      <h1 class="display display--title">{entry.data.title}</h1>
+      <div class="article__meta annotation">
+        {entry.data.live && (
+          <a class="link-quiet" href={entry.data.live}>
+            Live &rarr;
+          </a>
+        )}
+        {entry.data.source && (
+          <a class="link-quiet" href={entry.data.source}>
+            Source &rarr;
+          </a>
+        )}
+      </div>
+    </header>
+    <div class="article__body">
+      <Toc headings={headings} />
+      <div class="prose" data-pagefind-body>
+        <Content />
+      </div>
+    </div>
+    <p class="article__end" aria-hidden="true">&#10086;</p>
+    <div class="article__trail">
+      <Backlinks links={backlinks} />
+    </div>
+    <Comments />
+  </article>
+</Base>

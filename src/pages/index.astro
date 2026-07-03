@@ -2,31 +2,43 @@
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
 import EntryList from '../components/EntryList.astro';
-import { getTils, getPosts } from '../lib/content';
+import Newsletter from '../components/Newsletter.astro';
+import { getTils, getPosts, getFeatured } from '../lib/content';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
 const tils = (await getTils()).slice(0, 5);
 const posts = (await getPosts()).slice(0, 3);
+// The standout entry (frontmatter `featured: true`), if any — newest wins.
+const featured = (await getFeatured())[0];
 
-// The home thesis, hand-set to tumble down the page like a specimen spread.
+// The home thesis: two breaths, roman then italic — learning in public.
 const hero = [
-  { text: 'I build', size: 'xl', weight: 640, rot: -2 },
-  { text: 'things,', size: 'l', weight: 400, shift: '7rem', rot: 1.5 },
-  { text: 'break them,', size: 'xl', weight: 360, italic: true, shift: '1.5rem', rot: -1 },
-  { text: 'and write', size: 'm', weight: 560, shift: '10rem', rot: 2 },
-  { text: 'down why.', size: 'xl', weight: 760, shift: '3rem', rot: -1.5 },
+  { text: 'Learning', size: 'xl', weight: 680, rot: -1.5 },
+  { text: 'out loud.', size: 'xl', weight: 400, italic: true, shift: '5.8rem', rot: 1, lift:'-1.5rem' },
 ] as const;
 ---
 
 <Base title={SITE_TITLE} description={SITE_DESCRIPTION} type="website">
   <div class="stack">
-    <PageHeader eyebrow="The running notebook of Shreyash Rai" lines={hero} dense>
+    <PageHeader eyebrow="The running notebook for" lines={hero}>
       <p class="masthead__deck">
         I'm a Data Science &amp; AI undergrad at IIIT Naya Raipur. This is where I
-        keep a running log of things I learn (<a href="/til">TILs</a>) and write
-        up the <a href="/projects">projects</a> I make.
+        keep a running log of things I learn (<a href="/til">TILs</a>) and document the <a href="/projects">projects</a> I curate.
       </p>
     </PageHeader>
+
+    {
+      featured && (
+        <a class="featured" href={featured.url}>
+          <span class="featured__label eyebrow">Featured · {featured.collection}</span>
+          <span class="featured__title">{featured.title}</span>
+          {featured.description && (
+            <span class="featured__desc">{featured.description}</span>
+          )}
+          <span class="featured__cue annotation">Read &rarr;</span>
+        </a>
+      )
+    }
 
     <div class="home-split">
       <section class="home-split__til">
@@ -48,5 +60,7 @@ const hero = [
         </p>
       </section>
     </div>
+
+    <Newsletter />
   </div>
 </Base>

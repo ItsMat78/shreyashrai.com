@@ -1,0 +1,89 @@
+---
+// Renders a mixed, newest-first river of every content kind — TILs, posts,
+// links, and quotes — each with its own shape. Powers /stream and the single-
+// kind lists (/links, /quotes). Dates are permalinks, the Simon Willison way.
+import type { EntryItem } from '../lib/content';
+import FormattedDate from './FormattedDate.astro';
+import TagList from './TagList.astro';
+
+interface Props {
+  items: EntryItem[];
+}
+
+const { items } = Astro.props;
+
+const KIND_LABEL: Record<EntryItem['collection'], string> = {
+  til: 'TIL',
+  blog: 'Post',
+  links: 'Link',
+  quotes: 'Quote',
+};
+---
+
+<ul class="stream">
+  {
+    items.map((item) => (
+      <li class:list={['stream-item', `stream-item--${item.collection}`]}>
+        <div class="stream-item__meta">
+          <a class="link-quiet stream-item__permalink" href={item.url}>
+            <FormattedDate date={item.date} />
+          </a>
+          <span class="annotation stream-item__kind">{KIND_LABEL[item.collection]}</span>
+        </div>
+
+        <div class="stream-item__body">
+          {item.collection === 'quotes' ? (
+            <>
+              <blockquote class="stream-quote">{item.excerpt}</blockquote>
+              <p class="stream-quote__cite annotation">
+                {'— '}
+                {item.sourceUrl ? (
+                  <a href={item.sourceUrl}>{item.source}</a>
+                ) : (
+                  <span>{item.source}</span>
+                )}
+                {item.viaUrl && (
+                  <>
+                    {' · via '}
+                    <a href={item.viaUrl}>{item.via ?? 'source'}</a>
+                  </>
+                )}
+              </p>
+            </>
+          ) : item.collection === 'links' ? (
+            <>
+              <h3 class="stream-item__title">
+                <a class="stream-link-out" href={item.linkUrl}>
+                  {item.title} <span aria-hidden="true">&#8599;</span>
+                </a>
+              </h3>
+              {item.excerpt && <p class="stream-item__note">{item.excerpt}</p>}
+              <p class="annotation stream-item__foot">
+                <a class="link-quiet" href={item.url}>
+                  Permalink
+                </a>
+                {item.via && (
+                  <span>
+                    {' · via '}
+                    {item.viaUrl ? <a href={item.viaUrl}>{item.via}</a> : item.via}
+                  </span>
+                )}
+              </p>
+            </>
+          ) : (
+            <>
+              <h3 class="stream-item__title">
+                <a class="entry__title" href={item.url}>
+                  {item.title}
+                </a>
+              </h3>
+              {item.description && <p class="stream-item__note">{item.description}</p>}
+            </>
+          )}
+
+          <TagList tags={item.tags} />
+        </div>
+      </li>
+    ))
+  }
+</ul>

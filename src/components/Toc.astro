@@ -1,0 +1,35 @@
+---
+// Table of contents for an article, built from the headings Astro extracts
+// at render time. Shows h2/h3 only; hidden entirely when there's nothing
+// worth listing. Sits inline on small screens and becomes a sticky right
+// rail on wide ones (see .toc in global.css).
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+// h2/h3 only — the page's one true h1 is the article title, so body
+// sections start at ##. Indentation is relative to the shallowest level
+// actually used (an h3-only file still reads flush).
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const minDepth = items.length > 0 ? Math.min(...items.map((h) => h.depth)) : 2;
+---
+
+{
+  items.length >= 2 && (
+    <nav class="toc" aria-label="Contents">
+      <p class="toc__title eyebrow">Contents</p>
+      <ol>
+        {items.map((h) => (
+          <li data-indent={h.depth - minDepth}>
+            <a class="link-quiet" href={`#${h.slug}`}>
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}

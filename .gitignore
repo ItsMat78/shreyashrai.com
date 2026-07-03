@@ -33,3 +33,11 @@ Thumbs.db
 /image.png
 /image copy.png
 /CLAUDE.md
+
+# AI-maintained project map — kept local alongside CLAUDE.md, not published
+/project_map.md
+
+# Local editor/agent tooling (preview launch config) — not needed in the repo
+.claude/
+
+project_map.md

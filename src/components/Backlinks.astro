@@ -1,0 +1,28 @@
+---
+// "Mentioned in" — the reverse of a [[wikilink]]. Lists every entry whose body
+// links to this one, turning the flat archive into a connected notebook.
+import type { LinkRef } from '../lib/content';
+
+interface Props {
+  links: LinkRef[];
+}
+
+const { links } = Astro.props;
+---
+
+{
+  links.length > 0 && (
+    <nav class="backlinks" aria-label="Mentioned in">
+      <p class="backlinks__title eyebrow">Mentioned in</p>
+      <ul class="backlinks__list">
+        {links.map((link) => (
+          <li>
+            <a class="link-quiet" href={link.url}>
+              {link.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}

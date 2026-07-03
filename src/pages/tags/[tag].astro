@@ -28,7 +28,7 @@ const count = items.length;
 
 const heading = [
   { text: 'On', size: 'm', weight: 380, italic: true },
-  { text: tag, size: 'xl', weight: 660, shift: '2.5rem', rot: -1.5 },
+  { text: tag, size: 'xl', weight: 660, shift: '2.5rem', rot: -1.5, lift:'-2.5rem' },
 ] as const;
 ---
 
@@ -40,6 +40,8 @@ const heading = [
     <p class="masthead__deck">
       {count} {count === 1 ? 'entry' : 'entries'} tagged &ldquo;{tag}&rdquo;.
       <a href="/tags">All tags &rarr;</a>
+      <br>
+      <a href={`/tags/${tag}/rss.xml`}>Feed for this tag &rarr;</a>
     </p>
   </PageHeader>
 

@@ -8,15 +8,18 @@ interface Props {
   title: string;
   description?: string;
   type?: 'website' | 'article';
+  // Absolute site path to a share card (e.g. /og/blog/foo.png). Defaults to
+  // the site card in BaseHead when omitted.
+  ogImage?: string;
 }
 
-const { title, description, type } = Astro.props;
+const { title, description, type, ogImage } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
-    <BaseHead title={title} description={description} type={type} />
+    <BaseHead title={title} description={description} type={type} ogImage={ogImage} />
   </head>
   <body>
     <div class="site">
@@ -28,5 +31,44 @@ const { title, description, type } = Astro.props;
       </main>
       <Footer />
     </div>
+
+    <script>
+      // Copy-to-clipboard on every code block. Each <pre> is wrapped so the
+      // button can anchor to a non-scrolling parent; icon flips to a check
+      // for a moment after a successful copy.
+      const COPY_ICON =
+        '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+      const CHECK_ICON =
+        '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5 9.5 18 20 6.5"/></svg>';
+
+      for (const pre of document.querySelectorAll<HTMLElement>('.prose pre')) {
+        const wrap = document.createElement('div');
+        wrap.className = 'code-wrap';
+        pre.parentNode?.insertBefore(wrap, pre);
+        wrap.appendChild(pre);
+
+        const btn = document.createElement('button');
+        btn.className = 'code-copy';
+        btn.type = 'button';
+        btn.setAttribute('aria-label', 'Copy code');
+        btn.innerHTML = COPY_ICON;
+        btn.addEventListener('click', async () => {
+          const code = pre.querySelector('code') as HTMLElement | null;
+          const text = code?.innerText ?? pre.innerText;
+          try {
+            await navigator.clipboard.writeText(text);
+            btn.innerHTML = CHECK_ICON;
+            btn.classList.add('code-copy--done');
+            setTimeout(() => {
+              btn.innerHTML = COPY_ICON;
+              btn.classList.remove('code-copy--done');
+            }, 1800);
+          } catch {
+            /* clipboard unavailable (http, old browser): do nothing */
+          }
+        });
+        wrap.appendChild(btn);
+      }
+    </script>
   </body>
 </html>

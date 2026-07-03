@@ -1,0 +1,45 @@
+---
+// Email signup via Buttondown. Ships nothing until BUTTONDOWN_USER is set in
+// consts.ts. Buttondown's free tier can auto-send new posts from the RSS feed,
+// so this form is the only site-side wiring a newsletter needs. Posts straight
+// to Buttondown (no JS); it handles confirmation.
+import { BUTTONDOWN_USER } from '../consts';
+
+interface Props {
+  // A short line above the field; each surface can set its own.
+  blurb?: string;
+}
+
+const { blurb = 'New posts in your inbox — no more than one email per piece.' } =
+  Astro.props;
+const enabled = Boolean(BUTTONDOWN_USER);
+const action = `https://buttondown.com/api/emails/embed-subscribe/${BUTTONDOWN_USER}`;
+---
+
+{
+  enabled && (
+    <section class="newsletter" aria-label="Newsletter signup">
+      <p class="newsletter__title eyebrow">Subscribe</p>
+      <p class="newsletter__blurb">{blurb}</p>
+      <form class="newsletter__form" action={action} method="post" target="_blank">
+        <label class="newsletter__label" for="bd-email">
+          Email address
+        </label>
+        <div class="newsletter__row">
+          <input
+            class="newsletter__input"
+            id="bd-email"
+            type="email"
+            name="email"
+            required
+            placeholder="you@example.com"
+            autocomplete="email"
+          />
+          <button class="newsletter__submit" type="submit">
+            Subscribe
+          </button>
+        </div>
+      </form>
+    </section>
+  )
+}

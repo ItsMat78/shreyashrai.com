@@ -1,0 +1,30 @@
+---
+// "Read next" — a few entries that share tags with the current one, shown at
+// the foot of an article. Same quiet annotation voice as the rest of the site;
+// links are the entry titles in the display serif.
+import type { EntryItem } from '../lib/content';
+
+interface Props {
+  items: EntryItem[];
+}
+
+const { items } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <nav class="related" aria-label="Read next">
+      <p class="related__title eyebrow">Read next</p>
+      <ul class="related__list">
+        {items.map((item) => (
+          <li class="related__item">
+            <a class="related__link" href={item.url}>
+              {item.title}
+            </a>
+            <span class="annotation related__kind">{item.collection}</span>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}

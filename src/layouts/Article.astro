@@ -1,34 +1,97 @@
 ---
+import type { MarkdownHeading } from 'astro';
 import Base from './Base.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import TagList from '../components/TagList.astro';
+import FrameField from '../components/FrameField.astro';
+import Toc from '../components/Toc.astro';
+import SeriesNav from '../components/SeriesNav.astro';
+import RelatedList from '../components/RelatedList.astro';
+import Backlinks from '../components/Backlinks.astro';
+import Comments from '../components/Comments.astro';
 import { SITE_TITLE } from '../consts';
+import type { EntryItem, LinkRef } from '../lib/content';
 
 // Shared shell for a single TIL or post: kicker, display title, meta row,
-// rendered body. `eyebrow` names which section it belongs to.
+// contents rail, rendered body, then the "connected notebook" trail — series
+// nav, read-next, backlinks, and (if configured) comments.
 interface Props {
+  id: string;
+  collection: 'til' | 'blog';
   title: string;
   date: Date;
   tags: string[];
   description?: string;
   eyebrow?: string;
+  // Long-form pieces open with a drop cap (blog); short TILs don't.
+  dropcap?: boolean;
+  // Pass the headings from render(entry) to get a table of contents.
+  headings?: MarkdownHeading[];
+  // Estimated read time in minutes; shown in the meta row when present.
+  readingMinutes?: number;
+  // Series this entry belongs to, and all its parts in order.
+  series?: string;
+  seriesParts?: (EntryItem & { part?: number })[];
+  // Tag-related entries and reverse [[wikilink]] mentions.
+  related?: EntryItem[];
+  backlinks?: LinkRef[];
+  // Render the comments section (self-gates on GISCUS config).
+  comments?: boolean;
 }
 
-const { title, date, tags, description, eyebrow } = Astro.props;
+const {
+  id,
+  collection,
+  title,
+  date,
+  tags,
+  description,
+  eyebrow,
+  dropcap = false,
+  headings = [],
+  readingMinutes,
+  series,
+  seriesParts = [],
+  related = [],
+  backlinks = [],
+  comments = false,
+} = Astro.props;
+
+// Per-entry share card generated at build (see src/pages/og/[...route].png.ts).
+const ogImage = `/og/${collection}/${id}.png`;
 ---
 
-<Base title={`${title} — ${SITE_TITLE}`} description={description} type="article">
+<Base
+  title={`${title} — ${SITE_TITLE}`}
+  description={description}
+  type="article"
+  ogImage={ogImage}
+>
   <article>
     <header class="article__header">
+      <FrameField />
       {eyebrow && <p class="eyebrow">{eyebrow}</p>}
       <h1 class="display display--title">{title}</h1>
       <div class="article__meta">
         <FormattedDate date={date} format="long" />
+        {readingMinutes && (
+          <span class="annotation">{readingMinutes} min read</span>
+        )}
         <TagList tags={tags} />
       </div>
     </header>
-    <div class="prose">
-      <slot />
+    <div class="article__body">
+      <Toc headings={headings} />
+      <div class:list={['prose', dropcap && 'prose--dropcap']} data-pagefind-body>
+        {series && <SeriesNav name={series} parts={seriesParts} currentId={id} />}
+        <slot />
+      </div>
     </div>
+    <p class="article__end" aria-hidden="true">&#10086;</p>
+    <div class="article__trail">
+      <RelatedList items={related} />
+      <Backlinks links={backlinks} />
+    </div>
+    {comments && <Comments />}
   </article>
 </Base>

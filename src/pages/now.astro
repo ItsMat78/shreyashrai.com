@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import { SITE_TITLE } from '../consts';
+
+// A /now page (nownownow.com convention): what I'm focused on lately. Edit the
+// date and bullets whenever the focus shifts — it's meant to be current, not
+// archival.
+const updated = new Date('2026-07-03');
+
+const heading = [
+  { text: 'Right', size: 'l', weight: 380, italic: true, rot: -2 },
+  { text: 'now', size: 'xl', weight: 680, shift: '3.5rem', rot: 1.5, lift: '-2.2rem' },
+] as const;
+---
+
+<Base title={`Now — ${SITE_TITLE}`} description="What Shreyash Rai is focused on at the moment.">
+  <PageHeader eyebrow="A /now page" lines={heading}>
+    <p class="masthead__deck">
+      What I'm focused on lately. <a href="https://nownownow.com/about">What's this?</a>
+    </p>
+  </PageHeader>
+
+  <div class="prose" data-pagefind-body>
+    <p class="annotation">Updated <FormattedDate date={updated} format="long" /></p>
+
+    <ul>
+      <li>
+        Third year of my Data Science &amp; AI B.Tech at IIIT Naya Raipur —
+        deep in reinforcement learning and applied ML coursework.
+      </li>
+      <li>
+        Extending the <a href="/projects/lagrange-lock/">Lagrange-Lock</a>
+        station-keeping work and writing it up properly.
+      </li>
+      <li>
+        Reading papers on model-based RL and keeping the
+        <a href="/til">TIL log</a> ticking as I go.
+      </li>
+    </ul>
+
+    <p>
+      Want to compare notes? <a href="/about">Say hello.</a>
+    </p>
+  </div>
+</Base>

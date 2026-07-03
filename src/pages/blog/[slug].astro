@@ -1,7 +1,14 @@
 ---
 import { render } from 'astro:content';
 import Article from '../../layouts/Article.astro';
-import { getPostEntries, normalizeTags } from '../../lib/content';
+import {
+  getPostEntries,
+  normalizeTags,
+  readingTime,
+  getRelated,
+  getBacklinks,
+  getSeries,
+} from '../../lib/content';
 
 export async function getStaticPaths() {
   const entries = await getPostEntries();
@@ -9,16 +16,33 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 const tags = normalizeTags(entry.data.tags);
+const readingMinutes = readingTime(entry.body);
+
+const [related, backlinks, seriesParts] = await Promise.all([
+  getRelated(entry.id, tags),
+  getBacklinks(entry.id),
+  entry.data.series ? getSeries(entry.data.series) : Promise.resolve([]),
+]);
 ---
 
 <Article
+  id={entry.id}
+  collection="blog"
   title={entry.data.title}
   date={entry.data.date}
   tags={tags}
   description={entry.data.description}
   eyebrow="Writing"
+  dropcap
+  headings={headings}
+  readingMinutes={readingMinutes}
+  series={entry.data.series}
+  seriesParts={seriesParts}
+  related={related}
+  backlinks={backlinks}
+  comments
 >
   <Content />
 </Article>

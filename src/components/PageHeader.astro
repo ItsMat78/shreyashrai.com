@@ -12,13 +12,14 @@ interface Fragment {
   weight?: number;
   italic?: boolean;
   shift?: string;
+  lift?: string;
   wonk?: number;
   rot?: number;
 }
 
 interface Props {
   eyebrow: string;
-  lines: Fragment[];
+  lines: readonly Fragment[];
   dense?: boolean; // denser frame grid (home hero)
 }
 

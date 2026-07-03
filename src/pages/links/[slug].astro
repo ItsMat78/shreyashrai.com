@@ -1,0 +1,61 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import FrameField from '../../components/FrameField.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import TagList from '../../components/TagList.astro';
+import Backlinks from '../../components/Backlinks.astro';
+import Comments from '../../components/Comments.astro';
+import { getLinkEntries, getBacklinks, normalizeTags } from '../../lib/content';
+import { SITE_TITLE } from '../../consts';
+
+export async function getStaticPaths() {
+  const entries = await getLinkEntries();
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const tags = normalizeTags(entry.data.tags);
+const backlinks = await getBacklinks(entry.id);
+---
+
+<Base
+  title={`${entry.data.title} — ${SITE_TITLE}`}
+  description={entry.data.title}
+  type="article"
+  ogImage={`/og/links/${entry.id}.png`}
+>
+  <article>
+    <header class="article__header">
+      <FrameField />
+      <p class="eyebrow">The link blog</p>
+      <h1 class="display display--title">
+        <a class="stream-link-out" href={entry.data.url}>
+          {entry.data.title} <span aria-hidden="true">&#8599;</span>
+        </a>
+      </h1>
+      <div class="article__meta">
+        <FormattedDate date={entry.data.date} format="long" />
+        {entry.data.via && (
+          <span class="annotation">
+            via{' '}
+            {entry.data.viaUrl ? <a href={entry.data.viaUrl}>{entry.data.via}</a> : entry.data.via}
+          </span>
+        )}
+        <TagList tags={tags} />
+      </div>
+    </header>
+    <div class="prose" data-pagefind-body>
+      <Content />
+      <p class="annotation link-source">
+        &rarr; <a href={entry.data.url}>{entry.data.url}</a>
+      </p>
+    </div>
+    <p class="article__end" aria-hidden="true">&#10086;</p>
+    <div class="article__trail">
+      <Backlinks links={backlinks} />
+    </div>
+    <Comments />
+  </article>
+</Base>

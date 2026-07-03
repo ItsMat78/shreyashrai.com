@@ -2,7 +2,7 @@ import rss, { type RSSFeedItem } from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import MarkdownIt from 'markdown-it';
 import sanitizeHtml from 'sanitize-html';
-import type { Post, Til } from './content';
+import type { Post, Til, Link, Quote, Kind } from './content';
 
 // Feeds carry the FULL rendered post so people can read entirely in a reader —
 // that's the point of offering feeds. We render each markdown body to HTML with
@@ -10,8 +10,8 @@ import type { Post, Til } from './content';
 // appear unhighlighted in feeds, which is fine.
 const parser = new MarkdownIt();
 
-type FeedEntry = Til | Post;
-type Source = { entries: FeedEntry[]; prefix: 'til' | 'blog' };
+type FeedEntry = Til | Post | Link | Quote;
+type Source = { entries: FeedEntry[]; prefix: Kind };
 
 const MAX_ITEMS = 30;
 
@@ -25,16 +25,38 @@ function renderContent(body: string): string {
   });
 }
 
-function toItem(entry: FeedEntry, prefix: 'til' | 'blog'): RSSFeedItem {
-  const description =
-    'description' in entry.data ? entry.data.description : undefined;
+function toItem(entry: FeedEntry, prefix: Kind): RSSFeedItem {
+  const d = entry.data;
+  const link = `/${prefix}/${entry.id}/`;
+  const body = renderContent(entry.body ?? '');
+
+  if (prefix === 'quotes' && 'source' in d) {
+    // No title on a quote — lead with the source; body is the quote itself.
+    return {
+      title: `“…” — ${d.source}`,
+      pubDate: d.date,
+      link,
+      content: `<blockquote>${body}</blockquote><p>— ${d.source}</p>`,
+      categories: d.tags,
+    };
+  }
+  if (prefix === 'links' && 'url' in d && 'title' in d) {
+    // Surface the outbound target under the commentary.
+    return {
+      title: d.title,
+      pubDate: d.date,
+      link,
+      content: `${body}<p>Link: <a href="${d.url}">${d.url}</a></p>`,
+      categories: d.tags,
+    };
+  }
   return {
-    title: entry.data.title,
-    pubDate: entry.data.date,
-    link: `/${prefix}/${entry.id}/`,
-    description,
-    content: renderContent(entry.body ?? ''),
-    categories: entry.data.tags,
+    title: 'title' in d ? d.title : '',
+    pubDate: d.date,
+    link,
+    description: 'description' in d ? d.description : undefined,
+    content: body,
+    categories: d.tags,
   };
 }
 
@@ -59,4 +81,44 @@ export function buildFeed(context: APIContext, options: BuildOptions) {
     items,
     trailingSlash: false,
   });
+}
+
+// JSON Feed 1.1 (jsonfeed.org) sibling of the RSS feed, for readers that prefer
+// JSON. Same full-content, newest-first, capped items as buildFeed.
+export function buildJsonFeed(context: APIContext, options: BuildOptions) {
+  const site = context.site!.href.replace(/\/$/, '');
+  const items = options.sources
+    .flatMap((source) => source.entries.map((entry) => ({ entry, prefix: source.prefix })))
+    .sort((a, b) => b.entry.data.date.valueOf() - a.entry.data.date.valueOf())
+    .slice(0, MAX_ITEMS)
+    .map(({ entry, prefix }) => {
+      const d = entry.data;
+      const url = `${site}/${prefix}/${entry.id}/`;
+      const title =
+        'title' in d ? d.title : 'source' in d ? `Quote — ${d.source}` : '';
+      const summary = 'description' in d ? d.description : undefined;
+      let content = renderContent(entry.body ?? '');
+      if ('url' in d) content += `<p>Link: <a href="${d.url}">${d.url}</a></p>`;
+      return {
+        id: url,
+        url,
+        title,
+        ...(summary ? { summary } : {}),
+        content_html: content,
+        date_published: d.date.toISOString(),
+        tags: d.tags,
+      };
+    });
+
+  return new Response(
+    JSON.stringify({
+      version: 'https://jsonfeed.org/version/1.1',
+      title: options.title,
+      home_page_url: `${site}/`,
+      feed_url: `${site}/feed.json`,
+      description: options.description,
+      items,
+    }),
+    { headers: { 'Content-Type': 'application/feed+json; charset=utf-8' } },
+  );
 }

@@ -21,27 +21,40 @@ const years = [...groups.keys()];
 
 const heading = [
   { text: 'Today I', size: 'l', weight: 600, rot: -1.5 },
-  { text: 'learned', size: 'xl', weight: 420, italic: true, shift: '2.5rem', rot: 1.5 },
+  { text: 'learned', size: 'xl', weight: 420, italic: true, shift: '3.7rem', lift: '-0.22em', rot: 1.5 },
 ] as const;
 ---
 
 <Base
-  title={`TIL — ${SITE_TITLE}`}
-  description="Short, dated notes on things I've learned — the running log at the heart of the site."
+  title={`TIL, ${SITE_TITLE}`}
+  description="Short, dated notes on things I've learned. The running log at the heart of the site."
 >
   <PageHeader eyebrow="The running log" lines={heading}>
     <p class="masthead__deck">
       Short notes on things I picked up while building. New ones land here first.
+      <br>
       <a href="/til/rss.xml">TIL feed &rarr;</a>
     </p>
   </PageHeader>
+
+  {
+    years.length > 1 && (
+      <nav class="year-jump annotation" aria-label="Jump to year">
+        {years.map((year) => (
+          <a class="link-quiet" href={`#y${year}`}>
+            {year}
+          </a>
+        ))}
+      </nav>
+    )
+  }
 
   {
     years.length === 0 ? (
       <p>Nothing here yet.</p>
     ) : (
       years.map((year) => (
-        <section class="year-group">
+        <section class="year-group" id={`y${year}`}>
           <h2 class="display display--section year-heading">{year}</h2>
           <EntryList items={groups.get(year)!} />
         </section>

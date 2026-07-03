@@ -1,0 +1,29 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import StreamList from '../../components/StreamList.astro';
+import { getLinks } from '../../lib/content';
+import { SITE_TITLE } from '../../consts';
+
+// The link blog: short posts pointing out at things worth your time.
+const items = await getLinks();
+
+const heading = [
+  { text: 'Worth', size: 'l', weight: 600, rot: -1.5 },
+  { text: 'a look', size: 'xl', weight: 700, italic: true, shift: '3.5rem', rot: 1.5, lift: '-1.8rem' },
+] as const;
+---
+
+<Base
+  title={`Links — ${SITE_TITLE}`}
+  description="A link blog — things I found worth pointing at, with a line on why."
+>
+  <PageHeader eyebrow="The link blog" lines={heading}>
+    <p class="masthead__deck">
+      Things elsewhere worth your time, with a line on why.
+      <a href="/links/rss.xml">Links feed &rarr;</a>
+    </p>
+  </PageHeader>
+
+  {items.length === 0 ? <p>Nothing here yet.</p> : <StreamList items={items} />}
+</Base>

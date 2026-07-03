@@ -100,10 +100,10 @@
   --measure-read: 46rem; /* lists / reading column narrower than the shell */
 
   /* Decorative paper grain + the outlined "grid" frames behind headers. */
-  --tex-opacity: 0.05;
+  --tex-opacity: 0.12;
   --tex-blend: multiply;
   --frame-line: rgba(120, 110, 90, 0.22); /* fallback if color-mix unsupported */
-  --frame-line: color-mix(in srgb, var(--accent) 20%, transparent);
+  --frame-line: color-mix(in srgb, var(--accent) 32%, transparent);
 }
 
 /* Dark palette. Applied two ways so it works with and without JS:
@@ -118,7 +118,7 @@
   --accent-strong: #f4c85c;
   --rule: #372f1e;
   --code-bg: #201b11;
-  --tex-opacity: 0.07;
+  --tex-opacity: 0.15;
   --tex-blend: soft-light;
 }
 
@@ -132,7 +132,7 @@
     --accent-strong: #f4c85c;
     --rule: #372f1e;
     --code-bg: #201b11;
-    --tex-opacity: 0.07;
+    --tex-opacity: 0.15;
     --tex-blend: soft-light;
   }
 }
@@ -148,6 +148,9 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Anchor jumps (contents, footnotes) glide instead of teleporting.
+     The reduced-motion block below forces this back to auto. */
+  scroll-behavior: smooth;
 }
 
 body {
@@ -184,6 +187,18 @@ video,
 svg {
   max-width: 100%;
   height: auto;
+}
+
+/* Selecting text inks it in the accent — a small print-shop delight. */
+::selection {
+  background: var(--accent);
+  color: var(--paper);
+}
+
+/* The header is sticky, so jumped-to anchors need breathing room under it. */
+:is(h1, h2, h3, h4)[id],
+:target {
+  scroll-margin-top: 5.5rem;
 }
 
 /* ---- Layout ------------------------------------------------------------- */
@@ -242,6 +257,40 @@ main {
 
 .scatter__line--italic {
   font-style: italic;
+}
+
+/* Entrance: fragments rise into place one after another, like type being set.
+   `backwards` keeps them hidden through their stagger delay; the reduced-motion
+   block zeroes both duration and delay so the page just appears. */
+@keyframes scatter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.4em) rotate(var(--rot, 0deg));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+}
+
+.scatter__line {
+  animation: scatter-rise 0.55s cubic-bezier(0.2, 0.65, 0.25, 1) backwards;
+}
+
+.scatter__line:nth-child(2) {
+  animation-delay: 90ms;
+}
+.scatter__line:nth-child(3) {
+  animation-delay: 180ms;
+}
+.scatter__line:nth-child(4) {
+  animation-delay: 270ms;
+}
+.scatter__line:nth-child(5) {
+  animation-delay: 360ms;
+}
+.scatter__line:nth-child(6) {
+  animation-delay: 450ms;
 }
 
 /* Size steps. Values clamp hard so the drama survives down to a phone. */
@@ -310,6 +359,7 @@ main {
   pointer-events: none;
 }
 
+/* Outlines only — a fill wash was tried and read as clutter under the type. */
 .frame {
   position: absolute;
   border: 1px solid var(--frame-line);
@@ -335,15 +385,29 @@ main {
   color: var(--accent);
 }
 
-/* The tiny blue specimen kicker above each headline. */
+/* The tiny blue specimen kicker above each headline, finished with a short
+   hairline tick — the way printed folios rule off their running heads. */
 .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--accent);
-  margin: 0 0 var(--space-2);
+  /* Nudged down so the kicker clears the topmost frame line behind it. */
+  margin: 0.75rem 0 var(--space-2);
+}
+
+.eyebrow::after {
+  content: '';
+  flex: 0 0 auto;
+  width: 3.5rem;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.45;
 }
 
 /* ---- Annotation voice (dates, meta, small labels) ----------------------- */
@@ -396,7 +460,15 @@ a {
 /* ---- Header ------------------------------------------------------------- */
 
 .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   border-bottom: 1px solid var(--rule);
+  /* Semi-opaque paper so scrolled content blurs under the bar, not through it.
+     The fixed grain still shows through, keeping the bar part of the paper. */
+  background: color-mix(in srgb, var(--paper) 85%, transparent);
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
 }
 
 .site-header__inner {
@@ -479,10 +551,28 @@ a {
   padding-block: var(--space-3);
 }
 
+/* Colophon layout: links on the left, the type credit on the right — the way
+   a book signs off on its last page. */
 .site-footer__inner {
   display: flex;
   flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+
+.site-footer__links {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+.site-footer__colophon {
+  margin: 0;
+}
+
+.site-footer__fleuron {
+  color: var(--accent);
 }
 
 .site-footer a {
@@ -549,16 +639,30 @@ a {
 }
 
 .entry {
+  /* Anchor for the stretched title link — the whole row opens the entry. */
+  position: relative;
   display: grid;
   grid-template-columns: 8rem 1fr;
   gap: 0 var(--space-3);
   align-items: baseline;
   padding-block: var(--space-2);
   border-top: 1px solid var(--rule);
+  /* Same kinetic nudge as project rows, so every list answers the cursor. */
+  transition: transform 0.25s ease;
+}
+
+.entry:hover {
+  transform: translateX(6px);
 }
 
 .entry:last-child {
   border-bottom: 1px solid var(--rule);
+}
+
+/* When a list sits right under a section head, the head's underline already
+   draws the top rule — so drop the first entry's, or they double up. */
+.section-head + .entry-list .entry:first-child {
+  border-top: none;
 }
 
 .entry__meta {
@@ -568,17 +672,39 @@ a {
 }
 
 .entry__title {
+  /* Block (not the default inline for <a>) so line-height actually tightens
+     wrapped titles — inline anchors clamp the leading to the font's metrics. */
+  display: block;
+  width: fit-content;
   font-family: var(--font-display);
   font-optical-sizing: auto;
   font-size: 1.35rem;
   font-weight: 500;
-  line-height: 1.15;
+  line-height: 1;
   color: var(--ink);
   text-decoration: none;
 }
 
 .entry__title:hover {
   color: var(--accent);
+}
+
+/* Stretch the title link over the whole row. */
+.entry__title::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* Row hover paints the title even when the cursor is over the blurb/date. */
+.entry:hover .entry__title {
+  color: var(--accent);
+}
+
+.entry .entry__tags {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
 }
 
 .entry__desc {
@@ -644,6 +770,141 @@ a {
   margin: 0 0 var(--space-1);
 }
 
+/* ---- Stream (firehose: /stream, /links, /quotes) ------------------------ */
+
+.stream {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: var(--measure-read);
+}
+
+/* Same date-left / body-right rhythm as entry lists, with the kinetic nudge. */
+.stream-item {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0 var(--space-3);
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--rule);
+  transition: transform 0.25s ease;
+}
+
+.stream-item:hover {
+  transform: translateX(6px);
+}
+
+.stream-item:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+.stream-item__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.stream-item__kind {
+  color: var(--accent);
+}
+
+.stream-item__title {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Outbound link (link blog): display serif, accent arrow that slides on hover. */
+.stream-link-out {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.35rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.stream-link-out span {
+  color: var(--accent);
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.stream-link-out:hover {
+  color: var(--accent);
+}
+
+.stream-link-out:hover span {
+  transform: translate(2px, -2px);
+}
+
+.stream-item__note {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.stream-item__foot {
+  margin: 0.6rem 0 0;
+}
+
+.stream-item .tag-row {
+  margin-top: 0.6rem;
+}
+
+/* Quotes in the stream: a real pull-quote in the display serif. */
+.stream-quote {
+  margin: 0;
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--accent);
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.3rem;
+  line-height: 1.25;
+  font-style: italic;
+  color: var(--ink);
+}
+
+.stream-quote__cite {
+  margin: 0.6rem 0 0;
+}
+
+/* Quote permalink page: the quote set large, like an epigraph. */
+.quote-display {
+  font-size: clamp(1.7rem, 4vw, 2.6rem);
+  font-style: italic;
+  line-height: 1.15;
+  color: var(--ink);
+  border-left: 3px solid var(--accent);
+  padding-left: var(--space-3);
+  margin: var(--space-2) 0 0;
+  max-width: var(--measure);
+}
+
+.quote-display :is(p) {
+  margin: 0;
+}
+
+.quote-cite {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+/* The "→ url" source line at the foot of a link-blog permalink. */
+.link-source {
+  margin-top: var(--space-3);
+  word-break: break-word;
+}
+
+@media (max-width: 36rem) {
+  .stream-item {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+  }
+}
+
 /* ---- Projects ----------------------------------------------------------- */
 
 .project-list {
@@ -653,12 +914,45 @@ a {
 }
 
 .project {
+  /* Anchor for the stretched writeup link — the whole row is openable. */
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2) var(--space-4);
   padding-block: var(--space-3);
   border-top: 1px solid var(--rule);
+  /* Whole row nudges right on hover — the kinetic beat the page was missing. */
+  transition: background 0.25s ease, transform 0.25s ease;
 }
 
 .project:last-child {
   border-bottom: 1px solid var(--rule);
+}
+
+/* Wide: title/index on the left, blurb + links fill the right half so the page
+   no longer trails off into empty space. */
+@media (min-width: 46rem) {
+  .project {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    align-items: start;
+  }
+}
+
+.project__lead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+/* Big faint specimen numeral in the margin — brightens on hover. */
+.project__index {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--frame-line);
+  line-height: 1;
+  transition: color 0.25s ease;
 }
 
 .project__title {
@@ -668,11 +962,25 @@ a {
   font-weight: 560;
   line-height: 1.05;
   color: var(--ink);
-  margin: 0 0 0.5rem;
+  margin: 0;
+  transition: color 0.25s ease;
+}
+
+/* The title link stretches over the whole row; quiet ink, accent on hover
+   comes from the row rule below. */
+.project__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.project__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
 }
 
 .project__blurb {
-  margin: 0 0 0.7rem;
+  margin: 0 0 0.9rem;
   color: var(--ink);
   max-width: var(--measure);
 }
@@ -681,14 +989,49 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+  /* Lifted above the stretched link so Live/Source stay clickable. */
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+}
+
+.project__arrow {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+/* ---- Project hover choreography ---- */
+.project:hover {
+  transform: translateX(6px);
+}
+
+.project:hover .project__title {
+  color: var(--accent);
+}
+
+.project:hover .project__index {
+  color: var(--accent);
+}
+
+.project__links a:hover .project__arrow {
+  transform: translateX(4px);
 }
 
 /* ---- Article / prose ---------------------------------------------------- */
 
 .article__header {
+  /* Same stage as the mastheads: frames tucked behind, bleeding off-edge. */
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--rule);
+}
+
+/* Pulled up a touch so its descenders clear the frame line behind them. */
+.article__header .display--title {
+  margin-top: -0.4rem;
 }
 
 .article__meta {
@@ -718,7 +1061,7 @@ a {
 }
 
 /* In-prose headings: display serif, smaller, in ink — quietly editorial. */
-.prose :is(h2, h3) {
+.prose :is(h2, h3, h4) {
   font-family: var(--font-display);
   font-optical-sizing: auto;
   line-height: 1.15;
@@ -735,6 +1078,17 @@ a {
 .prose h3 {
   font-size: 1.3rem;
   font-weight: 600;
+}
+
+/* Sub-sections inside a problem ("Problems I faced", "What can be better") —
+   small caps annotation voice, so running labels read as structure. */
+.prose h4 {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
 }
 
 .prose ul,
@@ -754,10 +1108,117 @@ a {
   font-style: italic;
 }
 
+/* Section breaks are a centered fleuron, not a rule — an old print habit. */
 .prose hr {
   border: none;
-  border-top: 1px solid var(--rule);
+  text-align: center;
   margin-block: var(--space-3);
+}
+
+.prose hr::after {
+  content: '\2766'; /* ❦ */
+  color: var(--accent);
+  font-size: 1.1rem;
+}
+
+/* Long-form pieces open with a Fraunces drop cap in the accent — the oldest
+   trick in the book, literally. */
+.prose--dropcap > p:first-child::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-weight: 620;
+  font-size: 3.3em;
+  line-height: 0.78;
+  padding: 0.06em 0.12em 0 0;
+  color: var(--accent);
+  font-variation-settings: 'opsz' 144;
+}
+
+/* The end-mark: a fleuron centered under the text, closing the piece. */
+.article__end {
+  max-width: var(--measure);
+  margin: var(--space-3) 0 0;
+  text-align: center;
+  color: var(--accent);
+  font-size: 1.25rem;
+}
+
+/* ---- Article body + contents rail ---------------------------------------
+   Small screens: the contents box sits between header and prose.
+   Wide screens: it becomes a sticky rail in the right margin — occupying
+   the empty space beside the reading column. */
+.article__body {
+  display: grid;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+@media (min-width: 72rem) {
+  .article__body {
+    grid-template-columns: minmax(0, 1fr) 15rem;
+  }
+
+  .article__body .prose {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .article__body .toc {
+    grid-column: 2;
+    grid-row: 1;
+    position: sticky;
+    top: 5.5rem; /* clears the sticky site header */
+  }
+}
+
+/* Unboxed and quiet: the contents sit in the margin like a pencilled index —
+   faint until the reader reaches for them. */
+.toc {
+  max-width: var(--measure);
+}
+
+.toc__title {
+  margin-bottom: var(--space-1);
+}
+
+.toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  /* Same voice as tags: small uppercase specimen labels. */
+  font-size: 0.75rem;
+  font-weight: 500;
+  /* text-transform: uppercase; */
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+}
+
+.toc li + li {
+  margin-top: 0.45rem;
+}
+
+/* Sub-headings indent per level below the shallowest heading used. */
+.toc li[data-indent='1'] {
+  padding-left: 1rem;
+}
+
+.toc li[data-indent='2'] {
+  padding-left: 2rem;
+}
+
+.toc a {
+  color: var(--muted);
+  text-decoration: none;
+  opacity: 0.65;                                                                                                                       
+  transition: opacity 0.2s ease; 
+}
+
+.toc a:hover,
+.toc a:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  opacity: 1;
 }
 
 /* Wrap markdown tables so a wide one scrolls itself, not the page. */
@@ -766,6 +1227,28 @@ a {
   width: 100%;
   overflow-x: auto;
   border-collapse: collapse;
+}
+
+/* ---- Images beside text ----
+   In any .md file, give an image a side with raw HTML:
+     <img class="img-right" src="/images/foo.png" alt="…" />
+   and the following paragraph text wraps around it. Plain markdown images
+   (![alt](src)) stay full-width blocks. */
+.prose .img-right {
+  float: right;
+  width: min(45%, 18rem);
+  margin: 0.35rem 0 var(--space-2) var(--space-2);
+}
+
+.prose .img-left {
+  float: left;
+  width: min(45%, 18rem);
+  margin: 0.35rem var(--space-2) var(--space-2) 0;
+}
+
+/* Section boundaries clear any floating image so layouts can't tangle. */
+.prose :is(h2, h3, hr) {
+  clear: both;
 }
 
 /* ---- Code --------------------------------------------------------------- */
@@ -777,21 +1260,49 @@ samp {
   font-size: 0.9em;
 }
 
-/* Inline code */
+/* Inline code — backtick text carries the accent so it pops from prose. */
 .prose :not(pre) > code {
   background: var(--code-bg);
+  color: var(--accent);
   padding: 0.1em 0.35em;
   border-radius: 3px;
 }
 
-/* Block code (Shiki output) */
+/* Block code (Shiki output). Warm paper-2, never stark white. */
 .prose pre {
+  background: var(--code-bg);
   padding: var(--space-2);
   border: 1px solid var(--rule);
   border-radius: 3px;
   overflow-x: auto; /* the block scrolls, never the page */
   line-height: 1.5;
   font-size: 0.9rem;
+}
+
+/* Caption line above each block: the fence title (data-title, from the
+   Shiki transformer in astro.config) plus the language; language alone when
+   there's no title. Sticky-left so it stays put while the code scrolls. */
+.prose pre::before {
+  display: block;
+  position: sticky;
+  left: 0;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose pre[data-title]::before {
+  content: attr(data-title) '\2002\00B7\2002' attr(data-language);
+}
+
+.prose pre[data-language]:not([data-title])::before {
+  content: attr(data-language);
 }
 
 .prose pre code {
@@ -804,24 +1315,77 @@ samp {
   Shiki dual-theme wiring. With defaultColor:false, Shiki writes both palettes
   as inline CSS variables; pick the light one by default and swap to dark by the
   same rules as the tokens (explicit choice, or system when not set to light).
+  Backgrounds are deliberately NOT taken from the theme — blocks sit on the
+  site's own warm --code-bg instead of Shiki's stark white / grey.
 */
 .astro-code,
 .astro-code span {
   color: var(--shiki-light);
-  background-color: var(--shiki-light-bg);
+  background-color: transparent;
 }
 
 :root[data-theme='dark'] .astro-code,
 :root[data-theme='dark'] .astro-code span {
   color: var(--shiki-dark);
-  background-color: var(--shiki-dark-bg);
+  background-color: transparent;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .astro-code,
   :root:not([data-theme='light']) .astro-code span {
     color: var(--shiki-dark);
-    background-color: var(--shiki-dark-bg);
+    background-color: transparent;
+  }
+}
+
+/* ---- Copy-to-clipboard (button injected by the script in Base.astro) ---- */
+
+.code-wrap {
+  position: relative;
+}
+
+.code-wrap pre {
+  margin: 0; /* the wrapper carries the prose rhythm now */
+}
+
+.code-copy {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.code-wrap:hover .code-copy,
+.code-copy:focus-visible {
+  opacity: 1;
+}
+
+.code-copy:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.code-copy--done {
+  opacity: 1;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* No hover on touch: keep the button quietly visible. */
+@media (hover: none) {
+  .code-copy {
+    opacity: 0.7;
   }
 }
 
@@ -835,10 +1399,392 @@ samp {
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important; /* staggered entrances appear at once */
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ---- Wikilinks & heading anchors ---------------------------------------- */
+
+/* [[slug]] cross-links render as normal prose links; a missing target keeps
+   the text but flags it (bold, muted) so a broken reference is obvious. */
+.prose .wikilink--missing {
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 1px dashed var(--muted);
+}
+
+/* Hoverable heading permalinks (rehype-autolink-headings appends a "#"). */
+.prose :is(h2, h3, h4) {
+  position: relative;
+}
+
+.prose .heading-anchor {
+  text-decoration: none;
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 0.4rem;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.prose :is(h2, h3, h4):hover .heading-anchor,
+.prose .heading-anchor:focus-visible {
+  opacity: 0.6;
+}
+
+.prose .heading-anchor:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* ---- Featured (home) ---------------------------------------------------- */
+
+/* The standout entry above the two columns: a bordered block that answers the
+   cursor like the list rows, with an accent spine on the left. */
+.featured {
+  display: block;
+  position: relative;
+  padding: var(--space-3);
+  padding-left: calc(var(--space-3) + 4px);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  border-radius: 3px;
+  text-decoration: none;
+  color: inherit;
+  max-width: var(--measure-read);
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.featured:hover {
+  transform: translateX(6px);
+  border-color: var(--accent);
+}
+
+.featured__label {
+  margin: 0;
+}
+
+.featured__title {
+  display: block;
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: clamp(1.5rem, 3.5vw, 2.1rem);
+  font-weight: 560;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-top: var(--space-1);
+}
+
+.featured:hover .featured__title {
+  color: var(--accent);
+}
+
+.featured__desc {
+  display: block;
+  color: var(--muted);
+  margin-top: 0.5rem;
+}
+
+.featured__cue {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--accent);
+}
+
+/* ---- Article trail: series / read-next / backlinks ---------------------- */
+
+.article__trail {
+  max-width: var(--measure);
+  margin-top: var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.article__trail:empty {
+  display: none;
+}
+
+/* Series index above an article (inside the prose column). */
+.series {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper-2);
+}
+
+.series__title {
+  margin: 0 0 var(--space-1);
+}
+
+.series__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.series__item {
+  display: flex;
+  gap: 0.75rem;
+  padding-block: 0.2rem;
+}
+
+.series__num {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.series__item--current {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Read-next: title links in the display serif, kind marker in the small voice. */
+.related__title,
+.backlinks__title {
+  margin: 0 0 var(--space-2);
+}
+
+.related__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.related__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+  border-top: 1px solid var(--rule);
+  padding-top: var(--space-2);
+}
+
+.related__link {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.related__link:hover {
+  color: var(--accent);
+}
+
+.related__kind {
+  color: var(--accent);
+}
+
+.backlinks__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+/* ---- Newsletter --------------------------------------------------------- */
+
+.newsletter {
+  max-width: var(--measure-read);
+  padding: var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper-2);
+}
+
+.newsletter__title {
+  margin: 0 0 var(--space-1);
+}
+
+.newsletter__blurb {
+  margin: 0 0 var(--space-2);
+  color: var(--ink);
+}
+
+.newsletter__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.newsletter__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.newsletter__input {
+  flex: 1 1 14rem;
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.6rem 0.75rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+}
+
+.newsletter__input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.newsletter__submit {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.6rem 1.2rem;
+  color: var(--paper);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.newsletter__submit:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+/* ---- About page --------------------------------------------------------- */
+
+/* Specimen strip of facts: label / value rows, ruled like the rest of the site.
+   Sits right under the header before the intro paragraph. */
+.about-facts {
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  display: grid;
+  gap: 0;
+  max-width: var(--measure-read);
+  border-top: 1px solid var(--rule);
+}
+
+.about-facts__row {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: var(--space-2);
+  align-items: baseline;
+  padding-block: 0.6rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.about-facts dt {
+  margin: 0;
+  padding-top: 0.15rem;
+}
+
+.about-facts dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+
+@media (max-width: 34rem) {
+  .about-facts__row {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
+}
+
+/* The contact line: quiet links with a fleuron between, not raw middots. */
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+/* ---- Comments (giscus) -------------------------------------------------- */
+
+.comments {
+  max-width: var(--measure);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+}
+
+.comments__title {
+  margin: 0 0 var(--space-2);
+}
+
+/* ---- Year jump (TIL archive) -------------------------------------------- */
+
+.year-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ---- Search (Pagefind UI) ----------------------------------------------- */
+
+/* Retune Pagefind's default UI to the site's tokens so it reads as ours. */
+.search-ui {
+  max-width: var(--measure-read);
+  --pagefind-ui-primary: var(--accent);
+  --pagefind-ui-text: var(--ink);
+  --pagefind-ui-background: var(--paper);
+  --pagefind-ui-border: var(--rule);
+  --pagefind-ui-tag: var(--paper-2);
+  --pagefind-ui-border-width: 1px;
+  --pagefind-ui-border-radius: 3px;
+  --pagefind-ui-font: var(--font-body);
+}
+
+/* Pagefind hardcodes the input/clear text to near-black, which vanishes on the
+   dark paper — bind them to the theme ink instead. */
+.search-ui .pagefind-ui__search-input,
+.search-ui .pagefind-ui__search-clear {
+  color: var(--ink);
+  caret-color: var(--accent);
+}
+
+.search-ui .pagefind-ui__search-input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.search-ui .pagefind-ui__search-clear {
+  background: transparent;
+}
+
+.search-ui .pagefind-ui__search-clear:hover {
+  color: var(--accent);
+}
+
+/* Result titles in the display serif, matching entry lists. */
+.search-ui .pagefind-ui__result-title,
+.search-ui .pagefind-ui__result-title a {
+  font-family: var(--font-display);
+  color: var(--ink);
+}
+
+.search-ui .pagefind-ui__result-title a:hover {
+  color: var(--accent);
+}
+
+/* Shown in dev / an unbuilt site where the Pagefind index doesn't exist. */
+.search-missing {
+  max-width: var(--measure-read);
 }
 
 /* ---- Mobile ------------------------------------------------------------- */
@@ -854,5 +1800,74 @@ samp {
   /* Fewer background frames on a phone so headers stay calm. */
   .frame:nth-child(n + 4) {
     display: none;
+  }
+}
+
+/* ---- Print -------------------------------------------------------------- */
+
+/* Writeups should print clean: drop the furniture, ink the type, show link
+   targets. The editorial voice survives; the chrome doesn't. */
+@media print {
+  :root {
+    --paper: #fff;
+    --paper-2: #fff;
+    --ink: #111;
+    --muted: #444;
+    --accent: #111;
+    --rule: #bbb;
+  }
+
+  body::before,
+  .site-header,
+  .site-footer,
+  .frames,
+  .toc,
+  .theme-toggle,
+  .code-copy,
+  .year-jump,
+  .comments,
+  .newsletter,
+  .series,
+  .heading-anchor {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  .prose,
+  .article__trail {
+    max-width: none;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  /* Show where prose links point (skip in-page anchors). */
+  .prose a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    color: #555;
+    word-break: break-all;
+  }
+
+  .prose pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    border: 1px solid #bbb;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  .prose pre,
+  .prose blockquote,
+  figure {
+    break-inside: avoid;
   }
 }

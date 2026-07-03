@@ -1,7 +1,13 @@
 ---
 import { render } from 'astro:content';
 import Article from '../../layouts/Article.astro';
-import { getTilEntries, normalizeTags } from '../../lib/content';
+import {
+  getTilEntries,
+  normalizeTags,
+  getRelated,
+  getBacklinks,
+  getSeries,
+} from '../../lib/content';
 
 // Paths come from the same draft-filtered getter used everywhere, so a draft
 // never gets its own page in a build.
@@ -11,10 +17,31 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 const tags = normalizeTags(entry.data.tags);
+
+// The connected-notebook trail: tag-related entries, reverse [[wikilink]]
+// mentions, and any series this note is part of.
+const [related, backlinks, seriesParts] = await Promise.all([
+  getRelated(entry.id, tags),
+  getBacklinks(entry.id),
+  entry.data.series ? getSeries(entry.data.series) : Promise.resolve([]),
+]);
 ---
 
-<Article title={entry.data.title} date={entry.data.date} tags={tags} eyebrow="Today I learned">
+<Article
+  id={entry.id}
+  collection="til"
+  title={entry.data.title}
+  date={entry.data.date}
+  tags={tags}
+  eyebrow="Today I learned"
+  headings={headings}
+  series={entry.data.series}
+  seriesParts={seriesParts}
+  related={related}
+  backlinks={backlinks}
+  comments
+>
   <Content />
 </Article>

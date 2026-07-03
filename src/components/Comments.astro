@@ -1,0 +1,55 @@
+---
+// Reader comments via giscus (GitHub Discussions). Ships nothing until all
+// four GISCUS values are set in consts.ts, so the site stays zero-JS by
+// default. giscus injects its own iframe and follows the site theme by
+// swapping its stylesheet when the toggle flips (wired below).
+import { GISCUS } from '../consts';
+
+const { repo, repoId, category, categoryId } = GISCUS;
+const enabled = Boolean(repo && repoId && category && categoryId);
+---
+
+{
+  enabled && (
+    <section class="comments" aria-label="Comments">
+      <p class="comments__title eyebrow">Responses</p>
+      <div id="giscus-mount" />
+      <script
+        is:inline
+        define:vars={{ repo, repoId, category, categoryId }}
+      >
+        (function () {
+          var dark = document.documentElement.dataset.theme === 'dark';
+          var s = document.createElement('script');
+          s.src = 'https://giscus.app/client.js';
+          s.async = true;
+          s.crossOrigin = 'anonymous';
+          s.setAttribute('data-repo', repo);
+          s.setAttribute('data-repo-id', repoId);
+          s.setAttribute('data-category', category);
+          s.setAttribute('data-category-id', categoryId);
+          s.setAttribute('data-mapping', 'pathname');
+          s.setAttribute('data-strict', '1');
+          s.setAttribute('data-reactions-enabled', '1');
+          s.setAttribute('data-emit-metadata', '0');
+          s.setAttribute('data-input-position', 'top');
+          s.setAttribute('data-theme', dark ? 'dark_dimmed' : 'light');
+          s.setAttribute('data-lang', 'en');
+          document.getElementById('giscus-mount').appendChild(s);
+
+          // Keep giscus in sync when the reader flips the site theme.
+          var target = document.documentElement;
+          new MutationObserver(function () {
+            var d = target.dataset.theme === 'dark';
+            var frame = document.querySelector('iframe.giscus-frame');
+            if (!frame) return;
+            frame.contentWindow.postMessage(
+              { giscus: { setConfig: { theme: d ? 'dark_dimmed' : 'light' } } },
+              'https://giscus.app',
+            );
+          }).observe(target, { attributes: true, attributeFilter: ['data-theme'] });
+        })();
+      </script>
+    </section>
+  )
+}

@@ -1,0 +1,65 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { getProjectEntries } from '../../lib/content';
+import { SITE_TITLE } from '../../consts';
+
+// Hand-ordered, draft-filtered — through the single content layer so the draft
+// filter is never re-implemented (same guarantee as til/blog).
+const projects = await getProjectEntries();
+
+const heading = [
+  { text: 'Things', size: 'xl', weight: 620, rot: -2 },
+  { text: "I've", size: 'm', weight: 380, italic: true, shift: '9rem' },
+  { text: 'built', size: 'xl', weight: 720, shift: '7rem', rot: 1.5, lift: '-2.1rem' },
+] as const;
+---
+
+<Base
+  title={`Projects — ${SITE_TITLE}`}
+  description="Things I've built. Simulations, research and small tools."
+>
+  <PageHeader eyebrow="Selected work" lines={heading}>
+    <p class="masthead__deck">
+      with links where they're live or open source.
+    </p>
+  </PageHeader>
+
+  <ul class="project-list">
+    {
+      projects.map((project, i) => (
+        <li class="project">
+          <div class="project__lead">
+            <span class="project__index tabular" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h2 class="project__title">
+              {/* Stretched link: the whole row opens the writeup. */}
+              <a class="project__link" href={`/projects/${project.id}/`}>
+                {project.data.title}
+              </a>
+            </h2>
+          </div>
+          <div class="project__body">
+            <p class="project__blurb">{project.data.blurb}</p>
+            <div class="project__links annotation">
+              <a class="link-quiet" href={`/projects/${project.id}/`}>
+                Writeup <span class="project__arrow">&rarr;</span>
+              </a>
+              {project.data.live && (
+                <a class="link-quiet" href={project.data.live}>
+                  Live <span class="project__arrow">&rarr;</span>
+                </a>
+              )}
+              {project.data.source && (
+                <a class="link-quiet" href={project.data.source}>
+                  Source <span class="project__arrow">&rarr;</span>
+                </a>
+              )}
+            </div>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</Base>
