@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { projects } from '../data/projects';
+import { SITE_TITLE } from '../consts';
+
+const heading = [
+  { text: 'Things', size: 'xl', weight: 620, rot: -2 },
+  { text: "I've", size: 'm', weight: 380, italic: true, shift: '9rem' },
+  { text: 'built', size: 'xl', weight: 720, shift: '2rem', rot: 1.5 },
+] as const;
+---
+
+<Base
+  title={`Projects — ${SITE_TITLE}`}
+  description="Things I've built. Simulations, research and small tools."
+>
+  <PageHeader eyebrow="Selected work" lines={heading}>
+    <p class="masthead__deck">
+      with links where they're live or open source.
+    </p>
+  </PageHeader>
+
+  <ul class="project-list">
+    {
+      projects.map((project) => (
+        <li class="project">
+          <h2 class="project__title">{project.title}</h2>
+          <p class="project__blurb">{project.blurb}</p>
+          {(project.live || project.source) && (
+            <div class="project__links annotation">
+              {project.live && (
+                <a class="link-quiet" href={project.live}>
+                  Live &rarr;
+                </a>
+              )}
+              {project.source && (
+                <a class="link-quiet" href={project.source}>
+                  Source &rarr;
+                </a>
+              )}
+            </div>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</Base>

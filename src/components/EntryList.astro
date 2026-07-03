@@ -1,0 +1,40 @@
+---
+// The one dated-list component, shared by the home page, /til, /blog, and
+// /tags/[tag]. Keeping list markup in a single place means every list stays
+// consistent and stays semantic (good for a future static search index).
+import type { EntryItem } from '../lib/content';
+import FormattedDate from './FormattedDate.astro';
+import TagList from './TagList.astro';
+
+interface Props {
+  items: EntryItem[];
+  // Show the blog `description` under the title (used on /blog and home posts).
+  showDescription?: boolean;
+  // Show a small "til" / "blog" marker (used on mixed lists like tag pages).
+  showKind?: boolean;
+}
+
+const { items, showDescription = false, showKind = false } = Astro.props;
+---
+
+<ul class="entry-list">
+  {
+    items.map((item) => (
+      <li class="entry">
+        <div class="entry__meta">
+          <FormattedDate date={item.date} />
+          {showKind && <span class="annotation entry__kind">{item.collection}</span>}
+        </div>
+        <div>
+          <a class="entry__title" href={item.url}>
+            {item.title}
+          </a>
+          {showDescription && item.description && (
+            <p class="entry__desc">{item.description}</p>
+          )}
+          <TagList tags={item.tags} />
+        </div>
+      </li>
+    ))
+  }
+</ul>

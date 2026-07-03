@@ -1,0 +1,29 @@
+---
+import { SITE_TITLE, NAV } from '../consts';
+import ThemeToggle from './ThemeToggle.astro';
+
+// Highlight the section the current page belongs to (e.g. /til/foo → "til").
+const path = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="site-header__name" href="/">{SITE_TITLE}</a>
+    <div class="site-header__right">
+      <nav class="site-nav annotation" aria-label="Primary">
+        {
+          NAV.map((item) => (
+            <a
+              class="link-quiet"
+              href={item.href}
+              aria-current={path.startsWith(item.href) ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          ))
+        }
+      </nav>
+      <ThemeToggle />
+    </div>
+  </div>
+</header>

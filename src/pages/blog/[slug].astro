@@ -1,0 +1,24 @@
+---
+import { render } from 'astro:content';
+import Article from '../../layouts/Article.astro';
+import { getPostEntries, normalizeTags } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const entries = await getPostEntries();
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const tags = normalizeTags(entry.data.tags);
+---
+
+<Article
+  title={entry.data.title}
+  date={entry.data.date}
+  tags={tags}
+  description={entry.data.description}
+  eyebrow="Writing"
+>
+  <Content />
+</Article>

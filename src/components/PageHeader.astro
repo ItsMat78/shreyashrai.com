@@ -1,0 +1,33 @@
+---
+// The shared editorial opener for every page: a loose grid of outlined frames,
+// a tiny blue specimen kicker, a scattered display headline, and an optional
+// deck (passed as children). Using this on every page is what makes the site
+// read as one magazine.
+import ScatterHead from './ScatterHead.astro';
+import FrameField from './FrameField.astro';
+
+interface Fragment {
+  text: string;
+  size?: 's' | 'm' | 'l' | 'xl';
+  weight?: number;
+  italic?: boolean;
+  shift?: string;
+  wonk?: number;
+  rot?: number;
+}
+
+interface Props {
+  eyebrow: string;
+  lines: Fragment[];
+  dense?: boolean; // denser frame grid (home hero)
+}
+
+const { eyebrow, lines, dense = false } = Astro.props;
+---
+
+<header class="masthead">
+  <FrameField dense={dense} />
+  <p class="eyebrow">{eyebrow}</p>
+  <ScatterHead lines={lines} as="h1" />
+  <slot />
+</header>

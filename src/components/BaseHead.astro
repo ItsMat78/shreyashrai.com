@@ -1,0 +1,89 @@
+---
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+
+interface Props {
+  title: string;
+  description?: string;
+  type?: 'website' | 'article';
+}
+
+const {
+  title,
+  description = SITE_DESCRIPTION,
+  type = 'website',
+} = Astro.props;
+
+// Canonical URL: absolute, without a trailing slash (except the root).
+const path = Astro.url.pathname.replace(/\/+$/, '');
+const canonical = new URL(path || '/', Astro.site).href;
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
+
+<!--
+  Set the theme before first paint so there's no flash: an explicit choice in
+  localStorage wins; otherwise follow the system preference. Everything else in
+  the CSS keys off this [data-theme] attribute.
+-->
+<script is:inline>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme');
+      var theme =
+        stored === 'light' || stored === 'dark'
+          ? stored
+          : window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light';
+      document.documentElement.dataset.theme = theme;
+    } catch (e) {}
+  })();
+</script>
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+<!-- Icons -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+<!-- Preload the two self-hosted fonts to avoid a flash / layout shift -->
+<link
+  rel="preload"
+  href="/fonts/schibsted-grotesk-latin.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+<link
+  rel="preload"
+  href="/fonts/fraunces-latin.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+<link
+  rel="preload"
+  href="/fonts/fraunces-italic-latin.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<!-- Feed autodiscovery -->
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={`${SITE_TITLE} — all`}
+  href="/rss.xml"
+/>
+
+<!-- Open Graph / Twitter -->
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonical} />
+<meta property="og:site_name" content={SITE_TITLE} />
+<meta name="twitter:card" content="summary" />

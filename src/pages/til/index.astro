@@ -1,0 +1,51 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import EntryList from '../../components/EntryList.astro';
+import type { EntryItem } from '../../lib/content';
+import { getTils } from '../../lib/content';
+import { SITE_TITLE } from '../../consts';
+
+const tils = await getTils();
+
+// Group by UTC year. The list is already sorted newest-first, so inserting as
+// we go gives year buckets in descending order (Map preserves insertion order).
+const groups = new Map<number, EntryItem[]>();
+for (const t of tils) {
+  const year = t.date.getUTCFullYear();
+  const bucket = groups.get(year) ?? [];
+  bucket.push(t);
+  groups.set(year, bucket);
+}
+const years = [...groups.keys()];
+
+const heading = [
+  { text: 'Today I', size: 'l', weight: 600, rot: -1.5 },
+  { text: 'learned', size: 'xl', weight: 420, italic: true, shift: '2.5rem', rot: 1.5 },
+] as const;
+---
+
+<Base
+  title={`TIL — ${SITE_TITLE}`}
+  description="Short, dated notes on things I've learned — the running log at the heart of the site."
+>
+  <PageHeader eyebrow="The running log" lines={heading}>
+    <p class="masthead__deck">
+      Short notes on things I picked up while building. New ones land here first.
+      <a href="/til/rss.xml">TIL feed &rarr;</a>
+    </p>
+  </PageHeader>
+
+  {
+    years.length === 0 ? (
+      <p>Nothing here yet.</p>
+    ) : (
+      years.map((year) => (
+        <section class="year-group">
+          <h2 class="display display--section year-heading">{year}</h2>
+          <EntryList items={groups.get(year)!} />
+        </section>
+      ))
+    )
+  }
+</Base>

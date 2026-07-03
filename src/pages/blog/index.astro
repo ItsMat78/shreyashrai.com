@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import EntryList from '../../components/EntryList.astro';
+import { getPosts } from '../../lib/content';
+import { SITE_TITLE } from '../../consts';
+
+const posts = await getPosts();
+
+const heading = [
+  { text: 'Writing', size: 'xl', weight: 580, rot: -1.5 },
+  { text: '&', size: 'l', weight: 340, italic: true, shift: '1rem' },
+  { text: 'thinking', size: 'l', weight: 620, shift: '4.5rem', rot: 2 },
+] as const;
+---
+
+<Base
+  title={`Blog — ${SITE_TITLE}`}
+  description="Longer writeups and essays — project retrospectives and things worth more than a TIL."
+>
+  <PageHeader eyebrow="Longer form" lines={heading}>
+    <p class="masthead__deck">
+      Longer writeups and essays — project retrospectives and ideas worth more
+      than a TIL. <a href="/blog/rss.xml">Blog feed &rarr;</a>
+    </p>
+  </PageHeader>
+
+  {
+    posts.length === 0 ? (
+      <p>Nothing here yet.</p>
+    ) : (
+      <EntryList items={posts} showDescription />
+    )
+  }
+</Base>

@@ -1,0 +1,49 @@
+---
+// Decorative loose grid of thin outlined rectangles that sit behind a page
+// header — the "kinetic type" spread device. Purely ornamental: aria-hidden,
+// non-interactive, and clipped by the masthead so boxes can bleed off-edge.
+interface Rect {
+  t: number; // top %
+  l: number; // left %
+  w: number; // width %
+  h: number; // height %
+  rot?: number; // slight rotation in degrees
+}
+
+interface Props {
+  dense?: boolean; // more boxes (used on the home hero)
+}
+
+const { dense = false } = Astro.props;
+
+const base: Rect[] = [
+  { t: 4, l: -2, w: 42, h: 46 },
+  { t: -4, l: 33, w: 31, h: 74 },
+  { t: 32, l: 57, w: 46, h: 54 },
+  { t: 58, l: 6, w: 52, h: 44 },
+];
+
+const extra: Rect[] = [
+  { t: 16, l: 44, w: 24, h: 33, rot: -2 },
+  { t: -8, l: 68, w: 40, h: 42 },
+  { t: 48, l: 28, w: 28, h: 50, rot: 1.5 },
+];
+
+const rects = dense ? [...base, ...extra] : base;
+
+function styleFor(r: Rect): string {
+  return [
+    `top:${r.t}%`,
+    `left:${r.l}%`,
+    `width:${r.w}%`,
+    `height:${r.h}%`,
+    r.rot ? `transform:rotate(${r.rot}deg)` : '',
+  ]
+    .filter(Boolean)
+    .join(';');
+}
+---
+
+<div class="frames" aria-hidden="true">
+  {rects.map((r) => <span class="frame" style={styleFor(r)} />)}
+</div>

@@ -1,0 +1,858 @@
+/* =========================================================================
+   shreyashrai.com — global styles
+
+   Editorial direction (see plan.md §6, refined July 2026). Think of a printed
+   brand-guidelines spread: a high-contrast display serif (Fraunces, full axes)
+   set HUGE in electric blue on warm cream, with headline phrases broken into
+   fragments that tumble down the page at different sizes and weights — the
+   "scatter" headline is the signature. A grotesque (Schibsted Grotesk) carries
+   body text and the tiny uppercase specimen labels that annotate everything.
+
+   Dark/light is switchable: an inline head script sets [data-theme] on <html>
+   before paint; every colour keys off that (with a no-JS system fallback).
+   Every colour, size, and space is a custom property so the whole system
+   retunes from one place.
+   ========================================================================= */
+
+/* ---- Fonts (self-hosted, latin subset, woff2) --------------------------- */
+
+/* Display: Fraunces variable, FULL build — opsz + wght + SOFT + WONK axes.
+   Used large only; the extra axes give the playful high-contrast letterforms. */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/fraunces-latin.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Fraunces italic — the parenthetical / accent voice in display headlines. */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/fraunces-italic-latin.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Body/UI/annotation: Schibsted Grotesk variable (weight 400–900). */
+@font-face {
+  font-family: 'Schibsted Grotesk';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 900;
+  src: url('/fonts/schibsted-grotesk-latin.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Schibsted Grotesk';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400 900;
+  src: url('/fonts/schibsted-grotesk-italic-latin.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ---- Design tokens ------------------------------------------------------ */
+
+:root {
+  /* Palette — light. Warm paper, near-black ink, one warm grey, one blue. */
+  --paper: #faf8f2;
+  --paper-2: #f1eee4; /* faint second surface (gutter labels, code) */
+  --ink: #17150f;
+  --muted: #6f6b60;
+  --accent: #1f2ae6; /* the single accent: display headlines + links */
+  --accent-strong: #1620c0; /* hover only */
+  --rule: #e3dfd2; /* hairline rules */
+  --code-bg: #f1eee4;
+
+  /* Type */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Schibsted Grotesk', system-ui, -apple-system, 'Segoe UI',
+    Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono',
+    monospace;
+
+  --text-base: 1.125rem; /* ~18px at a 16px root */
+  --leading: 1.62;
+
+  /* Spacing scale — one rhythm, used everywhere */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --space-4: 4rem;
+  --space-5: 6rem;
+
+  /* Column widths */
+  --page: 64rem; /* editorial shell */
+  --measure: 66ch; /* prose */
+  --measure-read: 46rem; /* lists / reading column narrower than the shell */
+
+  /* Decorative paper grain + the outlined "grid" frames behind headers. */
+  --tex-opacity: 0.05;
+  --tex-blend: multiply;
+  --frame-line: rgba(120, 110, 90, 0.22); /* fallback if color-mix unsupported */
+  --frame-line: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* Dark palette. Applied two ways so it works with and without JS:
+   1) explicit user choice via [data-theme="dark"];
+   2) system preference when the user hasn't chosen light. */
+:root[data-theme='dark'] {
+  --paper: #16130c; /* deep warm brown-black */
+  --paper-2: #201b11;
+  --ink: #ecdcb7; /* warm parchment */
+  --muted: #a2926d; /* aged khaki */
+  --accent: #e3b23c; /* dark russian-yellow / mustard gold */
+  --accent-strong: #f4c85c;
+  --rule: #372f1e;
+  --code-bg: #201b11;
+  --tex-opacity: 0.07;
+  --tex-blend: soft-light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #16130c;
+    --paper-2: #201b11;
+    --ink: #ecdcb7;
+    --muted: #a2926d;
+    --accent: #e3b23c;
+    --accent-strong: #f4c85c;
+    --rule: #372f1e;
+    --code-bg: #201b11;
+    --tex-opacity: 0.07;
+    --tex-blend: soft-light;
+  }
+}
+
+/* ---- Reset & base ------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  position: relative;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Long words / URLs must never force horizontal scroll on a phone. */
+  overflow-wrap: break-word;
+}
+
+/* Subtle paper grain over the whole page. Fixed, decorative, non-interactive,
+   sits behind all content. SVG fractal noise, desaturated, blended very low. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='140'%20height='140'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.85'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='140'%20height='140'%20filter='url(%23n)'%20opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 140px 140px;
+  opacity: var(--tex-opacity);
+  mix-blend-mode: var(--tex-blend);
+}
+
+img,
+video,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---- Layout ------------------------------------------------------------- */
+
+.container {
+  width: 100%;
+  max-width: var(--page);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+.site {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+main {
+  flex: 1 0 auto;
+  padding-block: var(--space-4) var(--space-5);
+}
+
+/* Sections stack with a single consistent rhythm. */
+.stack > * + * {
+  margin-top: var(--space-4);
+}
+
+/* ---- The scatter headline (the signature) ------------------------------- */
+
+/*
+  A display phrase broken into fragments that tumble down the page. Each line
+  is a block; size comes from a modifier class, and weight / italic / horizontal
+  shift are set inline per fragment so every headline can be art-directed. Blue
+  ink, high optical size for maximum thick/thin contrast.
+*/
+.scatter {
+  font-family: var(--font-display);
+  font-style: normal;
+  color: var(--accent);
+  margin: 0;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+}
+
+.scatter__line {
+  display: block;
+  width: fit-content;
+  font-weight: 560;
+  /* Per-fragment indent, capped so a big shift can't cause page scroll. */
+  margin-inline-start: min(var(--shift, 0rem), 22vw);
+  font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' var(--wonk, 0);
+  /* Slight per-fragment tilt for the kinetic tumble. */
+  transform: rotate(var(--rot, 0deg));
+  transform-origin: left center;
+}
+
+.scatter__line--italic {
+  font-style: italic;
+}
+
+/* Size steps. Values clamp hard so the drama survives down to a phone. */
+.scatter__line--s {
+  font-size: clamp(1.7rem, 5.5vw, 2.6rem);
+}
+.scatter__line--m {
+  font-size: clamp(2.1rem, 8vw, 3.6rem);
+}
+.scatter__line--l {
+  font-size: clamp(2.6rem, 11vw, 5rem);
+}
+.scatter__line--xl {
+  font-size: clamp(3rem, 13.5vw, 6.25rem);
+  letter-spacing: -0.03em;
+}
+
+/* ---- Other display type ------------------------------------------------- */
+
+.display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-weight: 560;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  margin: 0;
+  color: var(--accent);
+}
+
+/* Article / single-entry titles: one big blue serif (content is arbitrary,
+   so it wraps normally rather than being hand-scattered). */
+.display--title {
+  font-size: clamp(2.3rem, 7vw, 4.5rem);
+  font-variation-settings: 'opsz' 144, 'SOFT' 0, 'WONK' 0;
+}
+
+/* Section / year headings carry the accent too, tilted a hair for the kinetic,
+   scattered feel that now runs through the whole site. */
+.display--section {
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.1;
+  display: inline-block;
+  transform: rotate(-1.2deg);
+  transform-origin: left center;
+}
+
+/* ---- Editorial header (used on every page) ------------------------------ */
+
+.masthead {
+  position: relative;
+  isolation: isolate; /* own stacking context so frames tuck behind the text */
+  overflow: hidden; /* let the outlined frames bleed off the edges */
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: var(--space-4);
+}
+
+/* The loose grid of outlined rectangles behind a header. */
+.frames {
+  position: absolute;
+  inset: 0;
+  z-index: -1; /* behind the header text, above the header background */
+  pointer-events: none;
+}
+
+.frame {
+  position: absolute;
+  border: 1px solid var(--frame-line);
+  border-radius: 2px;
+}
+
+.masthead__deck {
+  margin: var(--space-3) 0 0;
+  max-width: var(--measure-read);
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.masthead__deck a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 2px;
+}
+
+.masthead__deck a:hover {
+  color: var(--accent);
+}
+
+/* The tiny blue specimen kicker above each headline. */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin: 0 0 var(--space-2);
+}
+
+/* ---- Annotation voice (dates, meta, small labels) ----------------------- */
+
+.annotation {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Links -------------------------------------------------------------- */
+
+a {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+  text-underline-offset: 2px;
+}
+
+/* Content links (inside prose): ink text, accent underline; hover goes blue. */
+.prose a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+}
+
+.prose a:hover {
+  color: var(--accent);
+}
+
+/* UI links (nav, footer, name, tags): quiet, underline on hover only. */
+.link-quiet {
+  color: inherit;
+  text-decoration: none;
+}
+
+.link-quiet:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
+/* ---- Header ------------------------------------------------------------- */
+
+.site-header {
+  border-bottom: 1px solid var(--rule);
+}
+
+.site-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-2);
+  padding-block: var(--space-2);
+}
+
+.site-header__name {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.site-header__name:hover {
+  color: var(--accent);
+}
+
+.site-header__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  flex-wrap: wrap;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.site-nav a {
+  /* Padded hit area so the small type still gives a comfortable tap target. */
+  padding: 0.4rem 0;
+}
+
+.site-nav a[aria-current='page'] {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
+/* ---- Theme toggle ------------------------------------------------------- */
+
+.theme-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: 1px solid var(--rule);
+  color: var(--muted);
+  border-radius: 999px;
+  /* Comfortable 40px+ tap target */
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---- Footer ------------------------------------------------------------- */
+
+.site-footer {
+  border-top: 1px solid var(--rule);
+  padding-block: var(--space-3);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.site-footer a {
+  padding: 0.4rem 0;
+}
+
+/* ---- Section heads (list pages / home) ---------------------------------- */
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-2);
+  margin-bottom: var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ---- Home split: Writing left, TILs down the right half ----------------- */
+
+.home-split {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.home-split__rss {
+  margin-top: var(--space-3);
+}
+
+@media (min-width: 52rem) {
+  .home-split {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    align-items: start;
+  }
+
+  /* TILs occupy the right column; Writing the left. Explicit placement so it
+     holds regardless of source order (TILs come first in the DOM for mobile). */
+  .home-split__til {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .home-split__writing {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* In these narrower columns the date reads better stacked above the title. */
+  .home-split .entry {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+  }
+}
+
+/* ---- Entry lists (home, /til, /blog, /tags/[tag]) ----------------------- */
+
+.entry-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: var(--measure-read);
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0 var(--space-3);
+  align-items: baseline;
+  padding-block: var(--space-2);
+  border-top: 1px solid var(--rule);
+}
+
+.entry:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+.entry__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.entry__title {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.35rem;
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.entry__title:hover {
+  color: var(--accent);
+}
+
+.entry__desc {
+  margin-top: 0.4rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.entry__tags {
+  margin-top: 0.5rem;
+}
+
+/* Small "til" / "blog" marker in mixed lists (tag pages). */
+.entry__kind {
+  color: var(--accent);
+}
+
+/* ---- Tags --------------------------------------------------------------- */
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+}
+
+.tag {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-decoration: none;
+  /* Padded so adjacent tags can't be fat-fingered on a phone. */
+  padding: 0.3rem 0;
+}
+
+.tag:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
+.tag__count {
+  color: var(--accent);
+}
+
+/* The /tags index reads as a slightly roomier cloud. */
+.tag-row--index {
+  gap: 0.6rem 1.4rem;
+}
+
+.tag-row--index .tag {
+  font-size: 0.95rem;
+}
+
+/* Year grouping on /til */
+.year-group + .year-group {
+  margin-top: var(--space-4);
+}
+
+.year-heading {
+  margin: 0 0 var(--space-1);
+}
+
+/* ---- Projects ----------------------------------------------------------- */
+
+.project-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.project {
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--rule);
+}
+
+.project:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+.project__title {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  font-weight: 560;
+  line-height: 1.05;
+  color: var(--ink);
+  margin: 0 0 0.5rem;
+}
+
+.project__blurb {
+  margin: 0 0 0.7rem;
+  color: var(--ink);
+  max-width: var(--measure);
+}
+
+.project__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* ---- Article / prose ---------------------------------------------------- */
+
+.article__header {
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--rule);
+}
+
+.article__meta {
+  margin-top: var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+}
+
+.prose {
+  max-width: var(--measure);
+  font-size: 1.15rem;
+}
+
+/* One rule governs vertical rhythm between prose blocks. */
+.prose > * {
+  margin-block: 0;
+}
+
+.prose > * + * {
+  margin-top: var(--space-2);
+}
+
+.prose > * + :is(h2, h3) {
+  margin-top: var(--space-3);
+}
+
+/* In-prose headings: display serif, smaller, in ink — quietly editorial. */
+.prose :is(h2, h3) {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  line-height: 1.15;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.prose h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.prose h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4rem;
+}
+
+.prose li + li {
+  margin-top: 0.35rem;
+}
+
+.prose blockquote {
+  margin-inline: 0;
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--accent);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin-block: var(--space-3);
+}
+
+/* Wrap markdown tables so a wide one scrolls itself, not the page. */
+.prose :is(table) {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+/* ---- Code --------------------------------------------------------------- */
+
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* Inline code */
+.prose :not(pre) > code {
+  background: var(--code-bg);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+/* Block code (Shiki output) */
+.prose pre {
+  padding: var(--space-2);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow-x: auto; /* the block scrolls, never the page */
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/*
+  Shiki dual-theme wiring. With defaultColor:false, Shiki writes both palettes
+  as inline CSS variables; pick the light one by default and swap to dark by the
+  same rules as the tokens (explicit choice, or system when not set to light).
+*/
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+
+:root[data-theme='dark'] .astro-code,
+:root[data-theme='dark'] .astro-code span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .astro-code,
+  :root:not([data-theme='light']) .astro-code span {
+    color: var(--shiki-dark);
+    background-color: var(--shiki-dark-bg);
+  }
+}
+
+/* ---- Accessibility ------------------------------------------------------ */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Mobile ------------------------------------------------------------- */
+
+/* The single column already works at every width; this restacks the date/title
+   grid so narrow screens read date-above-title. */
+@media (max-width: 36rem) {
+  .entry {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+  }
+
+  /* Fewer background frames on a phone so headers stay calm. */
+  .frame:nth-child(n + 4) {
+    display: none;
+  }
+}

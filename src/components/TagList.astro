@@ -1,0 +1,21 @@
+---
+// A row of tag links. Tags are already normalised (lowercase) upstream; the
+// uppercase look is purely CSS. Links point at /tags/[tag].
+interface Props {
+  tags: string[];
+}
+
+const { tags } = Astro.props;
+---
+
+{
+  tags.length > 0 && (
+    <div class="tag-row">
+      {tags.map((tag) => (
+        <a class="tag" href={`/tags/${tag}`}>
+          {tag}
+        </a>
+      ))}
+    </div>
+  )
+}

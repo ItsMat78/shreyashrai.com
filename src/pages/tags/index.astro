@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { getAllTags } from '../../lib/content';
+import { SITE_TITLE } from '../../consts';
+
+const tags = await getAllTags();
+
+const heading = [
+  { text: 'Sorted', size: 'l', weight: 380, italic: true, rot: -2 },
+  { text: 'by topic', size: 'xl', weight: 640, shift: '2rem', rot: 1.5 },
+] as const;
+---
+
+<Base title={`Tags — ${SITE_TITLE}`} description="Every tag across TILs and posts.">
+  <PageHeader eyebrow="The index" lines={heading}>
+    <p class="masthead__deck">Everything on the site, gathered by subject.</p>
+  </PageHeader>
+
+  {
+    tags.length === 0 ? (
+      <p>No tags yet.</p>
+    ) : (
+      <div class="tag-row tag-row--index">
+        {tags.map(({ tag, count }) => (
+          <a class="tag" href={`/tags/${tag}`}>
+            {tag} <span class="tag__count">{count}</span>
+          </a>
+        ))}
+      </div>
+    )
+  }
+</Base>

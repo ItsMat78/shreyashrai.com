@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { SITE_TITLE, GITHUB_URL, EMAIL } from '../consts';
+
+const heading = [
+  { text: 'About,', size: 'xl', weight: 620, rot: -1.5 },
+  { text: 'briefly', size: 'l', weight: 380, italic: true, shift: '5rem', rot: 2 },
+] as const;
+---
+
+<Base
+  title={`About — ${SITE_TITLE}`}
+  description="Shreyash Rai — Data Science & AI undergrad at IIIT Naya Raipur, learning by building."
+>
+  <PageHeader eyebrow="Who / why" lines={heading} />
+
+  <div class="prose">
+    <p>
+      I'm Shreyash Rai, a Data Science &amp; AI undergrad at IIIT Naya Raipur. I
+      learn by building. Reinforcement learning, simulation, and small tools I
+      actually use. This site is where I keep a running log of things I learn
+      (<a href="/til">TILs</a>) and write up the
+      <a href="/projects">projects</a> I build.
+    </p>
+    <p>
+      The fastest way to see what I'm up to is the
+      <a href="/projects">projects</a> page or the
+      <a href="/rss.xml">feed</a>. If you want to reach me, email is best.
+    </p>
+    <p>
+      <a href={GITHUB_URL}>GitHub</a> &middot;
+      <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
+    </p>
+  </div>
+</Base>

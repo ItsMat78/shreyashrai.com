@@ -1,0 +1,51 @@
+---
+// The signature headline: a phrase broken into fragments that tumble down the
+// page at different sizes, weights, and horizontal offsets — like a printed
+// type-specimen spread. Art-directed per use: each fragment carries its own
+// size / weight / italic / indent so headlines are composed, not random.
+interface Fragment {
+  text: string;
+  size?: 's' | 'm' | 'l' | 'xl'; // scale step (default 'l')
+  weight?: number; // 300–900 for the playful weight mixing
+  italic?: boolean;
+  shift?: string; // horizontal indent, any CSS length (e.g. '3rem')
+  wonk?: number; // 0–1 Fraunces WONK axis, for the odd quirky fragment
+  rot?: number; // small rotation in degrees for the kinetic tumble
+}
+
+interface Props {
+  lines: Fragment[];
+  as?: 'h1' | 'p' | 'div';
+  id?: string;
+}
+
+const { lines, as: Tag = 'h1', id } = Astro.props;
+
+function styleFor(l: Fragment): string {
+  return [
+    l.shift ? `--shift:${l.shift}` : '',
+    l.weight ? `font-weight:${l.weight}` : '',
+    l.wonk ? `--wonk:${l.wonk}` : '',
+    l.rot ? `--rot:${l.rot}deg` : '',
+  ]
+    .filter(Boolean)
+    .join(';');
+}
+---
+
+<Tag class="scatter" id={id}>
+  {
+    lines.map((l) => (
+      <span
+        class:list={[
+          'scatter__line',
+          `scatter__line--${l.size ?? 'l'}`,
+          l.italic && 'scatter__line--italic',
+        ]}
+        style={styleFor(l)}
+      >
+        {l.text}
+      </span>
+    ))
+  }
+</Tag>

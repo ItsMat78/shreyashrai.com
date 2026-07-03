@@ -1,0 +1,22 @@
+---
+// Renders a date-only value. Formatted in UTC everywhere so a date never
+// shifts by a day depending on the build machine's timezone. This is the only
+// place dates are rendered.
+interface Props {
+  date: Date;
+  format?: 'short' | 'long';
+}
+
+const { date, format = 'short' } = Astro.props;
+
+const iso = date.toISOString().slice(0, 10); // YYYY-MM-DD for the datetime attr
+
+const options: Intl.DateTimeFormatOptions =
+  format === 'long'
+    ? { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' }
+    : { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' };
+
+const label = date.toLocaleDateString('en-GB', options);
+---
+
+<time datetime={iso} class="annotation tabular">{label}</time>
