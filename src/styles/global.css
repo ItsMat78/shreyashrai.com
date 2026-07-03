@@ -9,7 +9,7 @@
    body text and the tiny uppercase specimen labels that annotate everything.
 
    Dark/light is switchable: an inline head script sets [data-theme] on <html>
-   before paint; every colour keys off that (with a no-JS system fallback).
+   before paint (light by default); every colour keys off that attribute.
    Every colour, size, and space is a custom property so the whole system
    retunes from one place.
    ========================================================================= */
@@ -106,9 +106,7 @@
   --frame-line: color-mix(in srgb, var(--accent) 32%, transparent);
 }
 
-/* Dark palette. Applied two ways so it works with and without JS:
-   1) explicit user choice via [data-theme="dark"];
-   2) system preference when the user hasn't chosen light. */
+/* Dark palette — only when the user picks dark via the toggle. */
 :root[data-theme='dark'] {
   --paper: #16130c; /* deep warm brown-black */
   --paper-2: #201b11;
@@ -120,21 +118,6 @@
   --code-bg: #201b11;
   --tex-opacity: 0.15;
   --tex-blend: soft-light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --paper: #16130c;
-    --paper-2: #201b11;
-    --ink: #ecdcb7;
-    --muted: #a2926d;
-    --accent: #e3b23c;
-    --accent-strong: #f4c85c;
-    --rule: #372f1e;
-    --code-bg: #201b11;
-    --tex-opacity: 0.15;
-    --tex-blend: soft-light;
-  }
 }
 
 /* ---- Reset & base ------------------------------------------------------- */
@@ -1313,8 +1296,8 @@ samp {
 
 /*
   Shiki dual-theme wiring. With defaultColor:false, Shiki writes both palettes
-  as inline CSS variables; pick the light one by default and swap to dark by the
-  same rules as the tokens (explicit choice, or system when not set to light).
+  as inline CSS variables; pick the light one by default and swap to dark when
+  [data-theme="dark"] is set.
   Backgrounds are deliberately NOT taken from the theme — blocks sit on the
   site's own warm --code-bg instead of Shiki's stark white / grey.
 */
@@ -1328,14 +1311,6 @@ samp {
 :root[data-theme='dark'] .astro-code span {
   color: var(--shiki-dark);
   background-color: transparent;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .astro-code,
-  :root:not([data-theme='light']) .astro-code span {
-    color: var(--shiki-dark);
-    background-color: transparent;
-  }
 }
 
 /* ---- Copy-to-clipboard (button injected by the script in Base.astro) ---- */

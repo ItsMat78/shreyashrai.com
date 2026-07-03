@@ -36,8 +36,8 @@ export default defineConfig({
       ],
     ],
     shikiConfig: {
-      // Dual theme: Shiki emits both palettes as CSS variables and global.css
-      // switches between them under prefers-color-scheme. See global.css.
+      // Dual theme: Shiki emits both palettes as CSS variables; global.css
+      // picks light by default and dark when [data-theme="dark"] is set.
       themes: {
         light: 'github-light',
         dark: 'github-dark-dimmed',

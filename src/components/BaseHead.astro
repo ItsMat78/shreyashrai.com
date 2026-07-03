@@ -28,19 +28,15 @@ const ogImageUrl = new URL(ogImage, Astro.site).href;
 
 <!--
   Set the theme before first paint so there's no flash: an explicit choice in
-  localStorage wins; otherwise follow the system preference. Everything else in
-  the CSS keys off this [data-theme] attribute.
+  localStorage wins; otherwise default to light. Everything else in the CSS keys
+  off this [data-theme] attribute.
 -->
 <script is:inline>
   (function () {
     try {
       var stored = localStorage.getItem('theme');
       var theme =
-        stored === 'light' || stored === 'dark'
-          ? stored
-          : window.matchMedia('(prefers-color-scheme: dark)').matches
-            ? 'dark'
-            : 'light';
+        stored === 'light' || stored === 'dark' ? stored : 'light';
       document.documentElement.dataset.theme = theme;
     } catch (e) {}
   })();
