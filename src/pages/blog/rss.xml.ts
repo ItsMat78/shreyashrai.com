@@ -7,7 +7,7 @@ import { SITE_TITLE } from '../../consts';
 export async function GET(context: APIContext) {
   const posts = await getPostEntries();
   return buildFeed(context, {
-    title: `${SITE_TITLE} — Blog`,
+    title: `${SITE_TITLE} — Writing`,
     description: 'Longer writeups and essays by Shreyash Rai.',
     sources: [{ entries: posts, prefix: 'blog' }],
   });

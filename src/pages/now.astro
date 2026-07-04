@@ -2,7 +2,6 @@
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
 import FormattedDate from '../components/FormattedDate.astro';
-import { SITE_TITLE } from '../consts';
 
 // A /now page (nownownow.com convention): what I'm focused on lately. Edit the
 // date and bullets whenever the focus shifts — it's meant to be current, not
@@ -15,7 +14,7 @@ const heading = [
 ] as const;
 ---
 
-<Base title={`Now — ${SITE_TITLE}`} description="What Shreyash Rai is focused on at the moment.">
+<Base title="Now" description="What Shreyash Rai is focused on at the moment.">
   <PageHeader eyebrow="A /now page" lines={heading}>
     <p class="masthead__deck">
       What I'm focused on lately. <a href="https://nownownow.com/about">What's this?</a>

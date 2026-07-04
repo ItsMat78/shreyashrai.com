@@ -2,7 +2,6 @@
 import Base from '../../layouts/Base.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { getProjectEntries } from '../../lib/content';
-import { SITE_TITLE } from '../../consts';
 
 // Hand-ordered, draft-filtered — through the single content layer so the draft
 // filter is never re-implemented (same guarantee as til/blog).
@@ -16,7 +15,7 @@ const heading = [
 ---
 
 <Base
-  title={`Projects — ${SITE_TITLE}`}
+  title="Projects"
   description="Things I've built. Simulations, research and small tools."
 >
   <PageHeader eyebrow="Selected work" lines={heading}>
@@ -29,6 +28,13 @@ const heading = [
     {
       projects.map((project, i) => (
         <li class="project">
+          <div
+            class="project__cover"
+            data-has-cover={project.data.cover ? 'true' : 'false'}
+            data-index={String(i + 1).padStart(2, '0')}
+            style={project.data.cover ? `background-image:url(${project.data.cover})` : undefined}
+            aria-hidden="true"
+          />
           <div class="project__lead">
             <span class="project__index tabular" aria-hidden="true">
               {String(i + 1).padStart(2, '0')}
@@ -41,19 +47,29 @@ const heading = [
             </h2>
           </div>
           <div class="project__body">
-            <p class="project__blurb">{project.data.blurb}</p>
+            {project.data.outcome && (
+              <p class="project__outcome">{project.data.outcome}</p>
+            )}
+            <p class="project__blurb" set:html={project.data.blurb} />
+            {project.data.tech.length > 0 && (
+              <ul class="project__tech" aria-label="Tech stack">
+                {project.data.tech.map((t) => (
+                  <li>{t}</li>
+                ))}
+              </ul>
+            )}
             <div class="project__links annotation">
               <a class="link-quiet" href={`/projects/${project.id}/`}>
-                Writeup <span class="project__arrow">&rarr;</span>
+                Writeup <span class="project__arrow">🡥</span>
               </a>
               {project.data.live && (
                 <a class="link-quiet" href={project.data.live}>
-                  Live <span class="project__arrow">&rarr;</span>
+                  Live <span class="project__arrow">🡥</span>
                 </a>
               )}
               {project.data.source && (
                 <a class="link-quiet" href={project.data.source}>
-                  Source <span class="project__arrow">&rarr;</span>
+                  Source <span class="project__arrow">🡥</span>
                 </a>
               )}
             </div>

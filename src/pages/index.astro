@@ -6,10 +6,12 @@ import Newsletter from '../components/Newsletter.astro';
 import { getTils, getPosts, getFeatured } from '../lib/content';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
-const tils = (await getTils()).slice(0, 5);
-const posts = (await getPosts()).slice(0, 3);
-// The standout entry (frontmatter `featured: true`), if any — newest wins.
-const featured = (await getFeatured())[0];
+const [tils, posts] = await Promise.all([getTils(), getPosts()]);
+const latest = [...tils, ...posts]
+  .sort((a, b) => b.date.getTime() - a.date.getTime() || a.id.localeCompare(b.id))
+  .slice(0, 6);
+
+const featured = await getFeatured();
 
 // The home thesis: two breaths, roman then italic — learning in public.
 const hero = [
@@ -20,44 +22,36 @@ const hero = [
 
 <Base title={SITE_TITLE} description={SITE_DESCRIPTION} type="website">
   <div class="stack">
-    <PageHeader eyebrow="The running notebook for" lines={hero}>
+    <PageHeader eyebrow="The running notebook for" lines={hero} frames={false}>
       <p class="masthead__deck">
         I'm a Data Science &amp; AI undergrad at IIIT Naya Raipur. This is where I
-        keep a running log of things I learn (<a href="/til">TILs</a>) and document the <a href="/projects">projects</a> I curate.
+        keep a running log of things I learn (<a href="/notes">notes</a>) and document the <a href="/projects">projects</a> I curate.
       </p>
     </PageHeader>
 
-    {
-      featured && (
-        <a class="featured" href={featured.url}>
-          <span class="featured__label eyebrow">Featured · {featured.collection}</span>
-          <span class="featured__title">{featured.title}</span>
-          {featured.description && (
-            <span class="featured__desc">{featured.description}</span>
-          )}
-          <span class="featured__cue annotation">Read &rarr;</span>
-        </a>
-      )
-    }
-
-    <div class="home-split">
-      <section class="home-split__til">
+    <div class="home-grid">
+      <section>
         <div class="section-head">
-          <h2 class="display display--section">Today I learned</h2>
-          <a class="annotation link-quiet" href="/til">all TILs &rarr;</a>
+          <h2 class="display display--section">Latest</h2>
+          <a class="annotation link-quiet" href="/notes">all notes &rarr;</a>
         </div>
-        <EntryList items={tils} />
-      </section>
-
-      <section class="home-split__writing">
-        <div class="section-head">
-          <h2 class="display display--section">Writing</h2>
-          <a class="annotation link-quiet" href="/blog">all posts &rarr;</a>
-        </div>
-        <EntryList items={posts} showDescription />
+        <EntryList items={latest} showKind showDescription />
         <p class="annotation home-split__rss">
           <a class="link-quiet" href="/rss.xml">Follow along via RSS &rarr;</a>
         </p>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2 class="display display--section">Featured</h2>
+        </div>
+        {
+          featured.length > 0 ? (
+            <EntryList items={featured} showKind showDescription />
+          ) : (
+            <p class="annotation">No featured entries yet.</p>
+          )
+        }
       </section>
     </div>
 

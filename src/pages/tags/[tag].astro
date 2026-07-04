@@ -4,7 +4,6 @@ import PageHeader from '../../components/PageHeader.astro';
 import EntryList from '../../components/EntryList.astro';
 import type { EntryItem } from '../../lib/content';
 import { getAllTags, getEntriesByTag } from '../../lib/content';
-import { SITE_TITLE } from '../../consts';
 
 export async function getStaticPaths() {
   const tags = await getAllTags();
@@ -33,7 +32,7 @@ const heading = [
 ---
 
 <Base
-  title={`#${tag} — ${SITE_TITLE}`}
+  title={`#${tag}`}
   description={`All TILs and posts tagged “${tag}”.`}
 >
   <PageHeader eyebrow="Tagged" lines={heading}>

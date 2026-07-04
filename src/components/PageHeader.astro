@@ -21,13 +21,16 @@ interface Props {
   eyebrow: string;
   lines: readonly Fragment[];
   dense?: boolean; // denser frame grid (home hero)
+  // Set false to drop the outlined frames — the home hero ships without them
+  // so nothing crosses the display type.
+  frames?: boolean;
 }
 
-const { eyebrow, lines, dense = false } = Astro.props;
+const { eyebrow, lines, dense = false, frames = true } = Astro.props;
 ---
 
 <header class="masthead">
-  <FrameField dense={dense} />
+  {frames && <FrameField dense={dense} />}
   <p class="eyebrow">{eyebrow}</p>
   <ScatterHead lines={lines} as="h1" />
   <slot />

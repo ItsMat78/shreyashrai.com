@@ -2,27 +2,59 @@
 import { SITE_TITLE, NAV } from '../consts';
 import ThemeToggle from './ThemeToggle.astro';
 
-// Highlight the section the current page belongs to (e.g. /til/foo → "til").
+// Highlight the section the current page belongs to (e.g. /notes/... → "Notes").
 const path = Astro.url.pathname;
+const isCurrent = (href: string) =>
+  href === '/' ? path === '/' : path === href || path.startsWith(href + '/');
 ---
 
 <header class="site-header">
   <div class="container site-header__inner">
     <a class="site-header__name" href="/">{SITE_TITLE}</a>
-    <div class="site-header__right">
-      <nav class="site-nav annotation" aria-label="Primary">
+
+    <!-- The three intents + search. Inline on the right on desktop; on phones it
+         drops to a full-width row directly under the bar (always visible). -->
+    <div class="site-menu" id="site-menu">
+      <nav class="site-nav" aria-label="Primary">
         {
           NAV.map((item) => (
             <a
               class="link-quiet"
               href={item.href}
-              aria-current={path.startsWith(item.href) ? 'page' : undefined}
+              aria-current={isCurrent(item.href) ? 'page' : undefined}
             >
               {item.label}
             </a>
           ))
         }
       </nav>
+      <a
+        class="link-quiet nav-search"
+        href="/search"
+        aria-current={isCurrent('/search') ? 'page' : undefined}
+        aria-label="Search"
+      >
+        <svg
+          class="nav-search__icon"
+          viewBox="0 0 24 24"
+          width="18"
+          height="18"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </svg>
+        <span class="nav-search__label">Search</span>
+      </a>
+    </div>
+
+    <!-- Always-visible utility on the right: the theme toggle. -->
+    <div class="site-header__controls">
       <ThemeToggle />
     </div>
   </div>

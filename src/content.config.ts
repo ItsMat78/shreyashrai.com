@@ -47,6 +47,15 @@ const projects = defineCollection({
     title: z.string(),
     // One-liner for the list page teaser and the page meta description.
     blurb: z.string(),
+    // The concrete result, led with on the list/detail pages so a skimmer gets
+    // impact before prose (e.g. "100+ users, ~60k daily DB queries").
+    outcome: z.string().optional(),
+    // Scannable stack tags (e.g. ["Python", "PyTorch"]).
+    tech: z.array(z.string()).default([]),
+    // Optional cover image (path under /public, e.g. "/images/foo.png").
+    // Shown as the card image on phones and the slide-in behind the title on
+    // desktop. Projects without one fall back to a tinted panel.
+    cover: z.string().optional(),
     // Hand-set list position (1 = top).
     order: z.number(),
     live: z.string().url().optional(),

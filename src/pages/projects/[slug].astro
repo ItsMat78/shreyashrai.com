@@ -5,8 +5,7 @@ import FrameField from '../../components/FrameField.astro';
 import Toc from '../../components/Toc.astro';
 import Backlinks from '../../components/Backlinks.astro';
 import Comments from '../../components/Comments.astro';
-import { getProjectEntries, getBacklinks } from '../../lib/content';
-import { SITE_TITLE } from '../../consts';
+import { getProjectEntries, getBacklinks, getRelatedProjects } from '../../lib/content';
 
 // One page per project. Drafts never get a route (draft filter lives in the
 // content layer).
@@ -18,10 +17,11 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
 const backlinks = await getBacklinks(entry.id);
+const related = await getRelatedProjects(entry.id, entry.data.tech);
 ---
 
 <Base
-  title={`${entry.data.title} — ${SITE_TITLE}`}
+  title={entry.data.title}
   description={entry.data.blurb}
   type="article"
   ogImage={`/og/projects/${entry.id}.png`}
@@ -29,17 +29,28 @@ const backlinks = await getBacklinks(entry.id);
   <article>
     <header class="article__header">
       <FrameField />
-      <p class="eyebrow">Selected work</p>
+      <p class="eyebrow">About the project</p>
       <h1 class="display display--title">{entry.data.title}</h1>
+      {entry.data.outcome && (
+        <p class="project__outcome project__outcome--lead">{entry.data.outcome}</p>
+      )}
+      
+      {entry.data.tech.length > 0 && (
+        <ul class="project__tech" aria-label="Tech stack">
+          {entry.data.tech.map((t) => (
+            <li>{t}</li>
+          ))}
+        </ul>
+      )}
       <div class="article__meta annotation">
         {entry.data.live && (
           <a class="link-quiet" href={entry.data.live}>
-            Live &rarr;
+            Live Demo 🡥
           </a>
         )}
         {entry.data.source && (
           <a class="link-quiet" href={entry.data.source}>
-            Source &rarr;
+            REPOSITORY 🡥
           </a>
         )}
       </div>
@@ -53,7 +64,25 @@ const backlinks = await getBacklinks(entry.id);
     <p class="article__end" aria-hidden="true">&#10086;</p>
     <div class="article__trail">
       <Backlinks links={backlinks} />
+      {related.length > 0 && (
+        <nav class="related" aria-label="More projects">
+          <p class="related__title eyebrow">Other reads</p>
+          <ul class="related__list">
+            {related.map((item) => (
+              <li class="related__item">
+                <a class="related__link" href={`/projects/${item.id}`}>
+                  {item.data.title}
+                </a>
+                <span class="annotation related__kind">Project</span>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </div>
+    <nav class="article-nav" aria-label="More in Projects">
+      <a class="article-nav__back" href="/projects">&larr; All Projects</a>
+    </nav>
     <Comments />
   </article>
 </Base>

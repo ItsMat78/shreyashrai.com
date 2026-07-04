@@ -1,7 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
-import { SITE_TITLE } from '../consts';
 
 // A /uses page (uses.tech convention): the tools I actually reach for. Expanded
 // from the About page's "Tools" note into its own reference.
@@ -11,7 +10,7 @@ const heading = [
 ] as const;
 ---
 
-<Base title={`Uses — ${SITE_TITLE}`} description="The languages, ML stack, and tools Shreyash Rai reaches for.">
+<Base title="Uses" description="The languages, ML stack, and tools Shreyash Rai reaches for.">
   <PageHeader eyebrow="The toolbox" lines={heading}>
     <p class="masthead__deck">The languages, libraries, and tools I reach for.</p>
   </PageHeader>

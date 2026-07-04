@@ -1,10 +1,11 @@
 ---
 // The one dated-list component, shared by the home page, /til, /blog, and
-// /tags/[tag]. Keeping list markup in a single place means every list stays
-// consistent and stays semantic (good for a future static search index).
+// /tags/[tag]. Vertical stack: date + kind on one line, then title, then
+// description, then tags grouped at the bottom.
 import type { EntryItem } from '../lib/content';
 import FormattedDate from './FormattedDate.astro';
 import TagList from './TagList.astro';
+import { inlineMarkdown } from '../lib/markdown';
 
 interface Props {
   items: EntryItem[];
@@ -15,6 +16,14 @@ interface Props {
 }
 
 const { items, showDescription = false, showKind = false } = Astro.props;
+
+// Friendly kind markers so mixed lists read as "TIL / Writing", not "til / blog".
+const KIND_LABEL: Record<EntryItem['collection'], string> = {
+  til: 'TIL',
+  blog: 'Writing',
+  links: 'Link',
+  quotes: 'Quote',
+};
 ---
 
 <ul class="entry-list">
@@ -23,17 +32,15 @@ const { items, showDescription = false, showKind = false } = Astro.props;
       <li class="entry">
         <div class="entry__meta">
           <FormattedDate date={item.date} />
-          {showKind && <span class="annotation entry__kind">{item.collection}</span>}
+          {showKind && <span class="annotation entry__kind">{KIND_LABEL[item.collection]}</span>}
         </div>
-        <div>
-          <a class="entry__title" href={item.url}>
-            {item.title}
-          </a>
-          {showDescription && item.description && (
-            <p class="entry__desc">{item.description}</p>
-          )}
-          <TagList tags={item.tags} />
-        </div>
+        <a class="entry__title" href={item.url}>
+          {item.title}
+        </a>
+        {showDescription && item.description && (
+          <p class="entry__desc" set:html={inlineMarkdown(item.description)} />
+        )}
+        <TagList tags={item.tags} />
       </li>
     ))
   }

@@ -1,7 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
-import { SITE_TITLE } from '../consts';
 
 // Full-text search over every TIL, post, and project. The index is built by
 // Pagefind AFTER `astro build` (see package.json) and served from /pagefind,
@@ -12,14 +11,14 @@ const heading = [
 ] as const;
 ---
 
-<Base title={`Search — ${SITE_TITLE}`} description="Search every TIL, post, and project on the site.">
+<Base title="Search" description="Search every TIL, post, and project on the site.">
   <PageHeader eyebrow="The whole archive" lines={heading}>
     <p class="masthead__deck">Search across every note, essay, and writeup.</p>
   </PageHeader>
 
   <div id="search" class="search-ui"></div>
   <noscript>
-    <p class="annotation">Search needs JavaScript. Browse the <a href="/til">TILs</a>, <a href="/blog">blog</a>, or <a href="/tags">tags</a> instead.</p>
+    <p class="annotation">Search needs JavaScript. Browse the <a href="/notes">notes</a> or <a href="/tags">tags</a> instead.</p>
   </noscript>
 
   <!-- Pagefind's bundle only exists in a built site; harmless 404 in dev. -->
@@ -41,6 +40,18 @@ const heading = [
         showImages: false,
         resetStyles: false,
       });
+    });
+
+    // Press "/" anywhere (outside a field) to jump into the search box.
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+      var tag = (e.target && e.target.tagName) || '';
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || (e.target && e.target.isContentEditable)) return;
+      var input = document.querySelector('.pagefind-ui__search-input');
+      if (input) {
+        e.preventDefault();
+        input.focus();
+      }
     });
   </script>
 </Base>

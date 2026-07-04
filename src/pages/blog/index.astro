@@ -2,10 +2,12 @@
 import Base from '../../layouts/Base.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import EntryList from '../../components/EntryList.astro';
-import { getPosts } from '../../lib/content';
-import { SITE_TITLE } from '../../consts';
+import YearNav from '../../components/YearNav.astro';
+import { getPosts, groupByYear } from '../../lib/content';
 
 const posts = await getPosts();
+const groups = groupByYear(posts);
+const years = groups.map((g) => g.year);
 
 const heading = [
   { text: 'Writing', size: 'xl', weight: 580, rot: -1.5 },
@@ -15,21 +17,31 @@ const heading = [
 ---
 
 <Base
-  title={`Blog, ${SITE_TITLE}`}
+  title="Writing"
   description="Longer writeups and essays. Project retrospectives and things worth more than a TIL."
 >
   <PageHeader eyebrow="Longer form" lines={heading}>
     <p class="masthead__deck">
       Longer writeups and essays — project retrospectives and ideas worth more
-      than a TIL. <a href="/blog/rss.xml">Blog feed &rarr;</a>
+      than a TIL. <a href="/blog/rss.xml">Writing feed &rarr;</a>
     </p>
   </PageHeader>
 
-  {
-    posts.length === 0 ? (
-      <p>Nothing here yet.</p>
-    ) : (
-      <EntryList items={posts} showDescription />
-    )
-  }
+  <div class="index-grid">
+    <div class="index-content">
+      {
+        years.length === 0 ? (
+          <p>Nothing here yet.</p>
+        ) : (
+          groups.map(({ year, items }) => (
+            <section class="year-group" id={`y${year}`}>
+              <h2 class="display display--section year-heading">{year}</h2>
+              <EntryList items={items} showDescription />
+            </section>
+          ))
+        )
+      }
+    </div>
+    <YearNav years={years} />
+  </div>
 </Base>

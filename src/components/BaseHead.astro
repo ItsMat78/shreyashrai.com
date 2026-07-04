@@ -20,6 +20,11 @@ const path = Astro.url.pathname.replace(/\/+$/, '');
 const canonical = new URL(path || '/', Astro.site).href;
 // Share card must be an absolute URL for crawlers.
 const ogImageUrl = new URL(ogImage, Astro.site).href;
+
+// One title pattern for the whole site: "{Page} — Shreyash Rai". Pages pass a
+// bare page name; the home page passes SITE_TITLE and stands alone. Driving it
+// here means every page (and any new one) inherits the same separator.
+const fullTitle = title === SITE_TITLE ? title : `${title} — ${SITE_TITLE}`;
 ---
 
 <meta charset="utf-8" />
@@ -42,7 +47,7 @@ const ogImageUrl = new URL(ogImage, Astro.site).href;
   })();
 </script>
 
-<title>{title}</title>
+<title>{fullTitle}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
 
@@ -70,6 +75,13 @@ const ogImageUrl = new URL(ogImage, Astro.site).href;
   as="font"
   type="font/woff2"
   crossorigin
+/>
+
+<!-- KaTeX styles for LaTeX math rendering -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+  crossorigin="anonymous"
 />
 
 <!-- Feed autodiscovery -->

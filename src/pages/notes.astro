@@ -1,0 +1,53 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import StreamList from '../components/StreamList.astro';
+import { getTils, getPosts, getLinks, getQuotes } from '../lib/content';
+
+const [tils, posts, links, quotes] = await Promise.all([
+  getTils(), getPosts(), getLinks(), getQuotes(),
+]);
+
+const sections = [
+  { kind: 'til', label: 'TIL', items: tils, desc: 'Small, concrete things I learned, usually a snippet and a gotcha.' },
+  { kind: 'blog', label: 'Writing', items: posts, desc: 'Longer posts where I think something through.' },
+  { kind: 'links', label: 'Links', items: links, desc: 'Things elsewhere worth reading, with a line on why.' },
+  { kind: 'quotes', label: 'Quotes', items: quotes, desc: 'Lines worth keeping, with attribution.' },
+] as const;
+
+const heading = [
+  { text: 'The', size: 'm', weight: 380, italic: true, rot: -2 },
+  { text: 'notebook', size: 'xl', weight: 640, shift: '2rem', rot: 1.5, lift: '-2.5rem' },
+] as const;
+---
+
+<Base
+  title="Notes"
+  description="Every short-form thing I post (TILs, writing, links, and quotes) all on one page."
+>
+  <PageHeader eyebrow="Everything short-form" lines={heading}>
+    <p class="masthead__deck">
+      Every short-form thing I post (TILs, writing, links, and quotes) all on one page.
+    </p>
+  </PageHeader>
+
+  <div class="notes-grid">
+    {
+      sections.map((s) => (
+        <section>
+          <div class="section-head">
+            <h2 class="display display--section">{s.label}</h2>
+            <a class="annotation link-quiet" href={"/" + s.kind}>see all &rarr;</a>
+          </div>
+          {
+            s.items.length === 0 ? (
+              <p class="annotation">Nothing here yet.</p>
+            ) : (
+              <StreamList items={s.items} />
+            )
+          }
+        </section>
+      ))
+    }
+  </div>
+</Base>

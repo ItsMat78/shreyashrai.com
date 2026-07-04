@@ -3,6 +3,8 @@ import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { rehypeHeadingIds } from '@astrojs/markdown-remark';
 import remarkWikilinks from './src/lib/remark-wikilinks.mjs';
 
@@ -14,8 +16,10 @@ export default defineConfig({
     // Obsidian-style [[slug]] cross-links (remark) + hoverable heading anchors
     // (rehype). Astro assigns the heading ids first; autolink wraps each one in
     // a self link with a class the CSS turns into a faint § on hover.
-    remarkPlugins: [remarkWikilinks],
+    remarkPlugins: [remarkMath, remarkWikilinks],
     rehypePlugins: [
+      // LaTeX math rendering via KaTeX.
+      rehypeKatex,
       // Assign heading ids ourselves first so autolink sees them (Astro's own
       // id pass otherwise runs after user plugins, leaving nothing to link).
       rehypeHeadingIds,

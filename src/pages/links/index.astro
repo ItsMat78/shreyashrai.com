@@ -2,11 +2,12 @@
 import Base from '../../layouts/Base.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StreamList from '../../components/StreamList.astro';
-import { getLinks } from '../../lib/content';
-import { SITE_TITLE } from '../../consts';
+import YearNav from '../../components/YearNav.astro';
+import { getLinks, groupByYear } from '../../lib/content';
 
-// The link blog: short posts pointing out at things worth your time.
 const items = await getLinks();
+const groups = groupByYear(items);
+const years = groups.map((g) => g.year);
 
 const heading = [
   { text: 'Worth', size: 'l', weight: 600, rot: -1.5 },
@@ -15,7 +16,7 @@ const heading = [
 ---
 
 <Base
-  title={`Links — ${SITE_TITLE}`}
+  title="Links"
   description="A link blog — things I found worth pointing at, with a line on why."
 >
   <PageHeader eyebrow="The link blog" lines={heading}>
@@ -25,5 +26,21 @@ const heading = [
     </p>
   </PageHeader>
 
-  {items.length === 0 ? <p>Nothing here yet.</p> : <StreamList items={items} />}
+  <div class="index-grid">
+    <div class="index-content">
+      {
+        years.length === 0 ? (
+          <p>Nothing here yet.</p>
+        ) : (
+          groups.map(({ year, items }) => (
+            <section class="year-group" id={`y${year}`}>
+              <h2 class="display display--section year-heading">{year}</h2>
+              <StreamList items={items} />
+            </section>
+          ))
+        )
+      }
+    </div>
+    <YearNav years={years} />
+  </div>
 </Base>

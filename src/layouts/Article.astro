@@ -9,7 +9,6 @@ import SeriesNav from '../components/SeriesNav.astro';
 import RelatedList from '../components/RelatedList.astro';
 import Backlinks from '../components/Backlinks.astro';
 import Comments from '../components/Comments.astro';
-import { SITE_TITLE } from '../consts';
 import type { EntryItem, LinkRef } from '../lib/content';
 
 // Shared shell for a single TIL or post: kicker, display title, meta row,
@@ -37,6 +36,9 @@ interface Props {
   backlinks?: LinkRef[];
   // Render the comments section (self-gates on GISCUS config).
   comments?: boolean;
+  // Adjacent entries in the same section for prev/next navigation.
+  older?: { url: string; title: string };
+  newer?: { url: string; title: string };
 }
 
 const {
@@ -55,14 +57,23 @@ const {
   related = [],
   backlinks = [],
   comments = false,
+  older,
+  newer,
 } = Astro.props;
 
 // Per-entry share card generated at build (see src/pages/og/[...route].png.ts).
 const ogImage = `/og/${collection}/${id}.png`;
+
+// Where the "back to section" link goes, using the one shared name (Writing).
+const SECTION = {
+  til: { href: '/til', label: 'TIL' },
+  blog: { href: '/blog', label: 'Writing' },
+} as const;
+const back = SECTION[collection];
 ---
 
 <Base
-  title={`${title} — ${SITE_TITLE}`}
+  title={title}
   description={description}
   type="article"
   ogImage={ogImage}
@@ -92,6 +103,27 @@ const ogImage = `/og/${collection}/${id}.png`;
       <RelatedList items={related} />
       <Backlinks links={backlinks} />
     </div>
+    <nav class="article-nav" aria-label={`More in ${back.label}`}>
+      <a class="article-nav__back" href={back.href}>&larr; All {back.label}</a>
+      {(older || newer) && (
+        <div class="article-nav__pair">
+          {older ? (
+            <a class="article-nav__adj" href={older.url}>
+              <span class="annotation">&larr; Older</span>
+              <span class="article-nav__adj-title">{older.title}</span>
+            </a>
+          ) : (
+            <span />
+          )}
+          {newer && (
+            <a class="article-nav__adj article-nav__adj--next" href={newer.url}>
+              <span class="annotation">Newer &rarr;</span>
+              <span class="article-nav__adj-title">{newer.title}</span>
+            </a>
+          )}
+        </div>
+      )}
+    </nav>
     {comments && <Comments />}
   </article>
 </Base>

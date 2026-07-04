@@ -75,7 +75,10 @@
   --accent: #1f2ae6; /* the single accent: display headlines + links */
   --accent-strong: #1620c0; /* hover only */
   --rule: #e3dfd2; /* hairline rules */
-  --code-bg: #f1eee4;
+  --code-bg: rgb(235, 231, 222);
+  --read: #301c08;
+
+
 
   /* Type */
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
@@ -102,8 +105,8 @@
   /* Decorative paper grain + the outlined "grid" frames behind headers. */
   --tex-opacity: 0.12;
   --tex-blend: multiply;
-  --frame-line: rgba(120, 110, 90, 0.22); /* fallback if color-mix unsupported */
-  --frame-line: color-mix(in srgb, var(--accent) 32%, transparent);
+  --frame-line: rgba(120, 110, 90, 0.07); /* fallback if color-mix unsupported */
+  --frame-line: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 /* Dark palette — only when the user picks dark via the toggle. */
@@ -118,6 +121,7 @@
   --code-bg: #201b11;
   --tex-opacity: 0.15;
   --tex-blend: soft-light;
+  --read: #a2926d;
 }
 
 /* ---- Reset & base ------------------------------------------------------- */
@@ -139,16 +143,20 @@ html {
 body {
   margin: 0;
   position: relative;
-  background: var(--paper);
-  color: var(--ink);
   font-family: var(--font-body);
   font-size: var(--text-base);
   line-height: var(--leading);
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* Long words / URLs must never force horizontal scroll on a phone. */
   overflow-wrap: break-word;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* Render emojis in text style (colorless) everywhere they appear. */
+.prose, .stream, .entry-list, .masthead__deck, .project-list, .section-head {
+  font-variant-emoji: text;
 }
 
 /* Subtle paper grain over the whole page. Fixed, decorative, non-interactive,
@@ -291,6 +299,22 @@ main {
   letter-spacing: -0.03em;
 }
 
+/* The art-directed shifts and lifts are tuned in fixed rem/em for big desktop
+   type; once the type clamps down on a phone they collide. Below 48rem,
+   straighten the fragments into a clean left-aligned stack — no shift, no lift,
+   no tilt, and a hair more line-height so nothing overlaps. */
+@media (max-width: 47.99rem) {
+  .scatter {
+    line-height: 0.9;
+  }
+
+  .scatter__line {
+    margin-inline-start: 0;
+    margin-top: 0 !important; /* cancels each fragment's inline lift */
+    transform: none;
+  }
+}
+
 /* ---- Other display type ------------------------------------------------- */
 
 .display {
@@ -323,6 +347,14 @@ main {
   transform-origin: left center;
 }
 
+/* On phones the big single-entry titles tighten to match the scatter headlines
+   so multi-line titles hug instead of drifting apart. */
+@media (max-width: 47.99rem) {
+  .display--title {
+    line-height: 0.92;
+  }
+}
+
 /* ---- Editorial header (used on every page) ------------------------------ */
 
 .masthead {
@@ -347,6 +379,7 @@ main {
   position: absolute;
   border: 1px solid var(--frame-line);
   border-radius: 2px;
+  opacity: 0.6;
 }
 
 .masthead__deck {
@@ -428,6 +461,18 @@ a {
   color: var(--accent);
 }
 
+/* Bold text carries the accent, so emphasis reads as brand colour and not just
+   weight. A link wrapped in bold takes the same hue so the label stays one
+   colour (its underline still marks it as a link). */
+.prose strong {
+  font-weight: 650;
+  font-size: 1.1rem;
+}
+
+.prose strong a {
+  color: inherit;
+}
+
 /* UI links (nav, footer, name, tags): quiet, underline on hover only. */
 .link-quiet {
   color: inherit;
@@ -447,19 +492,15 @@ a {
   top: 0;
   z-index: 50;
   border-bottom: 1px solid var(--rule);
-  /* Semi-opaque paper so scrolled content blurs under the bar, not through it.
-     The fixed grain still shows through, keeping the bar part of the paper. */
-  background: color-mix(in srgb, var(--paper) 85%, transparent);
-  backdrop-filter: blur(10px) saturate(1.05);
-  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  /* Solid paper — no blur. Scrolled content passes cleanly under an opaque bar. */
+  background: var(--paper);
 }
 
 .site-header__inner {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--space-1) var(--space-2);
+  gap: var(--space-2) var(--space-3);
   padding-block: var(--space-2);
 }
 
@@ -471,34 +512,100 @@ a {
   letter-spacing: -0.01em;
   color: var(--ink);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .site-header__name:hover {
   color: var(--accent);
 }
 
-.site-header__right {
+/* The collapsible group (three intents + search). On desktop it's an inline
+   row pushed to the right; below 48rem it folds into a dropdown panel. */
+.site-menu {
   display: flex;
   align-items: center;
   gap: var(--space-2) var(--space-3);
-  flex-wrap: wrap;
+  margin-left: auto;
+  color: var(--muted);
 }
 
 .site-nav {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-2) var(--space-3);
 }
 
-.site-nav a {
-  /* Padded hit area so the small type still gives a comfortable tap target. */
+/* Nav + search share the tiny uppercase specimen voice of the rest of the UI. */
+.site-nav a,
+.nav-search {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   padding: 0.4rem 0;
 }
 
-.site-nav a[aria-current='page'] {
+.site-nav a[aria-current='page'],
+.nav-search[aria-current='page'] {
   color: var(--accent);
   text-decoration: underline;
   text-decoration-color: var(--accent);
+}
+
+/* Search: icon-only on desktop, icon + word inside the mobile menu. */
+.nav-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-search__icon {
+  display: block;
+}
+
+.nav-search__label {
+  display: none;
+}
+
+/* Right-hand utility that never collapses: the theme toggle. */
+.site-header__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ---- Mobile nav: below 48rem the links drop to a full-width row under the bar,
+   always visible — no hamburger, no blur. -------------------------------------- */
+@media (max-width: 47.99rem) {
+  .site-header__inner {
+    flex-wrap: wrap;
+    row-gap: 0;
+    padding-block: var(--space-1);
+  }
+
+  /* Name + theme toggle keep the top row; the menu folds to its own strip below,
+     ruled off by a hairline so it reads as an intentional tab bar. */
+  .site-header__controls {
+    order: 2;
+  }
+
+  .site-menu {
+    order: 3;
+    flex-basis: 100%;
+    position: static;
+    margin-left: 0;
+    margin-top: var(--space-1);
+    padding-top: var(--space-1);
+    border-top: 1px solid var(--rule);
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: var(--space-2);
+    color: var(--muted);
+  }
+
+  .site-nav {
+    gap: var(--space-3);
+  }
 }
 
 /* ---- Theme toggle ------------------------------------------------------- */
@@ -562,6 +669,31 @@ a {
   padding: 0.4rem 0;
 }
 
+/* On phones the two halves stack: link row first, type credit beneath — with
+   roomier tap targets and comfortable gaps between links. */
+@media (max-width: 47.99rem) {
+  .site-footer {
+    padding-block: var(--space-3);
+  }
+
+  .site-footer__inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  /* Links spread edge-to-edge as a tidy row, mirroring the header's tab strip. */
+  .site-footer__links {
+    width: 100%;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-2);
+  }
+
+  .site-footer a {
+    padding: 0.4rem 0;
+  }
+}
+
 /* ---- Section heads (list pages / home) ---------------------------------- */
 
 .section-head {
@@ -575,41 +707,18 @@ a {
   border-bottom: 1px solid var(--rule);
 }
 
-/* ---- Home split: Writing left, TILs down the right half ----------------- */
-
-.home-split {
-  display: grid;
-  gap: var(--space-4);
+/* When a stream list sits right under a section head, drop the first item's
+   top border so it doesn't double up with the head's underline. */
+.section-head + .stream .stream-item:first-child {
+  border-top: none;
 }
 
+/* ---- Home latest feed --------------------------------------------------- */
+
+/* The single reverse-chron feed replaced the old two-column split, which read
+   as half-empty with thin early content. */
 .home-split__rss {
   margin-top: var(--space-3);
-}
-
-@media (min-width: 52rem) {
-  .home-split {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-4);
-    align-items: start;
-  }
-
-  /* TILs occupy the right column; Writing the left. Explicit placement so it
-     holds regardless of source order (TILs come first in the DOM for mobile). */
-  .home-split__til {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .home-split__writing {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  /* In these narrower columns the date reads better stacked above the title. */
-  .home-split .entry {
-    grid-template-columns: 1fr;
-    gap: 0.3rem;
-  }
 }
 
 /* ---- Entry lists (home, /til, /blog, /tags/[tag]) ----------------------- */
@@ -622,15 +731,9 @@ a {
 }
 
 .entry {
-  /* Anchor for the stretched title link — the whole row opens the entry. */
   position: relative;
-  display: grid;
-  grid-template-columns: 8rem 1fr;
-  gap: 0 var(--space-3);
-  align-items: baseline;
   padding-block: var(--space-2);
   border-top: 1px solid var(--rule);
-  /* Same kinetic nudge as project rows, so every list answers the cursor. */
   transition: transform 0.25s ease;
 }
 
@@ -650,13 +753,16 @@ a {
 
 .entry__meta {
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.4rem;
+  align-items: baseline;
+  margin-bottom: 0.15rem;
+}
+
+.entry__meta .entry__kind::before {
+  content: '·\00a0';
 }
 
 .entry__title {
-  /* Block (not the default inline for <a>) so line-height actually tightens
-     wrapped titles — inline anchors clamp the leading to the font's metrics. */
   display: block;
   width: fit-content;
   font-family: var(--font-display);
@@ -753,6 +859,92 @@ a {
   margin: 0 0 var(--space-1);
 }
 
+/* ---- Home grid: two-column latest / featured ---------------------------- */
+
+.home-grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 48rem) {
+  .home-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---- Notes grid: 2x2 layout -------------------------------------------- */
+
+.notes-grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 48rem) {
+  .notes-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---- Index page layout: content + sticky year nav on wide screens ------- */
+
+.index-grid {
+  display: grid;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+@media (min-width: 72rem) {
+  .index-grid {
+    grid-template-columns: minmax(0, 1fr) 15rem;
+  }
+}
+
+/* ---- Year nav (sticky sidebar on index pages) --------------------------- */
+
+.year-nav {
+  max-width: var(--measure);
+}
+
+.year-nav__title {
+  margin-bottom: var(--space-1);
+}
+
+.year-nav ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+}
+
+.year-nav li + li {
+  margin-top: 0.45rem;
+}
+
+.year-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  opacity: 0.65;
+  transition: opacity 0.2s ease;
+}
+
+.year-nav a:hover,
+.year-nav a:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  opacity: 1;
+}
+
+@media (min-width: 72rem) {
+  .year-nav {
+    position: sticky;
+    top: 5.5rem;
+  }
+}
+
 /* ---- Stream (firehose: /stream, /links, /quotes) ------------------------ */
 
 .stream {
@@ -762,12 +954,9 @@ a {
   max-width: var(--measure-read);
 }
 
-/* Same date-left / body-right rhythm as entry lists, with the kinetic nudge. */
 .stream-item {
-  display: grid;
-  grid-template-columns: 8rem 1fr;
-  gap: 0 var(--space-3);
-  padding-block: var(--space-3);
+  position: relative;
+  padding-block: var(--space-2);
   border-top: 1px solid var(--rule);
   transition: transform 0.25s ease;
 }
@@ -780,26 +969,33 @@ a {
   border-bottom: 1px solid var(--rule);
 }
 
+/* Date + kind on one line above the title. */
 .stream-item__meta {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.4rem;
+  align-items: baseline;
+  margin-bottom: 0.25rem;
 }
 
 .stream-item__kind {
   color: var(--accent);
 }
 
+.stream-item__kind::before {
+  content: '·\00a0';
+}
+
 .stream-item__title {
   margin: 0;
   font-weight: 500;
+  line-height: 1;
 }
 
 /* Outbound link (link blog): display serif, accent arrow that slides on hover. */
 .stream-link-out {
   font-family: var(--font-display);
   font-optical-sizing: auto;
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   font-weight: 500;
   line-height: 1;
   color: var(--ink);
@@ -828,18 +1024,19 @@ a {
 }
 
 .stream-item__foot {
-  margin: 0.6rem 0 0;
+  margin: 0.5rem 0 0;
 }
 
+/* Tags sit at the bottom of every stream item. */
 .stream-item .tag-row {
-  margin-top: 0.6rem;
+  margin-top: 0.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 /* Quotes in the stream: a real pull-quote in the display serif. */
 .stream-quote {
   margin: 0;
-  padding-left: var(--space-2);
-  border-left: 2px solid var(--accent);
   font-family: var(--font-display);
   font-optical-sizing: auto;
   font-size: 1.3rem;
@@ -881,13 +1078,6 @@ a {
   word-break: break-word;
 }
 
-@media (max-width: 36rem) {
-  .stream-item {
-    grid-template-columns: 1fr;
-    gap: 0.3rem;
-  }
-}
-
 /* ---- Projects ----------------------------------------------------------- */
 
 .project-list {
@@ -897,26 +1087,67 @@ a {
 }
 
 .project {
-  /* Anchor for the stretched writeup link — the whole row is openable. */
+  /* Anchor for the stretched writeup link + the sliding cover behind the title. */
   position: relative;
+  overflow: hidden; /* clips the cover image that slides in from the left */
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-2) var(--space-4);
   padding-block: var(--space-3);
   border-top: 1px solid var(--rule);
-  /* Whole row nudges right on hover — the kinetic beat the page was missing. */
-  transition: background 0.25s ease, transform 0.25s ease;
+  transition: transform 0.25s ease;
 }
 
 .project:last-child {
   border-bottom: 1px solid var(--rule);
 }
 
+/* Cover: on desktop a low-key image panel filling the left column only, hidden
+   off to the left and sliding in behind the title on hover. Projects without a
+   cover simply never reveal one. */
+.project__cover {
+  position: absolute;
+  /* Bottom half of the row only, so the title sits on clean paper above it. */
+  top: 50%;
+  bottom: 0;
+  left: 0;
+  /* Exactly the width of column 1 (4.5fr of 11fr, minus the column gap) so the
+     image stops before the body text in column 2. */
+  width: calc((100% - var(--space-4)) * 4.5 / 11);
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(0.2, 0.65, 0.25, 1), opacity 0.45s ease;
+}
+
+/* Light paper veil to keep the image cohesive with the muted palette (and
+   readable if a long title wraps down into the lower half). */
+.project__cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--paper) 40%, transparent);
+}
+
+/* No image set → nothing to reveal on desktop. */
+.project__cover[data-has-cover='false'] {
+  display: none;
+}
+
+/* Title + body ride above the cover. */
+.project__lead,
+.project__body {
+  position: relative;
+  z-index: 1;
+}
+
 /* Wide: title/index on the left, blurb + links fill the right half so the page
    no longer trails off into empty space. */
 @media (min-width: 46rem) {
   .project {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    grid-template-columns: minmax(0, 4.5fr) minmax(0, 6.5fr);
     align-items: start;
   }
 }
@@ -933,7 +1164,8 @@ a {
   font-optical-sizing: auto;
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--frame-line);
+  color: var(--ink);
+  opacity: 0.65;
   line-height: 1;
   transition: color 0.25s ease;
 }
@@ -962,11 +1194,58 @@ a {
   inset: 0;
 }
 
-.project__blurb {
-  margin: 0 0 0.9rem;
+/* The concrete result, led with so a skimmer gets impact first: ink + strong. */
+.project__outcome {
+  margin: 0 0 0.4rem;
   color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.35rem;
+  line-height: 1.1;
   max-width: var(--measure);
 }
+
+/* On a project detail page the outcome sits under the big title as a deck. */
+.project__outcome--lead {
+  margin-top: var(--space-2);
+  font-size: 1.2rem;
+}
+
+/* Blurb is now the supporting line under the outcome — quieter. */
+.project__blurb {
+  margin: 0 0rem 0.9rem;
+  color: var(--muted);
+  font-size: 0.98rem;
+  max-width: var(--measure);
+}
+
+/* Scannable stack chips so the tech reads at a glance. Not links — tech isn't a
+   filterable tag, so these are plain pills. */
+.project__tech {
+  list-style: none;
+  margin: 1rem 0 0.9rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem 0.1rem;
+}
+
+.project__tech li {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  border: 1px solid var(--rule);
+  border-radius: 0px;
+  padding: 0.2rem 0.6rem;
+  line-height: 1.4;
+  margin: 0 0 0rem;
+  background-color: var(--rule);
+}
+
+
 
 .project__links {
   display: flex;
@@ -984,12 +1263,15 @@ a {
 }
 
 /* ---- Project hover choreography ---- */
-.project:hover {
-  transform: translateX(6px);
+/* The cover image slides in behind the title from the left. */
+.project:hover .project__cover {
+  transform: translateX(0);
+  opacity: 1;
 }
 
 .project:hover .project__title {
   color: var(--accent);
+  opacity: 1;
 }
 
 .project:hover .project__index {
@@ -998,6 +1280,90 @@ a {
 
 .project__links a:hover .project__arrow {
   transform: translateX(4px);
+}
+
+/* ---- Projects on phones: image cards -----------------------------------
+   Each project becomes a card — cover image on top, title beneath. The long
+   description, tech chips, and links are dropped so the list is scanned by
+   sight instead of read as a wall of jargon. Tapping the card opens the
+   writeup (the stretched link still covers the whole card). */
+@media (max-width: 47.99rem) {
+  .project-list {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .project {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 0;
+    border: 1px solid var(--rule);
+    border-radius: 0;
+    background: var(--paper-2);
+  }
+
+  /* Cover becomes a full-width image at the top of the card. */
+  .project__cover {
+    position: static;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    transform: none;
+    opacity: 1;
+  }
+
+  /* Imageless projects get a slim specimen band instead of an empty wash: a
+     big faint Fraunces numeral, the same folio voice used across the site. */
+  .project__cover[data-has-cover='false'] {
+    display: block;
+    position: relative;
+    aspect-ratio: 5 / 2;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 16%, var(--paper-2)) 0%,
+      var(--paper-2) 72%
+    );
+  }
+
+  .project__cover[data-has-cover='false']::before {
+    content: attr(data-index);
+    position: absolute;
+    left: var(--space-3);
+    bottom: -0.14em;
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(3.5rem, 22vw, 6rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    opacity: 0.32;
+  }
+
+  /* The big band numeral is the folio; drop the small one beside the title so
+     it doesn't read twice. Image cards (no band numeral) keep their index. */
+  .project:has(.project__cover[data-has-cover='false']) .project__index {
+    display: none;
+  }
+
+  /* No paper veil on mobile — the image is the point. */
+  .project__cover::after {
+    content: none;
+  }
+
+  .project__lead {
+    padding: var(--space-2) var(--space-3) var(--space-1);
+  }
+
+  /* Blurb, tech chips, and links stay on the card, padded to align with the
+     title above. The bold outcome line is dropped — the title carries it. */
+  .project__body {
+    padding: 0 var(--space-3) var(--space-3);
+  }
+
+  .project__outcome {
+    display: none;
+  }
 }
 
 /* ---- Article / prose ---------------------------------------------------- */
@@ -1027,7 +1393,26 @@ a {
 
 .prose {
   max-width: var(--measure);
-  font-size: 1.15rem;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 400;
+  line-height: 1.72;
+  letter-spacing: 0.006em;
+}
+
+/* Inline formulas ride the text baseline and never break mid-expression —
+   a formula either fits on the line or wraps whole to the next. */
+.prose :not(.katex-display) > .katex {
+  white-space: nowrap;
+}
+
+/* Display formulas ($$…$$) get their own centered block with room to breathe;
+   long ones scroll sideways rather than blow out the reading column. */
+.prose .katex-display {
+  margin-block: var(--space-2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.25rem;
 }
 
 /* One rule governs vertical rhythm between prose blocks. */
@@ -1048,7 +1433,7 @@ a {
   font-family: var(--font-display);
   font-optical-sizing: auto;
   line-height: 1.15;
-  color: var(--ink);
+  color: var(--read);
   letter-spacing: -0.01em;
 }
 
@@ -1059,8 +1444,9 @@ a {
 }
 
 .prose h3 {
-  font-size: 1.3rem;
-  font-weight: 600;
+  font-size: 1.4rem;
+  font-weight: 640;
+  
 }
 
 /* Sub-sections inside a problem ("Problems I faced", "What can be better") —
@@ -1080,7 +1466,7 @@ a {
 }
 
 .prose li + li {
-  margin-top: 0.35rem;
+  margin-top: 0.3rem;
 }
 
 .prose blockquote {
@@ -1180,20 +1566,53 @@ a {
   margin-top: 0.45rem;
 }
 
-/* Sub-headings indent per level below the shallowest heading used. */
+/* Sub-headings hang off a folder-tree guide: a faint vertical line with a
+   short tick into each label, and an elbow on the last child of a group.
+   The list is flat, so the tree is drawn with pseudo-elements keyed off the
+   indent level rather than real nesting. */
 .toc li[data-indent='1'] {
-  padding-left: 1rem;
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+/* Vertical guide. Its top reaches up through the inter-item gap (matching
+   .toc li + li) so the line runs unbroken down a run of sub-headings. */
+.toc li[data-indent='1']::before {
+  content: '';
+  position: absolute;
+  left: 0.4rem;
+  top: calc(-0.45rem - 1px);
+  bottom: 0;
+  border-left: 1px solid var(--rule);
+}
+
+/* Horizontal tick from the guide into the label, centred on the first line. */
+.toc li[data-indent='1']::after {
+  content: '';
+  position: absolute;
+  left: 0.4rem;
+  top: 0.52rem;
+  width: 0.55rem;
+  border-top: 1px solid var(--rule);
+}
+
+/* Last child of a group (next item is top-level, or it's the very last):
+   stop the guide at the tick so it reads as an elbow, not a dangling line. */
+.toc li[data-indent='1']:last-child::before,
+.toc li[data-indent='1']:has(+ li[data-indent='0'])::before {
+  bottom: auto;
+  height: calc(0.52rem + 0.45rem + 1px);
 }
 
 .toc li[data-indent='2'] {
-  padding-left: 2rem;
+  padding-left: 2.5rem;
 }
 
 .toc a {
   color: var(--muted);
   text-decoration: none;
-  opacity: 0.65;                                                                                                                       
-  transition: opacity 0.2s ease; 
+  opacity: 0.65;
+  transition: color 0.2s ease, opacity 0.2s ease;
 }
 
 .toc a:hover,
@@ -1204,12 +1623,53 @@ a {
   opacity: 1;
 }
 
-/* Wrap markdown tables so a wide one scrolls itself, not the page. */
+/* Scroll-spy: the section currently being read reads in the accent, fully
+   opaque, and a touch heavier — so the eye finds its place in the margin. */
+.toc a.is-active {
+  color: var(--accent);
+  opacity: 1;
+  font-weight: 700;
+}
+
+/* Markdown tables read like a spec sheet: full width, hairline rules under
+   each row, and a small-caps accent header. Column alignment still comes from
+   the GFM delimiter row (:--- / ---:). */
 .prose :is(table) {
-  display: block;
   width: 100%;
-  overflow-x: auto;
+  margin-block: var(--space-2);
   border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.prose :is(th, td) {
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+/* First column hugs the left edge; last hugs the right — no dead gutter. */
+.prose :is(th, td):first-child {
+  padding-left: 0;
+}
+
+.prose :is(th, td):last-child {
+  padding-right: 0;
+}
+
+.prose thead th {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--accent);
+  border-bottom-width: 1.5px;
+  border-bottom-color: var(--ink);
+}
+
+/* Close the block cleanly — no rule dangling under the final row. */
+.prose tbody tr:last-child :is(td) {
+  border-bottom: none;
 }
 
 /* ---- Images beside text ----
@@ -1229,6 +1689,55 @@ a {
   margin: 0.35rem var(--space-2) var(--space-2) 0;
 }
 
+/* Two (or more) plots/photos side by side, each with its own caption.
+   A responsive row: figures share the width and stack on narrow screens.
+   Use for comparisons — NOT the img-left/right floats, which are for a single
+   image with body text wrapping past it. */
+/* Every figure sits in a hairline frame: a padded plate on the faint surface
+   with its caption tucked inside — a single media block or a figure-row alike. */
+.prose figure {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--paper-2);
+  text-align: center;
+}
+
+.prose figure > :is(img, video) {
+  max-width: 100%;
+  height: auto;
+}
+
+.prose figcaption {
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* Two (or more) plots/photos side by side, each in its own frame. A responsive
+   row: figures share the width and stack on narrow screens. Use for comparisons
+   — NOT the img-left/right floats, which are for one image with text wrapping. */
+.prose .figure-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block: var(--space-2);
+  align-items: stretch;
+}
+
+/* Inside a row the frame comes from .prose figure above; here we only size it. */
+.prose .figure-row figure {
+  flex: 1 1 min(100%, 15rem);
+  margin: 0;
+}
+
+.prose .figure-row img {
+  width: 100%;
+  display: block;
+}
+
 /* Section boundaries clear any floating image so layouts can't tangle. */
 .prose :is(h2, h3, hr) {
   clear: both;
@@ -1246,9 +1755,11 @@ samp {
 /* Inline code — backtick text carries the accent so it pops from prose. */
 .prose :not(pre) > code {
   background: var(--code-bg);
-  color: var(--accent);
+  color: var(--ink);
+  font-weight: 400;
   padding: 0.1em 0.35em;
   border-radius: 3px;
+  outline:var(--ink);
 }
 
 /* Block code (Shiki output). Warm paper-2, never stark white. */
@@ -1566,6 +2077,67 @@ samp {
   gap: 0.4rem;
 }
 
+/* ---- Detail-page section nav: back-to-index + prev/next ------------------ */
+
+.article-nav {
+  max-width: var(--measure);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+}
+
+.article-nav__back {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.article-nav__back:hover {
+  color: var(--accent);
+}
+
+.article-nav__pair {
+  margin-top: var(--space-2);
+  display: grid;
+  gap: var(--space-2) var(--space-3);
+}
+
+@media (min-width: 40rem) {
+  .article-nav__pair {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.article-nav__adj {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.article-nav__adj--next {
+  text-align: right;
+}
+
+.article-nav__adj-title {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.article-nav__adj:hover .article-nav__adj-title {
+  color: var(--accent);
+}
+
 /* ---- Newsletter --------------------------------------------------------- */
 
 .newsletter {
@@ -1764,14 +2336,7 @@ samp {
 
 /* ---- Mobile ------------------------------------------------------------- */
 
-/* The single column already works at every width; this restacks the date/title
-   grid so narrow screens read date-above-title. */
 @media (max-width: 36rem) {
-  .entry {
-    grid-template-columns: 1fr;
-    gap: 0.3rem;
-  }
-
   /* Fewer background frames on a phone so headers stay calm. */
   .frame:nth-child(n + 4) {
     display: none;
@@ -1800,9 +2365,11 @@ samp {
   .theme-toggle,
   .code-copy,
   .year-jump,
+  .year-nav,
   .comments,
   .newsletter,
   .series,
+  .article-nav,
   .heading-anchor {
     display: none !important;
   }
@@ -1844,5 +2411,9 @@ samp {
   .prose blockquote,
   figure {
     break-inside: avoid;
+  }
+
+  figure {
+    outline: var(--muted);
   }
 }

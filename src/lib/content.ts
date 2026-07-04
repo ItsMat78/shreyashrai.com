@@ -166,6 +166,21 @@ export async function getAllEntries(): Promise<EntryItem[]> {
 // Semantic alias — the unified stream IS every entry, newest first.
 export const getStream = getAllEntries;
 
+// Group a flat EntryItem[] by UTC year, newest year first. Each year's items
+// preserve their input order (already newest-first from the upstream getters).
+export type YearGroup = { year: number; items: EntryItem[] };
+
+export function groupByYear(items: EntryItem[]): YearGroup[] {
+  const map = new Map<number, EntryItem[]>();
+  for (const item of items) {
+    const y = item.date.getUTCFullYear();
+    const bucket = map.get(y) ?? [];
+    bucket.push(item);
+    map.set(y, bucket);
+  }
+  return [...map.entries()].map(([year, items]) => ({ year, items }));
+}
+
 export type TagCount = { tag: string; count: number };
 
 // Every tag across both collections with its usage count, most-used first,
@@ -321,13 +336,42 @@ export async function getSeries(name: string): Promise<(EntryItem & { part?: num
     }));
 }
 
+// ---- Related projects ----------------------------------------------------
+// Projects that share the most tech items with the current one, keeping the
+// hand-ordered sort (order asc). Used for the "More projects" block on
+// project detail pages.
+export async function getRelatedProjects(
+  id: string,
+  tech: string[],
+  limit = 3,
+): Promise<Project[]> {
+  if (tech.length === 0) return [];
+  const target = new Set(tech.map((t) => t.toLowerCase()));
+  const entries = await getProjectEntries();
+  return entries
+    .filter((e) => e.id !== id)
+    .map((e) => ({
+      e,
+      shared: (e.data.tech || []).filter((t) => target.has(t.toLowerCase())).length,
+    }))
+    .filter((x) => x.shared > 0)
+    .sort((a, b) => b.shared - a.shared || a.e.data.order - b.e.data.order)
+    .slice(0, limit)
+    .map((x) => x.e);
+}
+
 // ---- Featured -----------------------------------------------------------
-// Entries flagged `featured: true`, newest first. The home page surfaces the
-// first one in a highlighted slot.
+// Entries flagged `featured: true`, newest first. The home page surfaces them
+// in a dedicated column alongside the latest feed.
 export async function getFeatured(): Promise<EntryItem[]> {
-  const [tils, posts] = await Promise.all([getTilEntries(), getPostEntries()]);
-  return [...tils, ...posts]
+  const [tils, posts, linkEntries] = await Promise.all([
+    getTilEntries(), getPostEntries(), getLinkEntries(),
+  ]);
+  return [...tils, ...posts, ...linkEntries]
     .filter((e) => e.data.featured)
     .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
-    .map((e) => toItem(e.collection === 'blog' ? 'blog' : 'til', e));
+    .map((e) => {
+      const c = e.collection;
+      return toItem(c === 'blog' ? 'blog' : c === 'links' ? 'links' : 'til', e);
+    });
 }

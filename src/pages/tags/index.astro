@@ -2,7 +2,6 @@
 import Base from '../../layouts/Base.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { getAllTags } from '../../lib/content';
-import { SITE_TITLE } from '../../consts';
 
 const tags = await getAllTags();
 
@@ -12,7 +11,7 @@ const heading = [
 ] as const;
 ---
 
-<Base title={`Tags — ${SITE_TITLE}`} description="Every tag across TILs and posts.">
+<Base title="Tags" description="Every tag across TILs and posts.">
   <PageHeader eyebrow="The index" lines={heading}>
     <p class="masthead__deck">Everything on the site, gathered by subject.</p>
   </PageHeader>

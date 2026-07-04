@@ -1,0 +1,25 @@
+---
+// Sticky year-navigation sidebar for collection index pages. Mirrors the TOC
+// pattern: visible only when >1 year, sits in the right rail on wide screens,
+// folds into the content flow on narrow ones.
+interface Props {
+  years: number[];
+}
+
+const { years } = Astro.props;
+---
+
+{
+  years.length > 1 && (
+    <nav class="year-nav" aria-label="Jump to year">
+      <p class="year-nav__title eyebrow">Years</p>
+      <ol>
+        {years.map((year) => (
+          <li>
+            <a class="link-quiet" href={`#y${year}`}>{year}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}

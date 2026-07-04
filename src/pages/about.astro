@@ -1,11 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
-import { SITE_TITLE, GITHUB_URL, LINKEDIN_URL, EMAIL } from '../consts';
+import { GITHUB_URL, LINKEDIN_URL, EMAIL } from '../consts';
 
 const heading = [
-  { text: 'About,', size: 'xl', weight: 620, rot: -1.5 },
-  { text: 'briefly', size: 'l', weight: 380, italic: true, shift: '5.2rem', rot: 2, lift: '-1.4rem' },
+  { text: 'Hi,', size: 'xl', weight: 620, rot: -1.5 },
+  { text: 'Shreyash here!', size: 'l', weight: 380, italic: true, shift: '8.2rem', rot: 1, lift: '-4.4rem' },
 ] as const;
 
 // A small specimen strip of facts — the annotation voice, set as a definition
@@ -13,13 +13,13 @@ const heading = [
 const facts = [
   { k: 'Program', v: 'B.Tech · Data Science & AI' },
   { k: 'School', v: 'IIIT Naya Raipur' },
-  { k: 'Years', v: '2024 – 2028' },
-  { k: 'Focus', v: 'Reinforcement learning · applied ML' },
+  { k: 'Years', v: '2024 - 2028' },
+  { k: 'Focus', v: 'Applied Machine Learning' },
 ];
 ---
 
 <Base
-  title={`About, ${SITE_TITLE}`}
+  title="About"
   description="Shreyash Rai, Data Science & AI undergrad at IIIT Naya Raipur, learning by building."
 >
   <PageHeader eyebrow="Who am I?" lines={heading}>

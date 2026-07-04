@@ -12,10 +12,18 @@ import {
 
 export async function getStaticPaths() {
   const entries = await getPostEntries();
-  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+  // Neighbours in the newest-first list, for prev/next nav within the section.
+  return entries.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      newer: i > 0 ? { url: `/blog/${entries[i - 1].id}`, title: entries[i - 1].data.title } : undefined,
+      older: i < entries.length - 1 ? { url: `/blog/${entries[i + 1].id}`, title: entries[i + 1].data.title } : undefined,
+    },
+  }));
 }
 
-const { entry } = Astro.props;
+const { entry, older, newer } = Astro.props;
 const { Content, headings } = await render(entry);
 const tags = normalizeTags(entry.data.tags);
 const readingMinutes = readingTime(entry.body);
@@ -42,6 +50,8 @@ const [related, backlinks, seriesParts] = await Promise.all([
   seriesParts={seriesParts}
   related={related}
   backlinks={backlinks}
+  older={older}
+  newer={newer}
   comments
 >
   <Content />

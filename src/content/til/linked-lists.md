@@ -2,6 +2,7 @@
 title: "Linked Lists"
 date: 2026-06-22
 tags: ["C++", "DSA"]
+featured: true
 ---
 
 ## Introduction
@@ -14,7 +15,9 @@ tags: ["C++", "DSA"]
 - Stores data in Nodes that are spread out in memory but all nodes are storing address of the next node in the list.
 - Traversal time complexity: O(n)
 - Insertion time complexity: O(n)
-!["Meow"](/public/images/Pasted%20image%2020260622201004.png)
+<figure>
+<img src="/public/images/linked-list.png">
+</figure>
 
 ## Arrays vs linkedlists
 ### a) Cost of Accessing an element

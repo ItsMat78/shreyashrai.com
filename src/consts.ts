@@ -30,13 +30,11 @@ export const GISCUS = {
   categoryId: '',
 } as const;
 
-// Header navigation, in order.
+// Primary navigation — three intent-level anchors, not the content taxonomy.
+// "Notes" is the hub that gathers TILs, writing, links, stream, and quotes;
+// search + the theme toggle ride alongside as utilities (see Header.astro).
 export const NAV = [
-  { href: '/til', label: 'til' },
-  { href: '/blog', label: 'blog' },
-  { href: '/links', label: 'links' },
-  { href: '/stream', label: 'stream' },
-  { href: '/projects', label: 'projects' },
-  { href: '/about', label: 'about' },
-  { href: '/search', label: 'search' },
+  { href: '/notes', label: 'Notes' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/about', label: 'About' },
 ] as const;

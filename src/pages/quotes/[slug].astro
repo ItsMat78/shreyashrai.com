@@ -7,7 +7,6 @@ import TagList from '../../components/TagList.astro';
 import Backlinks from '../../components/Backlinks.astro';
 import Comments from '../../components/Comments.astro';
 import { getQuoteEntries, getBacklinks, normalizeTags } from '../../lib/content';
-import { SITE_TITLE } from '../../consts';
 
 export async function getStaticPaths() {
   const entries = await getQuoteEntries();
@@ -21,7 +20,7 @@ const backlinks = await getBacklinks(entry.id);
 ---
 
 <Base
-  title={`${entry.data.source} — ${SITE_TITLE}`}
+  title={entry.data.source}
   description={`A quotation from ${entry.data.source}.`}
   type="article"
 >
@@ -54,6 +53,9 @@ const backlinks = await getBacklinks(entry.id);
     <div class="article__trail">
       <Backlinks links={backlinks} />
     </div>
+    <nav class="article-nav" aria-label="More quotes">
+      <a class="article-nav__back" href="/quotes">&larr; All Quotes</a>
+    </nav>
     <Comments />
   </article>
 </Base>

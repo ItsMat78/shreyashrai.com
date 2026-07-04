@@ -33,3 +33,56 @@ const minDepth = items.length > 0 ? Math.min(...items.map((h) => h.depth)) : 2;
     </nav>
   )
 }
+
+<script>
+  // Scroll-spy: highlight the contents entry for the section being read.
+  // The active heading is the last one whose top has scrolled above a line
+  // just below the sticky header — robust to fast scrolls and heading gaps.
+  const toc = document.querySelector('.toc');
+  if (toc) {
+    const links = new Map<string, HTMLAnchorElement>();
+    toc.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((a) => {
+      links.set(decodeURIComponent(a.hash.slice(1)), a);
+    });
+    const headings = [...links.keys()]
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (headings.length) {
+      const OFFSET = 96; // clears the sticky header
+      let current = '';
+      const setActive = (id: string) => {
+        if (id === current) return;
+        current = id;
+        links.forEach((a, key) => {
+          const on = key === id;
+          a.classList.toggle('is-active', on);
+          if (on) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+      };
+
+      const update = () => {
+        let activeId = headings[0].id;
+        for (const h of headings) {
+          if (h.getBoundingClientRect().top <= OFFSET) activeId = h.id;
+          else break;
+        }
+        setActive(activeId);
+      };
+
+      update();
+      let ticking = false;
+      const onScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          update();
+          ticking = false;
+        });
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+    }
+  }
+</script>
