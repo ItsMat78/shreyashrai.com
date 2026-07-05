@@ -1,5 +1,5 @@
 ---
-title: "Simon Willison's link blog — the format worth stealing"
+title: "Simon Willison's link blog: the format worth stealing"
 url: "https://simonwillison.net/"
 date: 2026-07-02
 tags: ["meta", "blogging"]

@@ -420,9 +420,18 @@ main {
 /* Blend the hard shadow into the cream with multiply for a natural, printed-ink
    shadow. Light theme only: the illustration is essentially unaffected (multiply
    against near-white ≈ identity), but on the dark parchment multiply would crush
-   both the art and the shadow toward black, so dark keeps normal compositing. */
+   both the art and the shadow toward black, so it's left off there. */
 :root:not([data-theme='dark']) .header-art {
   mix-blend-mode: multiply;
+}
+
+/* Dark mode: greyscale PNG art soaks the mustard-gold accent (#e3b23c). The
+   sepia chain drives every grey toward the accent hue; brightness/saturate land
+   it on the accent. The drop-shadow is repeated because redeclaring `filter`
+   replaces it wholesale — omit it and the hard shadow would vanish. */
+:root[data-theme='dark'] .header-art {
+  filter: grayscale(1) sepia(1) saturate(2.4) hue-rotate(-6deg) brightness(1.02)
+    drop-shadow(1px 4px 0 color-mix(in srgb, var(--ink) 22%, transparent));
 }
 
 /* Phones have no empty right rail — the headline uses the full width. */
@@ -1115,6 +1124,12 @@ a {
 }
 
 /* Outbound link (link blog): display serif, accent arrow that slides on hover. */
+.stream-item__title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35em;
+}
+
 .stream-link-out {
   font-family: var(--font-display);
   font-optical-sizing: auto;
@@ -1136,6 +1151,18 @@ a {
 }
 
 .stream-link-out:hover span {
+  transform: translate(2px, -2px);
+}
+
+/* Visit link icon in stream list — accent, slides on hover. */
+.stream-visit {
+  color: var(--accent);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  line-height: 1;
+}
+
+.stream-visit:hover {
   transform: translate(2px, -2px);
 }
 
@@ -1196,9 +1223,27 @@ a {
 }
 
 /* The "→ url" source line at the foot of a link-blog permalink. */
-.link-source {
-  margin-top: var(--space-3);
-  word-break: break-word;
+.link-visit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  padding: 0.35em 0.7em;
+  margin-bottom: var(--space-2);
+  width: fit-content;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.link-visit:hover {
+  background: var(--accent);
+  color: var(--paper);
 }
 
 /* ---- Projects ----------------------------------------------------------- */
@@ -1241,7 +1286,7 @@ a {
   background-size: cover;
   background-position: center;
   transform: translateX(-100%);
-  opacity: 0;
+  opacity: 50%;
   transition: transform 0.45s cubic-bezier(0.2, 0.65, 0.25, 1), opacity 0.45s ease;
 }
 
@@ -1267,6 +1312,12 @@ a {
   position: relative;
 }
 
+/* Per-project illustration hidden by default (phones use the card's own cover
+   image); the desktop rule inside the media query below reveals it. */
+.project-art {
+  display: none;
+}
+
 /* Wide: title/index on the left, blurb + links fill the right half so the page
    no longer trails off into empty space. */
 @media (min-width: 46rem) {
@@ -1278,6 +1329,36 @@ a {
   /* No cover art on desktop — the title/blurb carry the row, no hover image. */
   .project__cover {
     display: none;
+  }
+
+  /* Optional per-project illustration (transparent PNG via `headerArt`) parked
+     in the empty left column beneath the title, matching the header-art look:
+     lifted with a hard, multiply drop shadow. */
+  .project-art {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-36%);
+    width: auto;
+    height: auto;
+    max-width: 34%;
+    max-height: 82%;
+    opacity: 50%;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 0;
+    filter: drop-shadow(1px 4px 0 color-mix(in srgb, var(--ink) 20%, transparent));
+  }
+
+  :root:not([data-theme='dark']) .project-art {
+    mix-blend-mode: multiply;
+  }
+
+  /* Dark mode: same mustard-gold tint as the masthead art (see .header-art). */
+  :root[data-theme='dark'] .project-art {
+    filter: grayscale(1) sepia(1) saturate(2.4) hue-rotate(-6deg) brightness(1.02)
+      drop-shadow(1px 4px 0 color-mix(in srgb, var(--ink) 20%, transparent));
   }
 }
 
@@ -1386,6 +1467,7 @@ a {
   position: relative;
   z-index: 2;
   width: fit-content;
+  line-height: 0.1rem;
 }
 
 .project__arrow {
@@ -1430,20 +1512,28 @@ a {
     gap: 0;
     padding: 0;
     border: 1px solid var(--rule);
-    border-radius: 0;
+    border-radius: 0.5rem;
+    /* Clip the full-bleed cover to the rounded top corners. */
+    overflow: hidden;
     background: var(--paper-2);
+    /* Hard offset shadow (0 blur), keyed to --ink like the printed-ink art
+       shadows — reads on cream and dark parchment alike. */
+    box-shadow: 4px 2px 0 color-mix(in srgb, var(--ink) 16%, transparent);
   }
 
-  /* Cover image only when present: full-width at the top, ruled off from the
-     text below. Imageless projects show no band at all — the header leads. */
+  /* Cover image only when present: matted inside the card and set in a thin
+     frame-line outline (the site's frame motif). Imageless projects show no
+     band at all — the header leads. */
   .project__cover {
     position: static;
     display: block;
-    width: 100%;
+    width: auto;
+    margin: var(--space-2) var(--space-2) 0;
     aspect-ratio: 16 / 10;
     transform: none;
     opacity: 1;
-    border-bottom: 1px solid var(--rule);
+    border: 1px solid var(--frame-line);
+    border-radius: 2px;
   }
 
   .project__cover[data-has-cover='false'] {
@@ -1490,7 +1580,7 @@ a {
 
   .project__links {
     margin-top: 1rem;
-    gap: 1.5rem;
+    gap: 0.5rem 1.5rem;
   }
 }
 
@@ -1651,6 +1741,14 @@ a {
   align-items: start;
 }
 
+/* Stacked layout: the contents dropdown sits directly under the header, so the
+   header's deep desktop margin reads as a big empty gap above it. Tighten it. */
+@media (max-width: 71.99rem) {
+  .article__header {
+    margin-bottom: var(--space-2);
+  }
+}
+
 @media (min-width: 72rem) {
   .article__body {
     grid-template-columns: minmax(0, 1fr) 15rem;
@@ -1661,11 +1759,16 @@ a {
     grid-row: 1;
   }
 
-  .article__body .toc {
+  .article__body .rail {
     grid-column: 2;
     grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
     position: sticky;
-    top: 5.5rem; /* clears the sticky site header */
+    top: 5.5rem;
+    max-height: calc(100vh - 5.5rem);
+    overflow-y: auto;
   }
 }
 
@@ -1675,8 +1778,55 @@ a {
   max-width: var(--measure);
 }
 
-.toc__title {
+/* Collapsible rail sections (TOC + series). On phones they're dropdowns —
+   tap the label to reveal — so the reading column opens clean, no clutter.
+   On the wide sticky rail they stand permanently open and the toggle goes
+   inert, reading as a plain pencilled index. */
+.disclosure > .disclosure__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   margin-bottom: var(--space-1);
+  cursor: pointer;
+  list-style: none;
+}
+
+.disclosure > .disclosure__summary::-webkit-details-marker {
+  display: none;
+}
+
+.disclosure__summary .eyebrow {
+  margin: 0;
+}
+
+/* Caret drawn from two borders: points down when closed, flips up when open. */
+.disclosure__chevron {
+  flex: 0 0 auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.2rem;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform 0.25s ease;
+  opacity: 0.7;
+}
+
+.disclosure[open] > .disclosure__summary .disclosure__chevron {
+  transform: rotate(225deg);
+}
+
+/* Wide rail: no toggling, no caret — the index just stands open. */
+@media (min-width: 72rem) {
+  .disclosure > .disclosure__summary {
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .disclosure__chevron {
+    display: none;
+  }
 }
 
 .toc ol {
@@ -1818,6 +1968,17 @@ a {
   margin: 0.35rem var(--space-2) var(--space-2) 0;
 }
 
+/* Phones: too narrow for a text-wrap column, so the float is ignored — the
+   image drops to a full-width block like a plain markdown image. */
+@media (max-width: 47.99rem) {
+  .prose .img-right,
+  .prose .img-left {
+    float: none;
+    width: 100%;
+    margin: var(--space-2) 0;
+  }
+}
+
 /* Two (or more) plots/photos side by side, each with its own caption.
    A responsive row: figures share the width and stack on narrow screens.
    Use for comparisons — NOT the img-left/right floats, which are for a single
@@ -1872,6 +2033,116 @@ a {
   clear: both;
 }
 
+/* ---- Media loading skeleton --------------------------------------------
+   Content images/video get wrapped at runtime in a `.media-frame` by the
+   Base.astro client module; while the file loads, an animated tetromino cube
+   sits on a faint plate, then the media fades in and the loader retires. All
+   elements are <span>s (styled block) so the loader nests validly inside a
+   markdown `<p>`. Wrapping is automatic — plain `![](…)`, raw `<img>` and the
+   img-left/right floats alike, with no authoring change. Figure/figure-row
+   media is skipped (its own framed plate is already a placeholder). */
+.prose .media-frame {
+  display: block;
+  position: relative;
+}
+
+/* Reserve a stage before the image reports height, so the centered cube isn't
+   clipped by a collapsed box. Drops away the moment the media is in. */
+.prose .media-frame:not(.is-loaded) {
+  min-height: 8rem;
+  background: var(--paper-2);
+  border-radius: 2px;
+}
+
+.prose .media-frame > :is(img, video) {
+  display: block;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.prose .media-frame.is-loaded > :is(img, video) {
+  opacity: 1;
+}
+
+/* A loading float still wraps text: the float rides on the wrapper (moved off
+   the <img> in JS) and the media fills it. */
+.prose .media-frame:is(.img-left, .img-right) > :is(img, video) {
+  width: 100%;
+}
+
+/* Inside a <figure> the wrapper shrinks to the media and stays centered (the
+   img is no longer a direct figure child, so keep the centered look here). */
+.prose figure > .media-frame {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+/* Tetromino cube (cluster ≈ 145×116), centered on the frame with a half-size
+   offset — no container transform, so the child keyframes below run exactly as
+   authored. */
+.prose .media-frame .tetrominos {
+  position: absolute;
+  top: calc(50% - 42px);
+  left: calc(50% - 72px);
+  opacity: 0.9;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+
+.prose .media-frame.is-loaded .tetrominos {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.tetromino {
+  display: block;
+  width: 58px;
+  height: 68px;
+  position: absolute;
+  transition: all ease 0.3s;
+  /* Light theme: cube sides = accent blue, lit top face = a lighter blue. */
+  background: url('data:image/svg+xml;utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 612 684"%3E%3Cpath fill="%231f2ae6" d="M305.7 0L0 170.9v342.3L305.7 684 612 513.2V170.9L305.7 0z"/%3E%3Cpath fill="%23848df1" d="M305.7 80.1l-233.6 131 233.6 131 234.2-131-234.2-131"/%3E%3C/svg%3E') no-repeat top center;
+}
+
+/* Dark theme: cube sides = mustard-gold accent, lit top = the lighter gold. */
+:root[data-theme='dark'] .tetromino {
+  background: url('data:image/svg+xml;utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 612 684"%3E%3Cpath fill="%23e3b23c" d="M305.7 0L0 170.9v342.3L305.7 684 612 513.2V170.9L305.7 0z"/%3E%3Cpath fill="%23f4c85c" d="M305.7 80.1l-233.6 131 233.6 131 234.2-131-234.2-131"/%3E%3C/svg%3E') no-repeat top center;
+}
+
+.box1 { animation: tetromino1 1.5s ease-out infinite; }
+.box2 { animation: tetromino2 1.5s ease-out infinite; }
+.box3 { animation: tetromino3 1.5s ease-out infinite; z-index: 2; }
+.box4 { animation: tetromino4 1.5s ease-out infinite; }
+
+@keyframes tetromino1 {
+  0%, 40% { transform: translate(0, 0); }
+  50% { transform: translate(29px, -16px); }
+  60%, 100% { transform: translate(58px, 0); }
+}
+@keyframes tetromino2 {
+  0%, 20% { transform: translate(58px, 0); }
+  40%, 100% { transform: translate(87px, 16px); }
+}
+@keyframes tetromino3 {
+  0% { transform: translate(87px, 16px); }
+  20%, 60% { transform: translate(58px, 32px); }
+  90%, 100% { transform: translate(29px, 16px); }
+}
+@keyframes tetromino4 {
+  0%, 60% { transform: translate(29px, 16px); }
+  90%, 100% { transform: translate(0, 0); }
+}
+
+/* Reduced motion: no dance — the cubes rest as one static cube, centered. */
+@media (prefers-reduced-motion: reduce) {
+  .tetromino { animation: none; }
+  .prose .media-frame .tetrominos {
+    top: calc(50% - 34px);
+    left: calc(50% - 29px);
+  }
+}
+
 /* ---- Code --------------------------------------------------------------- */
 
 code,
@@ -1884,11 +2155,15 @@ samp {
 /* Inline code — backtick text carries the accent so it pops from prose. */
 .prose :not(pre) > code {
   background: var(--code-bg);
-  color: var(--ink);
+  color: var(--accent);
   font-weight: 400;
   padding: 0.1em 0.35em;
   border-radius: 3px;
-  outline:var(--ink);
+}
+
+.prose em,
+.prose i {
+  color: var(--accent);
 }
 
 /* Block code (Shiki output). Warm paper-2, never stark white. */
@@ -2123,29 +2398,28 @@ samp {
   display: none;
 }
 
-/* Series index above an article (inside the prose column). */
+/* Series index matches the TOC style — unboxed, quiet, same typography. */
 .series {
-  margin: 0 0 var(--space-3);
-  padding: var(--space-2);
-  border: 1px solid var(--rule);
-  border-radius: 3px;
-  background: var(--paper-2);
-}
-
-.series__title {
-  margin: 0 0 var(--space-1);
+  max-width: var(--measure);
 }
 
 .series__list {
   list-style: none;
   margin: 0;
   padding: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
 }
 
 .series__item {
   display: flex;
   gap: 0.75rem;
-  padding-block: 0.2rem;
+}
+
+.series__item + .series__item {
+  margin-top: 0.45rem;
 }
 
 .series__num {
@@ -2546,4 +2820,16 @@ samp {
   figure {
     outline: var(--muted);
   }
+}
+
+/* ---- Mermaid ------------------------------------------------------------- */
+.mermaid {
+  margin-block: var(--space-3);
+  overflow-x: auto;
+  text-align: center;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
 }

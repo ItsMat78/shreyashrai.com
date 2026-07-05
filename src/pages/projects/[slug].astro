@@ -59,7 +59,9 @@ const related = await getRelatedProjects(entry.id, entry.data.tech);
       </div>
     </header>
     <div class="article__body">
-      <Toc headings={headings} />
+      <div class="rail">
+        <Toc headings={headings} />
+      </div>
       <div class="prose" data-pagefind-body>
         <Content />
       </div>

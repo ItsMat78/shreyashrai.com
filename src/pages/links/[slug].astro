@@ -29,11 +29,7 @@ const backlinks = await getBacklinks(entry.id);
     <header class="article__header">
       <FrameField />
       <p class="eyebrow">The link blog</p>
-      <h1 class="display display--title">
-        <a class="stream-link-out" href={entry.data.url}>
-          {entry.data.title} <span aria-hidden="true">&#8599;</span>
-        </a>
-      </h1>
+      <h1 class="display display--title">{entry.data.title}</h1>
       <div class="article__meta">
         <FormattedDate date={entry.data.date} format="long" />
         {entry.data.via && (
@@ -46,10 +42,11 @@ const backlinks = await getBacklinks(entry.id);
       </div>
     </header>
     <div class="prose" data-pagefind-body>
+      <a class="link-visit" href={entry.data.url}>
+        <svg viewBox="0 0 12 12" width="0.9em" height="0.9em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10 10 2M4 2h6v6"/></svg>
+        Visit site
+      </a>
       <Content />
-      <p class="annotation link-source">
-        &rarr; <a href={entry.data.url}>{entry.data.url}</a>
-      </p>
     </div>
     <p class="article__end" aria-hidden="true">&#10086;</p>
     <div class="article__trail">

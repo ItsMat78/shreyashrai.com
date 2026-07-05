@@ -1,8 +1,8 @@
 ---
 title: How this site works
 date: 2026-07-03
-description: A static, Markdown-driven site built with Astro — why it exists and how publishing a new post is just adding a file.
-tags: ["meta", "astro"]
+description: A static, Markdown-driven site built with Astro, why it exists and how publishing a new post is just adding a file.
+tags: ["BLOGGING", "astro"]
 ---
 
 This site is a running log of things I learn and the projects I build. The most
@@ -21,9 +21,9 @@ instantly and there's nothing to break.
 
 There are two kinds of writing here:
 
-- **TILs** ("Today I Learned") — short, dated, tagged notes. This is the heart
+- **TILs** ("Today I Learned"), short, dated, tagged notes. This is the heart
   of the site and where most of the activity is.
-- **Posts** — longer writeups and essays, like this one.
+- **Posts**, longer writeups and essays, like this one.
 
 ## Why no JavaScript framework
 
@@ -38,7 +38,7 @@ to patch or attack.
 Everything is available as a feed. There's a
 [combined feed](/rss.xml) of TILs and posts, and if you only want one or the
 other, each has its own. Feeds carry the full text, so you can read without ever
-visiting the site — that's the point of them.
+visiting the site that's the point of them.
 
 If you want to see how the sausage is made, the source is on
-[GitHub](https://github.com/ItsMat78).
+[GitHub](https://github.com/ItsMat78/shreyashrai.com).

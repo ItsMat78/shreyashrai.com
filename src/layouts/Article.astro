@@ -92,9 +92,11 @@ const back = SECTION[collection];
       </div>
     </header>
     <div class="article__body">
-      <Toc headings={headings} />
-      <div class:list={['prose', dropcap && 'prose--dropcap']} data-pagefind-body>
+      <div class="rail">
+        <Toc headings={headings} />
         {series && <SeriesNav name={series} parts={seriesParts} currentId={id} />}
+      </div>
+      <div class:list={['prose', dropcap && 'prose--dropcap']} data-pagefind-body>
         <slot />
       </div>
     </div>

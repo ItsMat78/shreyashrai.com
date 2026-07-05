@@ -59,8 +59,11 @@ const KIND_LABEL: Record<EntryItem['collection'], string> = {
         ) : item.collection === 'links' ? (
           <div class="stream-item__body">
             <h3 class="stream-item__title">
-              <a class="stream-link-out" href={item.linkUrl}>
-                {item.title} <span aria-hidden="true">&#8599;</span>
+              <a class="entry__title" href={item.url}>
+                {item.title}
+              </a>
+              <a class="stream-visit" href={item.linkUrl} aria-label={`Visit ${item.title}`}>
+                <svg viewBox="0 0 12 12" width="0.8em" height="0.8em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10 10 2M4 2h6v6"/></svg>
               </a>
             </h3>
             {item.excerpt && <p class="stream-item__note" set:html={inlineMarkdown(item.excerpt)} />}

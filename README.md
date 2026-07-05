@@ -28,6 +28,7 @@ Most days you add a **TIL** ("Today I Learned") — a short, dated, tagged note.
    title: "Your title here"
    date: 2026-07-03
    tags: ["c++", "gotchas"]   # optional
+   draft: true/false          # optional
    ---
 
    Your note. Code blocks get syntax highlighting automatically.
@@ -60,7 +61,7 @@ prev/next navigation.
 
 **Featured:** `featured: true` surfaces an entry in the home Featured slot.
 
-**Cross-links:** `[[slug]]` or `[[slug|label]]` in any Markdown body links
+**Cross-links:** `[[path to md file]]` or `[[path to md file|label]]` in any Markdown body links
 across collections. The target page lists reverse mentions under "Mentioned in".
 
 ### Blog post example
@@ -90,21 +91,45 @@ tags: ["web"]
 Your note about why this link is worth reading.
 ```
 
----
-
-## Run locally
-
-```bash
-npm install        # once
-npm run dev        # http://localhost:4321 — live reload
-npm run build      # static site in dist/ + Pagefind search index
-npm run preview    # serve dist/ locally (search works here, not in dev)
-npm run check      # astro check — type gate
+### Project example
+```
+title: Lagrange-Lock
+blurb: "Secondary description"          # only visible on projects page
+outcome: "Primary description"
+tech: ["A","B"]
+order: Number                           # What order it appears in
+cover: /images/[project_image.png]      # what is showed for mobile users
+headerArt: /header/[project_header.png] # what is showed to PC users
+live: [Deployment link]
+source: [Repository Link]
 ```
 
-Search (`/search`) is built by [Pagefind](https://pagefind.app/) after Astro
-finishes. It only exists in a built site, so `npm run dev` shows a placeholder
-instead of a dead search box.
+---
+
+## Header art & images
+
+**Header art** is an optional transparent-PNG element parked in the empty side of
+a page header (hidden on phones).
+
+- On a page — add `image="/header/Name.png"` to that page's `<PageHeader>`.
+- On a project — set `headerArt: /header/Name.png` in the frontmatter; it shows
+  in both the project's detail-page header and its row on the projects list.
+
+Files go in `public/header/`. They use `object-fit: contain`, so the PNG scales
+to fit its box (keeps aspect ratio, centers). Display boxes at full width:
+masthead ~**410 × 350 px**, projects-list row **332 × 220 px**.
+
+**Recommended export** — so images line up and stay crisp: a **3:2, 1200 × 800 px**
+transparent PNG, element centered with **~10% empty margin** (so the drop-shadow
+and edges aren't clipped), kept **under ~300 KB**.
+
+**Images inside a post:** put the file in `public/images/` and reference it as
+`/images/foo.png` (not `/public/images/...`, which 404s). Always set the real
+`width`/`height` so the layout doesn't shift as it loads:
+
+```html
+<img src="/images/diagram.png" alt="what it shows" width="646" height="132">
+```
 
 ---
 

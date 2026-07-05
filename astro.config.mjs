@@ -8,6 +8,7 @@ import rehypeKatex from 'rehype-katex';
 import { rehypeHeadingIds } from '@astrojs/markdown-remark';
 import remarkWikilinks from './src/lib/remark-wikilinks.mjs';
 
+
 // The canonical origin. Required for RSS, sitemap, and canonical URLs.
 export default defineConfig({
   site: 'https://shreyashrai.com',

@@ -18,12 +18,17 @@ Instead of relying on traditional control theory (which needs heavy mathematical
 **Live Demo**: [lagrange-lock.shreyashrai.com](https://lagrange-lock.shreyashrai.com)  
 **Source Code**: [GitHub](https://github.com/ItsMat78/Lagrange-Lock)
 
-<figure>
+<figure >
 <video src="https://github.com/user-attachments/assets/59efcec9-c9b7-4394-9ebe-5f78b20ba3dc" autoplay loop muted playsinline width="100%"></video>
 <figcaption>A demonstration of the agent maintaining orbit near L1</figcaption>
 </figure>
 
 ## What are Lagrange Points?
+<figure class="img-right">
+<a href="https://www.researchgate.net/figure/Lagrange-points-in-the-Earth-Moon-system-The-three-body-problem-In-1722-Leonard-Euler_fig2_333919347"><img src="https://www.researchgate.net/profile/Gustavo-Gargioni/publication/333919347/figure/fig2/AS:784941633781763@1564156077699/Lagrange-points-in-the-Earth-Moon-system-The-three-body-problem-In-1722-Leonard-Euler.ppm" alt="Lagrange points in the Earth-Moon system The three-body problem In 1722, Leonard Euler proved the existence of the collinear libration point. In 1765, Lagrange found the triangular libration point L4 and L5 [4, Fig. 2]. In 1899, Henri Poincaré proved that the restricted problem was unsolvable and analytic, differentiable function of both the initial conditions and the time. Solving this problem is infinitely complex because of its many nonlinear dynamical systems which still have no closed form solution [5]."/></a>
+<figcaption>A diagram showing the five lagrange points.</figcaption>
+</figure>
+
 Lagrange Points (also called libration points) are five special locations in space where the gravitational pull of two large bodies (like Earth and the Moon) perfectly balances with the centrifugal force felt in their rotating frame. This creates spots where a small object, like a satellite, can stay in a relatively fixed position with very little fuel.
 
 In the Earth-Moon system, L1 sits between Earth and the Moon, L2 is on the far side of the Moon, and L3 is on the opposite side of Earth. L4 and L5 form equilateral triangles with Earth and the Moon.
@@ -55,6 +60,13 @@ These missions rely on careful orbit design (often Halo or Lissajous orbits) and
 - Created a full-stack experience: a custom Gymnasium environment connected to a real-time **Three.js** WebGL visualization so anyone can watch the AI in action.
 
 ### The Challenge
+
+
+<figure class="img-right">
+<img src="/images/lagrange-lock.png" alt="Taxshila App">
+<figsub>Pure gravitational physics simulated in browser</figsub>
+</figure>
+
 
 Lagrange points are special spots in space where gravitational forces balance out, making them ideal for satellites. But they're also unstable, especially L1. Tiny errors grow quickly, and satellites naturally drift away. Traditional solutions require complex math and precise modeling. I wanted to see if an AI could learn to "surf" these gravitational manifolds without hand-crafted equations.
 

@@ -35,6 +35,9 @@ const heading = [
             style={project.data.cover ? `background-image:url(${project.data.cover})` : undefined}
             aria-hidden="true"
           />
+          {project.data.headerArt && (
+            <img class="project-art" src={project.data.headerArt} alt="" decoding="async" />
+          )}
           <div class="project__lead">
             <span class="project__index tabular" aria-hidden="true">
               {String(i + 1).padStart(2, '0')}

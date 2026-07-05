@@ -25,6 +25,9 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 
+# Obsidian vault config — local editor state, not published
+.obsidian/
+
 # Initial planning docs — kept on disk, never tracked/published
 /instructions.md
 /plan.md
