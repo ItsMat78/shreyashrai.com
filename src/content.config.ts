@@ -84,7 +84,7 @@ const quotes = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/quotes' }),
   schema: z.object({
     date: z.coerce.date(),
-    source: z.string(),
+    source: z.string().optional(),
     sourceUrl: z.string().url().optional(),
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),

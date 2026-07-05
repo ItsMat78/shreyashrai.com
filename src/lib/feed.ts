@@ -30,13 +30,14 @@ function toItem(entry: FeedEntry, prefix: Kind): RSSFeedItem {
   const link = `/${prefix}/${entry.id}/`;
   const body = renderContent(entry.body ?? '');
 
-  if (prefix === 'quotes' && 'source' in d) {
-    // No title on a quote — lead with the source; body is the quote itself.
+  if (prefix === 'quotes') {
+    // No title on a quote — lead with the source when present; body is the quote.
+    const source = 'source' in d ? d.source : undefined;
     return {
-      title: `“…” — ${d.source}`,
+      title: source ? `“…” — ${source}` : '“…”',
       pubDate: d.date,
       link,
-      content: `<blockquote>${body}</blockquote><p>— ${d.source}</p>`,
+      content: `<blockquote>${body}</blockquote>${source ? `<p>— ${source}</p>` : ''}`,
       categories: d.tags,
     };
   }
@@ -95,7 +96,11 @@ export function buildJsonFeed(context: APIContext, options: BuildOptions) {
       const d = entry.data;
       const url = `${site}/${prefix}/${entry.id}/`;
       const title =
-        'title' in d ? d.title : 'source' in d ? `Quote — ${d.source}` : '';
+        'title' in d
+          ? d.title
+          : prefix === 'quotes'
+            ? `Quote${'source' in d && d.source ? ` — ${d.source}` : ''}`
+            : '';
       const summary = 'description' in d ? d.description : undefined;
       let content = renderContent(entry.body ?? '');
       if ('url' in d) content += `<p>Link: <a href="${d.url}">${d.url}</a></p>`;

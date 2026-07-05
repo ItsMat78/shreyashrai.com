@@ -35,20 +35,26 @@ const KIND_LABEL: Record<EntryItem['collection'], string> = {
         {item.collection === 'quotes' ? (
           <div class="stream-item__body">
             <blockquote class="stream-quote">{item.excerpt}</blockquote>
-            <p class="stream-quote__cite annotation">
-              {'BY '}
-              {item.sourceUrl ? (
-                <a href={item.sourceUrl}>{item.source}</a>
-              ) : (
-                <span>{item.source}</span>
-              )}
-              {item.viaUrl && (
-                <>
-                  {' · via '}
-                  <a href={item.viaUrl}>{item.via ?? 'source'}</a>
-                </>
-              )}
-            </p>
+            {(item.source || item.via) && (
+              <p class="stream-quote__cite annotation">
+                {item.source && (
+                  <>
+                    {'BY '}
+                    {item.sourceUrl ? (
+                      <a href={item.sourceUrl}>{item.source}</a>
+                    ) : (
+                      <span>{item.source}</span>
+                    )}
+                  </>
+                )}
+                {item.via && (
+                  <>
+                    {item.source ? ' · via ' : 'via '}
+                    {item.viaUrl ? <a href={item.viaUrl}>{item.via}</a> : item.via}
+                  </>
+                )}
+              </p>
+            )}
           </div>
         ) : item.collection === 'links' ? (
           <div class="stream-item__body">

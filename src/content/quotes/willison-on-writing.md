@@ -4,5 +4,4 @@ source: "Simon Willison"
 sourceUrl: "https://simonwillison.net/2022/Nov/6/what-to-blog-about/"
 ---
 
-You should blog about things you've learned, even if you don't think anyone will
-read it. The act of writing it up is what cements your own understanding.
+"You should start a blog. Having your own little corner of the internet is good for the soul!"

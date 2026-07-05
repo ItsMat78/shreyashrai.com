@@ -17,11 +17,12 @@ const { entry } = Astro.props;
 const { Content } = await render(entry);
 const tags = normalizeTags(entry.data.tags);
 const backlinks = await getBacklinks(entry.id);
+const source = entry.data.source;
 ---
 
 <Base
-  title={entry.data.source}
-  description={`A quotation from ${entry.data.source}.`}
+  title={source ?? 'Quote'}
+  description={source ? `A quotation from ${source}.` : 'A quotation.'}
   type="article"
 >
   <article>
@@ -31,14 +32,16 @@ const backlinks = await getBacklinks(entry.id);
       <blockquote class="display quote-display" data-pagefind-body>
         <Content />
       </blockquote>
-      <p class="quote-cite">
-        {'— '}
-        {entry.data.sourceUrl ? (
-          <a href={entry.data.sourceUrl}>{entry.data.source}</a>
-        ) : (
-          <span>{entry.data.source}</span>
-        )}
-      </p>
+      {source && (
+        <p class="quote-cite">
+          {'— '}
+          {entry.data.sourceUrl ? (
+            <a href={entry.data.sourceUrl}>{source}</a>
+          ) : (
+            <span>{source}</span>
+          )}
+        </p>
+      )}
       <div class="article__meta">
         <FormattedDate date={entry.data.date} format="long" />
         {entry.data.via && (
