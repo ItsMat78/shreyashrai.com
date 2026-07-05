@@ -20,7 +20,7 @@ const heading = [
 >
   <PageHeader eyebrow="Selected work" lines={heading}>
     <p class="masthead__deck">
-      with links where they're live or open source.
+      Things I've built. Simulations, research and small tools with links where they're live or open source.
     </p>
   </PageHeader>
 
@@ -60,16 +60,16 @@ const heading = [
             )}
             <div class="project__links annotation">
               <a class="link-quiet" href={`/projects/${project.id}/`}>
-                Writeup <span class="project__arrow">🡥</span>
+                Writeup <span class="project__arrow"><svg viewBox="0 0 12 12" width="0.8em" height="0.8em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10 10 2M4 2h6v6"/></svg></span>
               </a>
               {project.data.live && (
                 <a class="link-quiet" href={project.data.live}>
-                  Deployment <span class="project__arrow">🡥</span>
+                  Deployment <span class="project__arrow"><svg viewBox="0 0 12 12" width="0.8em" height="0.8em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10 10 2M4 2h6v6"/></svg></span>
                 </a>
               )}
               {project.data.source && (
                 <a class="link-quiet" href={project.data.source}>
-                  Repository <span class="project__arrow">🡥</span>
+                  Repository <span class="project__arrow"><svg viewBox="0 0 12 12" width="0.8em" height="0.8em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10 10 2M4 2h6v6"/></svg></span>
                 </a>
               )}
             </div>

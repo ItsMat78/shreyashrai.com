@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from 'astro:transitions';
 import { SITE_TITLE, SITE_DESCRIPTION, CF_ANALYTICS_TOKEN } from '../consts';
 
 interface Props {
@@ -30,6 +31,10 @@ const fullTitle = title === SITE_TITLE ? title : `${title} — ${SITE_TITLE}`;
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="generator" content={Astro.generator} />
+
+<!-- App-like navigation: cross-page morphing with Astro View Transitions. -->
+<ClientRouter />
+
 
 <!--
   Set the theme before first paint so there's no flash: an explicit choice in

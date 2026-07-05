@@ -56,6 +56,9 @@ const projects = defineCollection({
     // Shown as the card image on phones and the slide-in behind the title on
     // desktop. Projects without one fall back to a tinted panel.
     cover: z.string().optional(),
+    // Optional decorative art (transparent PNG) parked in the empty right side
+    // of the detail-page header — same treatment as the page mastheads.
+    headerArt: z.string().optional(),
     // Hand-set list position (1 = top).
     order: z.number(),
     live: z.string().url().optional(),

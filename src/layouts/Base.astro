@@ -33,42 +33,95 @@ const { title, description, type, ogImage } = Astro.props;
     </div>
 
     <script>
-      // Copy-to-clipboard on every code block. Each <pre> is wrapped so the
-      // button can anchor to a non-scrolling parent; icon flips to a check
-      // for a moment after a successful copy.
+      // All client behaviour lives here in ONE module (executed once) so it
+      // survives Astro View Transitions: listeners are bound to `document` and
+      // to the transition lifecycle rather than to per-page elements.
+
       const COPY_ICON =
         '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
       const CHECK_ICON =
         '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5 9.5 18 20 6.5"/></svg>';
 
-      for (const pre of document.querySelectorAll<HTMLElement>('.prose pre')) {
-        const wrap = document.createElement('div');
-        wrap.className = 'code-wrap';
-        pre.parentNode?.insertBefore(wrap, pre);
-        wrap.appendChild(pre);
+      // Copy-to-clipboard on every code block. Idempotent: skips any <pre> that
+      // is already wrapped, so it can safely re-run after each navigation.
+      function initCopyButtons() {
+        for (const pre of document.querySelectorAll<HTMLElement>('.prose pre')) {
+          if (pre.closest('.code-wrap')) continue;
+          const wrap = document.createElement('div');
+          wrap.className = 'code-wrap';
+          pre.parentNode?.insertBefore(wrap, pre);
+          wrap.appendChild(pre);
 
-        const btn = document.createElement('button');
-        btn.className = 'code-copy';
-        btn.type = 'button';
-        btn.setAttribute('aria-label', 'Copy code');
-        btn.innerHTML = COPY_ICON;
-        btn.addEventListener('click', async () => {
-          const code = pre.querySelector('code') as HTMLElement | null;
-          const text = code?.innerText ?? pre.innerText;
-          try {
-            await navigator.clipboard.writeText(text);
-            btn.innerHTML = CHECK_ICON;
-            btn.classList.add('code-copy--done');
-            setTimeout(() => {
-              btn.innerHTML = COPY_ICON;
-              btn.classList.remove('code-copy--done');
-            }, 1800);
-          } catch {
-            /* clipboard unavailable (http, old browser): do nothing */
-          }
-        });
-        wrap.appendChild(btn);
+          const btn = document.createElement('button');
+          btn.className = 'code-copy';
+          btn.type = 'button';
+          btn.setAttribute('aria-label', 'Copy code');
+          btn.innerHTML = COPY_ICON;
+          btn.addEventListener('click', async () => {
+            const code = pre.querySelector('code') as HTMLElement | null;
+            const text = code?.innerText ?? pre.innerText;
+            try {
+              await navigator.clipboard.writeText(text);
+              btn.innerHTML = CHECK_ICON;
+              btn.classList.add('code-copy--done');
+              setTimeout(() => {
+                btn.innerHTML = COPY_ICON;
+                btn.classList.remove('code-copy--done');
+              }, 1800);
+            } catch {
+              /* clipboard unavailable (http, old browser): do nothing */
+            }
+          });
+          wrap.appendChild(btn);
+        }
       }
+
+      // Theme: the inline head script sets [data-theme] before first paint; this
+      // re-applies it the instant a new page is swapped in so it never flashes.
+      function applyTheme() {
+        try {
+          const t = localStorage.getItem('theme');
+          document.documentElement.dataset.theme =
+            t === 'dark' || t === 'light' ? t : 'light';
+        } catch {
+          /* localStorage blocked: leave whatever is already set */
+        }
+      }
+
+      // Keep the toggle's icon/label in sync with the current theme.
+      function syncToggle() {
+        const btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        const icon = btn.querySelector('.theme-toggle__icon');
+        const dark = document.documentElement.dataset.theme === 'dark';
+        if (icon) icon.textContent = dark ? '☀' : '☾';
+        btn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+        btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      }
+
+      // Delegated click: one listener on document survives every page swap.
+      document.addEventListener('click', (e) => {
+        const target = e.target;
+        const btn = target instanceof Element ? target.closest('#theme-toggle') : null;
+        if (!btn) return;
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        try {
+          localStorage.setItem('theme', next);
+        } catch {
+          /* ignore */
+        }
+        syncToggle();
+      });
+
+      // Re-apply the saved theme pre-paint on every transition (no flash).
+      document.addEventListener('astro:after-swap', applyTheme);
+
+      // Fires on the initial load AND after every client-side navigation.
+      document.addEventListener('astro:page-load', () => {
+        syncToggle();
+        initCopyButtons();
+      });
     </script>
   </body>
 </html>

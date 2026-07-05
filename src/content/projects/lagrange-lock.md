@@ -5,6 +5,7 @@ outcome: "Taming the Three-Body Problem with Reinforcement Learning"
 tech: ["Python", "Reinforcement learning", "Gymnasium", "Numba", "Three.js"]
 order: 1
 cover: /images/lagrange-lock.png
+headerArt: /header/Satellite.png
 live: https://lagrange-lock.shreyashrai.com
 source: https://github.com/ItsMat78/Lagrange-Lock
 ---
@@ -87,11 +88,11 @@ The agent now reliably finds and holds Halo orbits, which is pretty cool to watc
 
 <div class="figure-row">
   <figure>
-    <img src="/images/training_rewards.png" alt="Training Reward over Episodes">
+    <img src="/images/training_rewards.png" alt="Training Reward over Episodes" width="1000" height="500">
     <figcaption>The left plot shows the agent going from crashing almost instantly to maintaining long-term orbits.</figcaption>
   </figure>
   <figure>
-    <img src="/images/training_distance.png" alt="Distance to L1 vs Time">
+    <img src="/images/training_distance.png" alt="Distance to L1 vs Time" width="1000" height="500">
     <figcaption>The right plot proves it’s genuinely getting better at staying near L1 over millions of timesteps.</figcaption>
   </figure>
 </div>

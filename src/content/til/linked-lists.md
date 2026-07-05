@@ -16,7 +16,7 @@ featured: true
 - Traversal time complexity: O(n)
 - Insertion time complexity: O(n)
 <figure>
-<img src="/public/images/linked-list.png">
+<img src="/images/linked-list.png" alt="A singly linked list: nodes holding data and a pointer to the next node." width="646" height="132">
 </figure>
 
 ## Arrays vs linkedlists

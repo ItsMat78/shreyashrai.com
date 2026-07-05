@@ -24,13 +24,25 @@ interface Props {
   // Set false to drop the outlined frames — the home hero ships without them
   // so nothing crosses the display type.
   frames?: boolean;
+  // Optional decorative art for the empty right side of the header. Meant for a
+  // transparent PNG of a single element; hidden on phones (no empty right side).
+  image?: string;
+  imageAlt?: string;
 }
 
-const { eyebrow, lines, dense = false, frames = true } = Astro.props;
+const {
+  eyebrow,
+  lines,
+  dense = false,
+  frames = true,
+  image,
+  imageAlt = '',
+} = Astro.props;
 ---
 
 <header class="masthead">
   {frames && <FrameField dense={dense} />}
+  {image && <img class="header-art" src={image} alt={imageAlt} decoding="async" />}
   <p class="eyebrow">{eyebrow}</p>
   <ScatterHead lines={lines} as="h1" />
   <slot />

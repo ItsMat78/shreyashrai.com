@@ -16,8 +16,8 @@ const sections = [
 ] as const;
 
 const heading = [
-  { text: 'The', size: 'm', weight: 380, italic: true, rot: -2 },
-  { text: 'notebook', size: 'xl', weight: 640, shift: '2rem', rot: 1.5, lift: '-2.5rem' },
+  { text: 'the', size: 'l', weight: 380, italic: true, rot: -2, shift: '5rem' },
+  { text: 'Notebook', size: 'xl', weight: 640, shift: '0rem', rot: 1.5, lift: '-2.0rem' },
 ] as const;
 ---
 
@@ -25,7 +25,7 @@ const heading = [
   title="Notes"
   description="Every short-form thing I post (TILs, writing, links, and quotes) all on one page."
 >
-  <PageHeader eyebrow="Everything short-form" lines={heading}>
+  <PageHeader eyebrow="Everything short-form" lines={heading} image="/header/Notes.png">
     <p class="masthead__deck">
       Every short-form thing I post (TILs, writing, links, and quotes) all on one page.
     </p>

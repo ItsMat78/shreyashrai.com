@@ -3,10 +3,11 @@ import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
 import EntryList from '../components/EntryList.astro';
 import Newsletter from '../components/Newsletter.astro';
-import { getTils, getPosts, getFeatured } from '../lib/content';
+import { getTils, getPosts, getFeatured, getAllTags } from '../lib/content';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
-const [tils, posts] = await Promise.all([getTils(), getPosts()]);
+const [tils, posts, allTags] = await Promise.all([getTils(), getPosts(), getAllTags()]);
+const tags = allTags.slice(0, 5);
 const latest = [...tils, ...posts]
   .sort((a, b) => b.date.getTime() - a.date.getTime() || a.id.localeCompare(b.id))
   .slice(0, 6);
@@ -28,6 +29,13 @@ const hero = [
         keep a running log of things I learn (<a href="/notes">notes</a>) and document the <a href="/projects">projects</a> I build.
       </p>
     </PageHeader>
+
+    <div class="tag-row tag-row--home">
+      {tags.map(({ tag, count }) => (
+        <a class="tag" href={`/tags/${tag}`}>{tag} <span class="tag__count">{count}</span></a>
+      ))}
+      <a class="tag" href="/tags">&hellip;</a>
+    </div>
 
     <div class="home-grid">
       <section>

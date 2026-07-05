@@ -1,6 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
+import { getAllTags } from '../lib/content';
+
+const tags = (await getAllTags()).slice(0, 16);
 
 // Full-text search over every TIL, post, and project. The index is built by
 // Pagefind AFTER `astro build` (see package.json) and served from /pagefind,
@@ -15,6 +18,18 @@ const heading = [
   <PageHeader eyebrow="The whole archive" lines={heading}>
     <p class="masthead__deck">Search across every note, essay, and writeup.</p>
   </PageHeader>
+
+  <section>
+    <div class="section-head">
+      <h2 class="display display--section">Browse by tag</h2>
+      <a class="annotation link-quiet" href="/tags">all tags &rarr;</a>
+    </div>
+    <div class="tag-row">
+      {tags.map(({ tag }) => (
+        <a class="tag" href={`/tags/${tag}`}>{tag}</a>
+      ))}
+    </div>
+  </section>
 
   <div id="search" class="search-ui"></div>
   <noscript>

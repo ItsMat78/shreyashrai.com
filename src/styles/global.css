@@ -305,13 +305,12 @@ main {
    no tilt, and a hair more line-height so nothing overlaps. */
 @media (max-width: 47.99rem) {
   .scatter {
-    line-height: 0.9;
+    line-height: 0.8;
   }
 
   .scatter__line {
     margin-inline-start: 0;
     margin-top: 0 !important; /* cancels each fragment's inline lift */
-    transform: none;
   }
 }
 
@@ -361,7 +360,7 @@ main {
   }
 
   .masthead {
-    padding-top: var(--space-1);
+    padding-top: var(--space-2);
   }
 
   .eyebrow {
@@ -394,6 +393,46 @@ main {
   border: 1px solid var(--frame-line);
   border-radius: 2px;
   opacity: 0.6;
+}
+
+/* Optional decorative art (a transparent PNG element) parked in the empty right
+   side of the header. Lifted to the foreground with a hard (no-blur) drop shadow
+   offset straight down, so the element reads as sitting slightly above the page.
+   Clipped by the masthead's own overflow. */
+.header-art {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-40%);
+  width: auto;
+  height: auto;
+  max-height: 88%;
+  max-width: 42%;
+  opacity: 80%;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: -1;
+  /* Hard shadow: 0 blur, vertical offset only. Keyed to --ink so it reads on
+     both the cream and the dark parchment backgrounds. */
+  filter: drop-shadow(1px 4px 0 color-mix(in srgb, var(--ink) 22%, transparent));
+}
+
+/* Blend the hard shadow into the cream with multiply for a natural, printed-ink
+   shadow. Light theme only: the illustration is essentially unaffected (multiply
+   against near-white ≈ identity), but on the dark parchment multiply would crush
+   both the art and the shadow toward black, so dark keeps normal compositing. */
+:root:not([data-theme='dark']) .header-art {
+  mix-blend-mode: multiply;
+}
+
+/* Phones have no empty right rail — the headline uses the full width. */
+@media (max-width: 47.99rem) {
+  .header-art {
+    transform: translateY(-15%);
+    opacity: 10%;
+    max-height: 60%;
+    max-width: 60%;
+  }
 }
 
 .masthead__deck {
@@ -855,6 +894,25 @@ a {
   color: var(--accent);
 }
 
+/* Home page tags: centred and tight against the sections below. */
+.tag-row--home {
+  justify-content: center;
+  gap: 0.15rem 0.9rem;
+  margin-bottom: -2rem;
+}
+
+.tag-row--home .tag {
+  line-height: 1;
+  padding-block: 0.1rem;
+  text-decoration-color: var(--muted);
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+}
+
+.tag-row--home .tag:hover {
+  text-decoration-color: var(--accent);
+}
+
 /* The /tags index reads as a slightly roomier cloud. */
 .tag-row--index {
   gap: 0.6rem 1.4rem;
@@ -963,8 +1021,15 @@ a {
    than fall to the bottom of the page, it moves to the TOP (order: -1) as a
    horizontal, swipeable strip — scrolls sideways when the years overflow. */
 @media (max-width: 71.99rem) {
+  /* Bound the single column to the container so the nowrap strip below can
+     scroll inside it instead of stretching the whole grid wider than the page. */
+  .index-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .year-nav {
     order: -1;
+    min-width: 0;
     max-width: none;
     margin-bottom: var(--space-2);
     padding-bottom: var(--space-2);
@@ -1456,6 +1521,7 @@ a {
 
 .prose {
   max-width: var(--measure);
+  min-width: 0;
   font-family: var(--font-body);
   font-size: var(--text-base);
   font-weight: 400;
@@ -1891,6 +1957,7 @@ samp {
 
 .code-wrap {
   position: relative;
+  max-width: 100%;
 }
 
 .code-wrap pre {

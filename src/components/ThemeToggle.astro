@@ -1,33 +1,9 @@
 ---
 // A dark/light switch. The effective theme is already on <html data-theme> by
-// the inline head script; this button just flips it, persists the choice, and
-// keeps its own icon/label in sync. The only client JS on the site — kept tiny.
+// the inline head script. Its behaviour (flip + persist + icon sync) is wired
+// centrally in Base.astro via event delegation so it survives View Transitions.
 ---
 
 <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme">
   <span class="theme-toggle__icon" aria-hidden="true">☾</span>
 </button>
-
-<script is:inline>
-  (function () {
-    var btn = document.getElementById('theme-toggle');
-    if (!btn) return;
-    var icon = btn.querySelector('.theme-toggle__icon');
-    function sync() {
-      var dark = document.documentElement.dataset.theme === 'dark';
-      // Show the icon for the mode the click switches TO.
-      icon.textContent = dark ? '☀' : '☾';
-      btn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
-      btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
-    }
-    sync();
-    btn.addEventListener('click', function () {
-      var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = next;
-      try {
-        localStorage.setItem('theme', next);
-      } catch (e) {}
-      sync();
-    });
-  })();
-</script>

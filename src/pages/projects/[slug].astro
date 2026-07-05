@@ -29,6 +29,9 @@ const related = await getRelatedProjects(entry.id, entry.data.tech);
   <article>
     <header class="article__header">
       <FrameField />
+      {entry.data.headerArt && (
+        <img class="header-art" src={entry.data.headerArt} alt="" decoding="async" />
+      )}
       <p class="eyebrow">About the project</p>
       <h1 class="display display--title">{entry.data.title}</h1>
       {entry.data.outcome && (
@@ -45,12 +48,12 @@ const related = await getRelatedProjects(entry.id, entry.data.tech);
       <div class="article__meta annotation">
         {entry.data.live && (
           <a class="link-quiet" href={entry.data.live}>
-            Live Demo 🡥
+            Live Demo <span class="project__arrow"><svg viewBox="0 0 12 12" width="0.8em" height="0.8em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10 10 2M4 2h6v6"/></svg></span>
           </a>
         )}
         {entry.data.source && (
           <a class="link-quiet" href={entry.data.source}>
-            REPOSITORY 🡥
+            REPOSITORY <span class="project__arrow"><svg viewBox="0 0 12 12" width="0.8em" height="0.8em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10 10 2M4 2h6v6"/></svg></span>
           </a>
         )}
       </div>

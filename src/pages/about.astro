@@ -8,24 +8,24 @@ const heading = [
   { text: 'Shreyash here!', size: 'l', weight: 380, italic: true, shift: '8.2rem', rot: 1, lift: '-4.4rem' },
 ] as const;
 
-// A small specimen strip of facts — the annotation voice, set as a definition
-// list so it stays semantic. No city / phone / .edu mail (public-web privacy).
+// A small strip of facts, set as a definition list so it stays semantic.
+// No city, phone, or .edu mail (keeping the public-web stuff private).
 const facts = [
-  { k: 'Program', v: 'B.Tech · Data Science & AI' },
-  { k: 'School', v: 'IIIT Naya Raipur' },
-  { k: 'Years', v: '2024 - 2028' },
+  { k: 'Program', v: 'B.Tech · Data Science & Artificial Intelligence' },
+  { k: 'Education', v: 'IIIT Naya Raipur, Chattisgarh' },
+  { k: 'Current Semester', v: 'V'},
+  { k: 'Location', v: 'Varanasi - Uttar Pradesh - India' },
   { k: 'Focus', v: 'Applied Machine Learning' },
 ];
 ---
 
 <Base
   title="About"
-  description="Shreyash Rai, Data Science & AI undergrad at IIIT Naya Raipur, learning by building."
+  description="Shreyash Rai, a Data Science and AI undergrad at IIIT Naya Raipur who learns by building things."
 >
-  <PageHeader eyebrow="Who am I?" lines={heading}>
+  <PageHeader eyebrow="Who am I?" lines={heading} image="/header/Me.png">
     <p class="masthead__deck">
-      I build machine-learning systems end to end and write down what I learn on
-      the way. This is the running log.
+      I build machine learning systems, start to finish.
     </p>
   </PageHeader>
 
@@ -42,57 +42,61 @@ const facts = [
     </dl>
 
     <p>
-      I'm <strong>Shreyash Rai</strong>, a third-year B.Tech student in Data
-      Science &amp; Artificial Intelligence at IIIT Naya Raipur. I like taking a
-      system apart to the first principles and rebuilding it myself — a physics
-      simulator, a training loop, a retrieval pipeline — because that's the only
-      way I actually understand it. What I learn doing that lands here as
-      <a href="/til">TILs</a>; what I build lands as
-      <a href="/projects">projects</a>. If you want the short version of what
-      I'm on right now, there's a <a href="/now">/now</a> page for that.
+      I'm a third year B.Tech student in Data
+      Science and AI at IIIT Naya Raipur. The way I actually learn something is
+      by pulling it apart down to the basics and putting it back together
+      myself, whether that's a physics simulator, a training loop, or a
+      retrieval pipeline. If I didn't build it, I don't really trust that I get
+      it. Whatever I pick up along the way shows up here as
+      <a href="/til">TILs</a>, and whatever I build shows up as
+      <a href="/projects">projects</a>. If you just want the quick version of
+      what I'm on right now, there's a <a href="/now">/now</a> page for that.
     </p>
 
-    <h2>Education</h2>
+    <h2>School</h2>
     <p>
-      B.Tech in Data Science and Artificial Intelligence at Dr. SPM
-      International Institute of Information Technology, Naya Raipur (2024–2028),
-      currently at a CGPA of 8.65/10. The coursework I keep coming back to:
-      reinforcement learning, machine learning, linear algebra, probability
-      &amp; statistics, numerical methods, algorithms, and graph theory.
+      I'm doing my B.Tech in Data Science and AI at IIIT Naya Raipur (officially
+      Dr. SPM International Institute of Information Technology, Naya Raipur),
+      2024 to 2028, sitting at 8.65/10 CGPA so far. The classes I keep coming
+      back to are reinforcement learning, machine learning, linear algebra,
+      probability and statistics, numerical methods, algorithms, and graph
+      theory.
     </p>
 
     <h2>Research</h2>
     <p>
-      <a href="/projects/lagrange-lock/">Lagrange-Lock</a> — reinforcement
-      learning for satellite station-keeping, advised by Dr. Avantika Singh. I
-      built a custom Gymnasium environment on a CR3BP physics core JIT-compiled
-      with Numba (~10,000 steps/second), then trained a PPO agent over ~5
-      million timesteps with a reward balancing orbit retention, fuel use, and
-      drift. It learned to hold Halo orbits for 5,000+ timesteps at the
-      Earth–Moon L1 point; a Three.js viewer plays back its thrust trajectories.
+      <a href="/projects/lagrange-lock/">Lagrange-Lock</a> is reinforcement
+      learning for satellite station-keeping, with Dr. Avantika Singh advising.
+      I wrote a custom Gymnasium environment on top of a CR3BP physics core,
+      JIT-compiled with Numba so it runs around 10,000 steps a second, then
+      trained a PPO agent for about 5 million timesteps with a reward that
+      juggles staying in orbit, fuel use, and drift. It ended up holding Halo
+      orbits for 5,000+ timesteps around the Earth-Moon L1 point, and there's a
+      Three.js viewer that plays back its thrust trajectories so you can
+      actually watch it work.
     </p>
     <p>
       <a href="/projects/fdtd-dmd-wave-simulation/">FDTD prediction via DMD</a>
-      — numerical modeling, advised by Dr. Maifuz Ali. I modeled 1D FDTD
-      electromagnetic wave propagation and applied Dynamic Mode Decomposition to
-      predict field evolution, cutting computation roughly 10× versus direct
-      simulation while holding accuracy.
+      is numerical modeling work, with Dr. Maifuz Ali advising. I modeled 1D
+      FDTD electromagnetic wave propagation, then used Dynamic Mode
+      Decomposition to predict how the field evolves, which cut the computation
+      by roughly 10x while keeping the accuracy basically intact.
     </p>
 
     <h2>What I build with</h2>
     <p>
-      Mostly Python, with C++ and C when speed matters; PyTorch,
-      Stable-Baselines3, and Gymnasium for the RL work; Transformers and
-      sentence-transformers for NLP and RAG. The full list — languages, ML
-      stack, scientific-computing and visualization tools — lives on the
-      <a href="/uses">/uses</a> page.
+      Mostly Python, plus C++ and C when I need the speed. For the RL stuff it's
+      PyTorch, Stable-Baselines3, and Gymnasium; for NLP and RAG it's
+      Transformers and sentence-transformers. The full list, languages, ML
+      stack, and all the scientific-computing and visualization tools, lives
+      over on the <a href="/uses">/uses</a> page.
     </p>
 
     <h2>Elsewhere</h2>
     <p>
-      The quickest read on what I'm up to is the
+      The fastest way to see what I'm up to is the
       <a href="/projects">projects</a> page or the <a href="/rss.xml">feed</a>.
-      To reach me, email is best.
+      If you want to reach me, email is the move.
     </p>
     <p class="about-links">
       <a href={GITHUB_URL}>GitHub</a>
