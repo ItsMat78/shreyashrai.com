@@ -9,7 +9,7 @@ const [tils, posts, links, quotes] = await Promise.all([
 ]);
 
 const sections = [
-  { kind: 'til', label: 'TIL', items: tils, desc: 'Small, concrete things I learned, usually a snippet and a gotcha.' },
+  { kind: 'til', label: 'Today I learned', items: tils, desc: 'Small, concrete things I learned, usually a snippet and a gotcha.' },
   { kind: 'blog', label: 'Writing', items: posts, desc: 'Longer posts where I think something through.' },
   { kind: 'links', label: 'Links', items: links, desc: 'Things elsewhere worth reading, with a line on why.' },
   { kind: 'quotes', label: 'Quotes', items: quotes, desc: 'Lines worth keeping, with attribution.' },

@@ -353,6 +353,20 @@ main {
   .display--title {
     line-height: 0.92;
   }
+
+  /* Phones: the full desktop padding leaves a tall empty band above the
+     masthead. Trim the page top and pull the headline up under the eyebrow. */
+  main {
+    padding-top: var(--space-2);
+  }
+
+  .masthead {
+    padding-top: var(--space-1);
+  }
+
+  .eyebrow {
+    margin-bottom: var(--space-1);
+  }
 }
 
 /* ---- Editorial header (used on every page) ------------------------------ */
@@ -945,6 +959,50 @@ a {
   }
 }
 
+/* Below the two-column breakpoint the year nav can't sit in a side rail. Rather
+   than fall to the bottom of the page, it moves to the TOP (order: -1) as a
+   horizontal, swipeable strip — scrolls sideways when the years overflow. */
+@media (max-width: 71.99rem) {
+  .year-nav {
+    order: -1;
+    max-width: none;
+    margin-bottom: var(--space-2);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .year-nav__title {
+    margin-bottom: 0.5rem;
+  }
+
+  .year-nav ol {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 1.25rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none; /* strip reads cleaner without a track */
+    font-size: 0.9rem;
+    padding-bottom: 0.15rem;
+  }
+
+  .year-nav ol::-webkit-scrollbar {
+    display: none;
+  }
+
+  .year-nav li {
+    flex: 0 0 auto; /* keep each year on one line, don't squeeze */
+  }
+
+  .year-nav li + li {
+    margin-top: 0;
+  }
+
+  .year-nav a {
+    opacity: 1; /* full-strength as a primary nav strip, not a quiet rail */
+  }
+}
+
 /* ---- Stream (firehose: /stream, /links, /quotes) ------------------------ */
 
 .stream {
@@ -1136,11 +1194,12 @@ a {
   display: none;
 }
 
-/* Title + body ride above the cover. */
-.project__lead,
+/* The body is a positioning context only for its own real links (which lift
+   above the overlay). The lead must NOT be positioned, or the stretched link's
+   absolute ::after would anchor to it and only cover the title block instead of
+   the whole row. */
 .project__body {
   position: relative;
-  z-index: 1;
 }
 
 /* Wide: title/index on the left, blurb + links fill the right half so the page
@@ -1149,6 +1208,11 @@ a {
   .project {
     grid-template-columns: minmax(0, 4.5fr) minmax(0, 6.5fr);
     align-items: start;
+  }
+
+  /* No cover art on desktop — the title/blurb carry the row, no hover image. */
+  .project__cover {
+    display: none;
   }
 }
 
@@ -1192,6 +1256,8 @@ a {
   content: '';
   position: absolute;
   inset: 0;
+  /* Above the card content so the entire row opens the writeup. */
+  z-index: 1;
 }
 
 /* The concrete result, led with so a skimmer gets impact first: ink + strong. */
@@ -1253,7 +1319,7 @@ a {
   gap: var(--space-3);
   /* Lifted above the stretched link so Live/Source stay clickable. */
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: fit-content;
 }
 
@@ -1282,11 +1348,12 @@ a {
   transform: translateX(4px);
 }
 
-/* ---- Projects on phones: image cards -----------------------------------
-   Each project becomes a card — cover image on top, title beneath. The long
-   description, tech chips, and links are dropped so the list is scanned by
-   sight instead of read as a wall of jargon. Tapping the card opens the
-   writeup (the stretched link still covers the whole card). */
+/* ---- Projects on phones: bordered cards --------------------------------
+   Each project becomes a self-contained card. A cover image (when one is set)
+   sits flush at the top; otherwise the card simply leads with the folio index
+   and title. Everything shares one left edge for a clean, scannable column.
+   Tapping the card opens the writeup (the stretched link covers the whole
+   card); the Writeup/Live/Source links stay individually tappable. */
 @media (max-width: 47.99rem) {
   .project-list {
     display: grid;
@@ -1302,7 +1369,8 @@ a {
     background: var(--paper-2);
   }
 
-  /* Cover becomes a full-width image at the top of the card. */
+  /* Cover image only when present: full-width at the top, ruled off from the
+     text below. Imageless projects show no band at all — the header leads. */
   .project__cover {
     position: static;
     display: block;
@@ -1310,39 +1378,10 @@ a {
     aspect-ratio: 16 / 10;
     transform: none;
     opacity: 1;
+    border-bottom: 1px solid var(--rule);
   }
 
-  /* Imageless projects get a slim specimen band instead of an empty wash: a
-     big faint Fraunces numeral, the same folio voice used across the site. */
   .project__cover[data-has-cover='false'] {
-    display: block;
-    position: relative;
-    aspect-ratio: 5 / 2;
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--accent) 16%, var(--paper-2)) 0%,
-      var(--paper-2) 72%
-    );
-  }
-
-  .project__cover[data-has-cover='false']::before {
-    content: attr(data-index);
-    position: absolute;
-    left: var(--space-3);
-    bottom: -0.14em;
-    font-family: var(--font-display);
-    font-optical-sizing: auto;
-    font-weight: 600;
-    font-size: clamp(3.5rem, 22vw, 6rem);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    color: var(--accent);
-    opacity: 0.32;
-  }
-
-  /* The big band numeral is the folio; drop the small one beside the title so
-     it doesn't read twice. Image cards (no band numeral) keep their index. */
-  .project:has(.project__cover[data-has-cover='false']) .project__index {
     display: none;
   }
 
@@ -1351,18 +1390,42 @@ a {
     content: none;
   }
 
+  /* Header: folio index + title on one line, aligned with the body below. */
   .project__lead {
-    padding: var(--space-2) var(--space-3) var(--space-1);
+    padding: var(--space-2) var(--space-2) 0;
+    gap: 0.55rem;
   }
 
-  /* Blurb, tech chips, and links stay on the card, padded to align with the
-     title above. The bold outcome line is dropped — the title carries it. */
+  .project__index {
+    font-size: 1rem;
+    opacity: 0.5;
+  }
+
+  .project__title {
+    font-size: clamp(1.55rem, 7vw, 1.9rem);
+  }
+
+  /* Blurb, tech chips, and links share the card's left padding. The bold
+     outcome line is dropped — the title carries the row. */
   .project__body {
-    padding: 0 var(--space-3) var(--space-3);
+    padding: 0.55rem var(--space-2) var(--space-2);
   }
 
   .project__outcome {
     display: none;
+  }
+
+  .project__blurb {
+    margin: 0;
+  }
+
+  .project__tech {
+    margin: 0.9rem 0 0;
+  }
+
+  .project__links {
+    margin-top: 1rem;
+    gap: 1.5rem;
   }
 }
 
