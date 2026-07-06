@@ -1,0 +1,41 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import EntryList from '../../components/EntryList.astro';
+import type { EntryItem } from '../../lib/content';
+import { getAllSeries, getSeries } from '../../lib/content';
+
+// One page per series, listing every part in order. Paths come from the same
+// getAllSeries() the /series index uses, so slugs always line up.
+export async function getStaticPaths() {
+  const series = await getAllSeries();
+  const paths = [];
+  for (const { name, slug } of series) {
+    paths.push({ params: { slug }, props: { name, items: await getSeries(name) } });
+  }
+  return paths;
+}
+
+interface Props {
+  name: string;
+  items: EntryItem[];
+}
+
+const { name, items } = Astro.props;
+const count = items.length;
+
+const heading = [
+  { text: name, size: 'xl', weight: 660, rot: -1.5 },
+] as const;
+---
+
+<Base title={`Series · ${name}`} description={`Every part of the “${name}” series, in order.`}>
+  <PageHeader eyebrow="Series" lines={heading}>
+    <p class="masthead__deck">
+      {count} {count === 1 ? 'part' : 'parts'}, read in order.
+      <a href="/series">All series &rarr;</a>
+    </p>
+  </PageHeader>
+
+  <EntryList items={items} showKind showDescription />
+</Base>

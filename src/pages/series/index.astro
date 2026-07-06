@@ -1,0 +1,32 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { getAllSeries } from '../../lib/content';
+
+const series = await getAllSeries();
+
+const heading = [
+  { text: 'Read', size: 'l', weight: 380, italic: true, rot: -2, shift: '2rem' },
+  { text: 'in order', size: 'xl', weight: 640, rot: 1, lift: '-2.2rem' },
+] as const;
+---
+
+<Base title="Series" description="Multi-part sequences — course logs and threaded write-ups.">
+  <PageHeader eyebrow="Collections" lines={heading}>
+    <p class="masthead__deck">Multi-part sequences, each meant to be read start to finish.</p>
+  </PageHeader>
+
+  {
+    series.length === 0 ? (
+      <p class="masthead__deck">No series yet.</p>
+    ) : (
+      <div class="tag-row tag-row--index">
+        {series.map(({ name, slug, count }) => (
+          <a class="tag" href={`/series/${slug}`}>
+            {name} <span class="tag__count">{count}</span>
+          </a>
+        ))}
+      </div>
+    )
+  }
+</Base>

@@ -3,6 +3,7 @@
 // every part in order with the current one marked, so a reader can move through
 // a sequence (e.g. a course log) without hunting the archive.
 import type { EntryItem } from '../lib/content';
+import { seriesSlug } from '../lib/content';
 
 interface Props {
   name: string;
@@ -18,7 +19,10 @@ const { name, parts, currentId } = Astro.props;
     <aside class="series" aria-label={`Series: ${name}`} data-pagefind-ignore>
       <details class="disclosure" open>
         <summary class="disclosure__summary">
-          <span class="eyebrow">Series · {name}</span>
+          <span class="eyebrow">
+            Series ·{' '}
+            <a class="series__link" href={`/series/${seriesSlug(name)}`}>{name}</a>
+          </span>
           <span class="disclosure__chevron" aria-hidden="true" />
         </summary>
         <ol class="series__list">

@@ -2496,6 +2496,22 @@ samp {
   max-width: var(--measure);
 }
 
+/* The series NAME in the header links to that series' own page. `pointer-events`
+   is forced on so it stays clickable even where the wide-rail summary sets it to
+   none; accent + underline signal it's a link inside the muted eyebrow. */
+.series__link {
+  pointer-events: auto;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  transition: border-color 0.15s ease;
+}
+
+.series__link:hover,
+.series__link:focus-visible {
+  border-bottom-color: var(--accent);
+}
+
 .series__list {
   list-style: none;
   margin: 0;

@@ -336,6 +336,33 @@ export async function getSeries(name: string): Promise<(EntryItem & { part?: num
     }));
 }
 
+export type SeriesInfo = { name: string; slug: string; count: number };
+
+// URL-safe slug for a series name ("Neetcode 150" -> "neetcode-150"). The
+// per-series route and the SeriesNav link both derive the href from this, so
+// they always agree.
+export function seriesSlug(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+// Every distinct series across til + blog with its part count, most parts
+// first then alphabetical. Powers the /series index and per-series pages.
+export async function getAllSeries(): Promise<SeriesInfo[]> {
+  const [tils, posts] = await Promise.all([getTilEntries(), getPostEntries()]);
+  const counts = new Map<string, number>();
+  for (const e of [...tils, ...posts]) {
+    const name = e.data.series;
+    if (name) counts.set(name, (counts.get(name) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, slug: seriesSlug(name), count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
 // ---- Related projects ----------------------------------------------------
 // Projects that share the most tech items with the current one, keeping the
 // hand-ordered sort (order asc). Used for the "More projects" block on
