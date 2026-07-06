@@ -1476,6 +1476,12 @@ a {
 }
 
 /* ---- Project hover choreography ---- */
+/* The whole row nudges right on hover, like every other list on the site
+   (.entry / .stream-item / .featured). The transition already lives on .project. */
+.project:hover {
+  transform: translateX(6px);
+}
+
 /* The cover image slides in behind the title from the left. */
 .project:hover .project__cover {
   transform: translateX(0);
@@ -2140,6 +2146,93 @@ a {
   .prose .media-frame .tetrominos {
     top: calc(50% - 34px);
     left: calc(50% - 29px);
+  }
+}
+
+/* ---- Media lightbox -----------------------------------------------------
+   Click a content image to open it enlarged over a dark scrim. Decorative
+   masthead/project art lives OUTSIDE .prose, so it's untouched; linked images
+   keep their link (cursor stays a pointer). Overlay markup + behaviour live in
+   the Base.astro client module. */
+.prose img {
+  cursor: zoom-in;
+}
+
+.prose a img {
+  cursor: pointer;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  background: rgba(10, 8, 4, 0.88);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  cursor: zoom-out;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+
+.lightbox.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s ease;
+}
+
+.lightbox__img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 3px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  transform: scale(0.96);
+  transition: transform 0.25s ease;
+}
+
+.lightbox.is-open .lightbox__img {
+  transform: scale(1);
+}
+
+.lightbox__close {
+  position: absolute;
+  top: clamp(0.6rem, 3vw, 1.4rem);
+  right: clamp(0.6rem, 3vw, 1.4rem);
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.lightbox__close:hover,
+.lightbox__close:focus-visible {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+/* Scroll lock on <html> while a lightbox is open. */
+.lightbox-open {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox {
+    transition: opacity 0.2s ease;
+  }
+  .lightbox__img {
+    transform: none;
+    transition: none;
   }
 }
 

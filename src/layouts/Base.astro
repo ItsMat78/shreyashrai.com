@@ -193,6 +193,63 @@ const { title, description, type, ogImage } = Astro.props;
       }
       wideRail.addEventListener('change', syncRail);
 
+      // Lightbox: click a content image to see it enlarged over a dark scrim.
+      // Decorative masthead/project art lives outside .prose (untouched); linked
+      // images keep their link. Delegated to document, so it needs no per-image
+      // wiring and survives View Transitions — the overlay node itself is
+      // re-attached on page-load since a swap discards body children.
+      let lbOpener: HTMLElement | null = null;
+
+      function ensureLightbox() {
+        let overlay = document.getElementById('lightbox');
+        if (overlay) return overlay;
+        overlay = document.createElement('div');
+        overlay.id = 'lightbox';
+        overlay.className = 'lightbox';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.innerHTML =
+          '<img class="lightbox__img" alt="" />' +
+          '<button type="button" class="lightbox__close" aria-label="Close image">' +
+          '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>' +
+          '</button>';
+        overlay.addEventListener('click', closeLightbox);
+        document.body.appendChild(overlay);
+        return overlay;
+      }
+
+      function openLightbox(img: HTMLImageElement) {
+        const overlay = ensureLightbox();
+        const big = overlay.querySelector('img') as HTMLImageElement;
+        big.src = img.currentSrc || img.src;
+        big.alt = img.alt || '';
+        lbOpener = img;
+        requestAnimationFrame(() => overlay.classList.add('is-open'));
+        document.documentElement.classList.add('lightbox-open');
+        (overlay.querySelector('.lightbox__close') as HTMLElement | null)?.focus();
+      }
+
+      function closeLightbox() {
+        const overlay = document.getElementById('lightbox');
+        document.documentElement.classList.remove('lightbox-open');
+        if (overlay) overlay.classList.remove('is-open');
+        lbOpener?.focus?.();
+        lbOpener = null;
+      }
+
+      // Open on a plain content image; skip linked images (follow the link) and
+      // the overlay's own image.
+      document.addEventListener('click', (e) => {
+        const t = e.target;
+        if (!(t instanceof HTMLImageElement)) return;
+        if (t.closest('.lightbox') || t.closest('a') || !t.closest('.prose')) return;
+        openLightbox(t);
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLightbox();
+      });
+
       // Re-apply the saved theme pre-paint on every transition (no flash).
       document.addEventListener('astro:after-swap', applyTheme);
 
@@ -201,6 +258,10 @@ const { title, description, type, ogImage } = Astro.props;
         syncToggle();
         initCopyButtons();
         initMediaSkeletons();
+        ensureLightbox();
+        // A navigation while the lightbox was open discards the overlay; make
+        // sure the scroll lock never survives into the next page.
+        document.documentElement.classList.remove('lightbox-open');
         syncRail();
       });
     </script>
