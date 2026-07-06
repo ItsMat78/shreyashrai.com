@@ -2503,8 +2503,23 @@ samp {
   pointer-events: auto;
   color: var(--accent);
   text-decoration: none;
+  /* Keep the series name whole so it wraps as one unit under "Series ·", never
+     mid-word ("NEETCODE" / "150") in the narrow rail. */
+  white-space: nowrap;
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
   transition: border-color 0.15s ease;
+}
+
+/* The header sits in a 15rem sticky rail on desktop. Let "Series · <name>" flow
+   as plain inline text instead of the eyebrow's flex row, and drop the fixed
+   hairline tick that otherwise squeezes the little horizontal space and forces
+   an ugly per-word wrap. */
+.series .eyebrow {
+  display: block;
+}
+
+.series .eyebrow::after {
+  display: none;
 }
 
 .series__link:hover,
