@@ -1,5 +1,5 @@
 ---
-title: "B) Two pointers"
+title: "Two pointers"
 date: 2026-07-09
 tags: [C++, Neetcode, 'DSA']
 series: "Neetcode 150"

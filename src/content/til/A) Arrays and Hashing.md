@@ -1,5 +1,5 @@
 ---
-title: "A) Arrays and Hashing"
+title: "Arrays and Hashing"
 date: 2026-07-04
 tags: ["C++", "DSA", "Neetcode"]
 series: "Neetcode 150"
@@ -31,7 +31,7 @@ public:
 - As `set` is basically BST, it's tree operations take `logn` time. Instead use a hash table (`unordered_set`) which is basically a bucket system, and it's operations are in average case `O(1)`. Close because the worst case is `O(n)` if all the elements collide into ONE bucket.
 
 #### New things
-- `Insert`: is an API, it *returns* a `pair<iterator, bool>` where iterator is basically a pointer to either the new element added (in which case bool is `true`) or the already existing element that didn't get inserted again (bool being `false`). Thus, without checking for size in each loop, we could just check if the `pair.second` value was false.
+- `Insert`: is an [[API]], it *returns* a `pair<iterator, bool>` where iterator is basically a pointer to either the new element added (in which case bool is `true`) or the already existing element that didn't get inserted again (bool being `false`). Thus, without checking for size in each loop, we could just check if the `pair.second` value was false.
 - `count` and `contains` can become alternatives for the if condition, checking if the set contained the element already. But `insert.second` is much cleaner.
 - Count: `.count(number)` gives how many times number appeared in the container. For sets and unordered_sets it is either 0 or 1 because each element is unique. So we could use this too.
 - Contains (for newer C++20): `.contains(number)` is a boolean function that returns true if an element exists in the container. 
