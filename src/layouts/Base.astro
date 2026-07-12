@@ -193,6 +193,121 @@ const { title, description, type, ogImage } = Astro.props;
       }
       wideRail.addEventListener('change', syncRail);
 
+      // Contents scroll-spy: highlight the TOC entry for the section being read.
+      // State is rebuilt on every navigation (initTocSpy) while the scroll/resize
+      // listeners are bound ONCE below and always read the latest state — so it
+      // keeps working after client-side page swaps, not just the first load.
+      let spyLinks = new Map<string, HTMLAnchorElement>();
+      let spyHeadings: HTMLElement[] = [];
+      let spyCurrent = '';
+      const SPY_OFFSET = 96; // clears the sticky header
+
+      function initTocSpy() {
+        spyLinks = new Map();
+        spyHeadings = [];
+        spyCurrent = '';
+        const toc = document.querySelector('.toc');
+        if (!toc) return;
+        toc.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((a) => {
+          spyLinks.set(decodeURIComponent(a.hash.slice(1)), a);
+        });
+        spyHeadings = [...spyLinks.keys()]
+          .map((id) => document.getElementById(id))
+          .filter((el): el is HTMLElement => el !== null);
+        updateTocSpy();
+      }
+
+      function updateTocSpy() {
+        if (!spyHeadings.length) return;
+        // The active heading is the last one whose top has scrolled above the
+        // line just under the sticky header — robust to fast scrolls and gaps.
+        let activeId = spyHeadings[0].id;
+        for (const h of spyHeadings) {
+          if (h.getBoundingClientRect().top <= SPY_OFFSET) activeId = h.id;
+          else break;
+        }
+        if (activeId === spyCurrent) return;
+        spyCurrent = activeId;
+        spyLinks.forEach((a, key) => {
+          const on = key === activeId;
+          a.classList.toggle('is-active', on);
+          if (on) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+      }
+
+      let spyTicking = false;
+      function onSpyScroll() {
+        if (spyTicking) return;
+        spyTicking = true;
+        requestAnimationFrame(() => {
+          updateTocSpy();
+          spyTicking = false;
+        });
+      }
+      window.addEventListener('scroll', onSpyScroll, { passive: true });
+      window.addEventListener('resize', onSpyScroll, { passive: true });
+
+      // Search (Pagefind): the bundle only exists in the BUILT site, so it's
+      // injected on demand the first time /search is shown and the UI is mounted
+      // on every navigation there (the #search node is fresh after each swap).
+      // This is why reaching /search via an in-site link now works — the old
+      // DOMContentLoaded init never re-fired after a View Transition.
+      let pagefindJs: Promise<boolean> | null = null;
+      function loadPagefindJs(): Promise<boolean> {
+        if (pagefindJs) return pagefindJs;
+        pagefindJs = new Promise((resolve) => {
+          if ((window as any).PagefindUI) return resolve(true);
+          const s = document.createElement('script');
+          s.src = '/pagefind/pagefind-ui.js';
+          s.onload = () => resolve(true);
+          s.onerror = () => resolve(false); // dev / no index built yet
+          document.head.appendChild(s);
+        });
+        return pagefindJs;
+      }
+
+      function initSearch() {
+        const mount = document.getElementById('search');
+        if (!mount || mount.dataset.ready) return;
+        // Pagefind's stylesheet is dropped from <head> when navigating away;
+        // re-add it whenever the search page is shown.
+        if (!document.querySelector('link[data-pagefind-css]')) {
+          const css = document.createElement('link');
+          css.rel = 'stylesheet';
+          css.href = '/pagefind/pagefind-ui.css';
+          css.setAttribute('data-pagefind-css', '');
+          document.head.appendChild(css);
+        }
+        loadPagefindJs().then((ok) => {
+          if (mount.dataset.ready) return;
+          const UI = (window as any).PagefindUI;
+          if (!ok || typeof UI === 'undefined') {
+            mount.innerHTML =
+              '<p class="search-missing annotation">Search runs on the built site. Locally, run <code>npm run build</code> then <code>npm run preview</code>.</p>';
+            return;
+          }
+          mount.dataset.ready = '1';
+          new UI({ element: '#search', showSubResults: true, showImages: false, resetStyles: false });
+        });
+      }
+
+      // When a series index is capped and scrolls inside itself (a long series on
+      // a stacked layout), bring the current part into view within its own box so
+      // the reader lands in place rather than at the top of a scrolled list. Only
+      // touches lists that actually overflow, and only their own scrollTop — never
+      // the page.
+      function alignSeriesCurrent() {
+        for (const list of document.querySelectorAll<HTMLElement>('.series__list')) {
+          if (list.scrollHeight <= list.clientHeight + 4) continue;
+          const cur = list.querySelector<HTMLElement>('.series__item--current');
+          if (!cur) continue;
+          const offset =
+            cur.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+          list.scrollTop = offset - list.clientHeight / 2 + cur.offsetHeight / 2;
+        }
+      }
+
       // Lightbox: click a content image to see it enlarged over a dark scrim.
       // Decorative masthead/project art lives outside .prose (untouched); linked
       // images keep their link. Delegated to document, so it needs no per-image
@@ -248,6 +363,17 @@ const { title, description, type, ogImage } = Astro.props;
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeLightbox();
+        // "/" anywhere (outside a field) jumps into the search box.
+        if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          const t = e.target as HTMLElement | null;
+          const tag = t?.tagName ?? '';
+          if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || t?.isContentEditable) return;
+          const input = document.querySelector<HTMLInputElement>('.pagefind-ui__search-input');
+          if (input) {
+            e.preventDefault();
+            input.focus();
+          }
+        }
       });
 
       // Re-apply the saved theme pre-paint on every transition (no flash).
@@ -263,6 +389,9 @@ const { title, description, type, ogImage } = Astro.props;
         // sure the scroll lock never survives into the next page.
         document.documentElement.classList.remove('lightbox-open');
         syncRail();
+        initTocSpy();
+        initSearch();
+        alignSeriesCurrent();
       });
     </script>
   </body>

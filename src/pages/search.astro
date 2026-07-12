@@ -31,42 +31,11 @@ const heading = [
     </div>
   </section>
 
+  {/* Pagefind is loaded + mounted from the Base client module (initSearch),
+      so it survives View Transitions — reaching /search via an in-site link
+      (e.g. the header icon on mobile) mounts the UI just the same. */}
   <div id="search" class="search-ui"></div>
   <noscript>
     <p class="annotation">Search needs JavaScript. Browse the <a href="/notes">notes</a> or <a href="/tags">tags</a> instead.</p>
   </noscript>
-
-  <!-- Pagefind's bundle only exists in a built site; harmless 404 in dev. -->
-  <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
-  <script is:inline src="/pagefind/pagefind-ui.js"></script>
-  <script is:inline>
-    window.addEventListener('DOMContentLoaded', function () {
-      var mount = document.getElementById('search');
-      // The Pagefind index is only built after `astro build`, so in `astro dev`
-      // the UI script 404s. Say so instead of leaving a dead empty box.
-      if (typeof PagefindUI === 'undefined') {
-        mount.innerHTML =
-          '<p class="search-missing annotation">Search runs on the built site. Locally, run <code>npm run build</code> then <code>npm run preview</code>.</p>';
-        return;
-      }
-      new PagefindUI({
-        element: '#search',
-        showSubResults: true,
-        showImages: false,
-        resetStyles: false,
-      });
-    });
-
-    // Press "/" anywhere (outside a field) to jump into the search box.
-    document.addEventListener('keydown', function (e) {
-      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
-      var tag = (e.target && e.target.tagName) || '';
-      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || (e.target && e.target.isContentEditable)) return;
-      var input = document.querySelector('.pagefind-ui__search-input');
-      if (input) {
-        e.preventDefault();
-        input.focus();
-      }
-    });
-  </script>
 </Base>

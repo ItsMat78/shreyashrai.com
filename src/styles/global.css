@@ -154,6 +154,15 @@ body {
   color: var(--ink);
 }
 
+/* Phones read at a smaller base (16px vs 18px) — the generous desktop size is
+   too big on a narrow column. Everything keyed to --text-base (body + .prose)
+   follows; the display/scatter type already scales via its clamp() vw sizing. */
+@media (max-width: 47.99rem) {
+  :root {
+    --text-base: 1rem;
+  }
+}
+
 /* Render emojis in text style (colorless) everywhere they appear. */
 .prose, .stream, .entry-list, .masthead__deck, .project-list, .section-head {
   font-variant-emoji: text;
@@ -744,11 +753,14 @@ a {
     gap: var(--space-2);
   }
 
-  /* Links spread edge-to-edge as a tidy row, mirroring the header's tab strip. */
+  /* Pack the links left with even gaps and let them wrap naturally. (Was
+     `space-between`, which flung the last wrapped row's items to opposite edges
+     with a big, size-dependent gap — the footer looked different at every phone
+     width.) Left-aligned wrapping is tidy and predictable at any size. */
   .site-footer__links {
     width: 100%;
-    justify-content: space-between;
-    gap: var(--space-1) var(--space-2);
+    justify-content: flex-start;
+    gap: var(--space-1) var(--space-3);
   }
 
   .site-footer a {
@@ -872,6 +884,29 @@ a {
 /* Small "til" / "blog" marker in mixed lists (tag pages). */
 .entry__kind {
   color: var(--accent);
+}
+
+/* Numbered list (series pages): a left gutter of tabular numerals so the parts
+   read as an ordered "read in order" run — same voice as the SeriesNav index. */
+.entry-list--numbered .entry {
+  padding-left: 3rem;
+}
+
+.entry__num {
+  position: absolute;
+  left: 0;
+  top: var(--space-2);
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.entry:hover .entry__num {
+  color: var(--accent);
+  opacity: 1;
 }
 
 /* ---- Tags --------------------------------------------------------------- */
@@ -1753,6 +1788,15 @@ a {
   .article__header {
     margin-bottom: var(--space-2);
   }
+
+  /* The rail stacks the contents + series dropdowns here (it's only a flex
+     column on the wide rail). Give them a clear gap so an expanded TOC doesn't
+     crowd the series index right beneath it. */
+  .rail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
 }
 
 @media (min-width: 72rem) {
@@ -2494,6 +2538,116 @@ samp {
 /* Series index matches the TOC style — unboxed, quiet, same typography. */
 .series {
   max-width: var(--measure);
+}
+
+/* Mobile-only copy at the foot of a series article: kept expanded so the reader
+   can pick the next part after finishing. Redundant with the sticky rail on wide
+   screens, so it's hidden there. */
+/* End-of-article series module: a proper "continue the series" card rather than
+   the rail index dropped into the body. Bordered panel on --paper-2,
+   non-collapsible (no chevron/toggle — it just stands open), with roomier rows
+   ruled apart and the current part marked "Reading now". Shown at every width
+   (desktop keeps the rail index too — this is the after-reading CTA). */
+.series--end {
+  margin-top: var(--space-4);
+  padding: var(--space-2) var(--space-2) 0.35rem;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+}
+
+/* Header stands as a plain label — no collapsing at the foot of the article. */
+.series--end .disclosure__summary {
+  pointer-events: none;
+  cursor: default;
+  margin-bottom: 0.15rem;
+}
+.series--end .disclosure__chevron {
+  display: none;
+}
+.series--end .series__link {
+  pointer-events: auto;
+}
+
+.series__progress {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Roomier rows than the compact rail index, ruled apart, comfortably tappable. */
+.series--end .series__list {
+  font-size: 1rem;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+.series--end .series__item {
+  gap: 0.9rem;
+  padding-block: 0.7rem;
+  align-items: baseline;
+}
+.series--end .series__item + .series__item {
+  margin-top: 0;
+  border-top: 1px solid var(--rule);
+}
+.series--end .series__num {
+  font-size: 1rem;
+  min-width: 1.5rem;
+}
+.series--end .series__item a {
+  flex: 1;
+  color: var(--ink);
+  text-decoration: none;
+}
+.series--end .series__item a:hover,
+.series--end .series__item a:focus-visible {
+  color: var(--accent);
+}
+
+/* Current part: accent, not a link, badged so "you are here" is unmistakable. */
+.series--end .series__item--current {
+  color: var(--accent);
+}
+.series--end .series__item--current > [aria-current] {
+  flex: 1;
+}
+.series--end .series__item--current > [aria-current]::after {
+  content: 'Reading now';
+  /* inline-block so it wraps to its own line when the row is tight, rather than
+     forcing a horizontal scroll. */
+  display: inline-block;
+  margin-left: 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0.14rem 0.45rem;
+  vertical-align: 0.1em;
+}
+
+/* Long lists on a stacked (phone / tablet) layout: cap the height and let the
+   list scroll inside itself, so a 20-part series or a deep contents index never
+   stretches the page into an endless tail. The desktop rail already scrolls as a
+   unit; here each list gets its own scroll. The current series part is scrolled
+   into view by the Base module (alignSeriesCurrent) so a capped list still lands
+   the reader in place. */
+@media (max-width: 71.99rem) {
+  .toc ol,
+  .series__list {
+    max-height: 60vh;
+    /* Scroll vertically only — never sideways; long labels wrap instead. */
+    overflow: hidden auto;
+    overscroll-behavior: contain;
+    padding-right: 0.5rem;
+  }
 }
 
 /* The series NAME in the header links to that series' own page. `pointer-events`

@@ -9,14 +9,25 @@ interface Props {
   name: string;
   parts: (EntryItem & { part?: number })[];
   currentId: string;
+  // 'rail' (default) sits in the article's contents rail — collapsed on phones.
+  // 'end' is a mobile-only copy dropped at the foot of the article, kept EXPANDED
+  // so a reader can pick the next part after finishing (hidden on the wide rail).
+  variant?: 'rail' | 'end';
 }
 
-const { name, parts, currentId } = Astro.props;
+const { name, parts, currentId, variant = 'rail' } = Astro.props;
+
+// Position of the piece being read, for the end-card's "Part X of N" line.
+const currentIndex = parts.findIndex((p) => p.id === currentId);
 ---
 
 {
   parts.length > 0 && (
-    <aside class="series" aria-label={`Series: ${name}`} data-pagefind-ignore>
+    <aside
+      class:list={['series', variant === 'end' && 'series--end']}
+      aria-label={`Series: ${name}`}
+      data-pagefind-ignore
+    >
       <details class="disclosure" open>
         <summary class="disclosure__summary">
           <span class="eyebrow">
@@ -25,6 +36,11 @@ const { name, parts, currentId } = Astro.props;
           </span>
           <span class="disclosure__chevron" aria-hidden="true" />
         </summary>
+        {variant === 'end' && currentIndex >= 0 && (
+          <p class="series__progress">
+            Part {currentIndex + 1} of {parts.length}
+          </p>
+        )}
         <ol class="series__list">
           {parts.map((p, i) => {
             const current = p.id === currentId;
@@ -45,12 +61,14 @@ const { name, parts, currentId } = Astro.props;
           })}
         </ol>
       </details>
-      <script is:inline>
-        (function () {
-          var d = document.currentScript.previousElementSibling;
-          if (d && !window.matchMedia('(min-width: 72rem)').matches) d.open = false;
-        })();
-      </script>
+      {variant === 'rail' && (
+        <script is:inline>
+          (function () {
+            var d = document.currentScript.previousElementSibling;
+            if (d && !window.matchMedia('(min-width: 72rem)').matches) d.open = false;
+          })();
+        </script>
+      )}
     </aside>
   )
 }

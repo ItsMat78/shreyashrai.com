@@ -11,6 +11,10 @@ import { GITHUB_URL, EMAIL } from '../consts';
       <a class="link-quiet" href={GITHUB_URL} rel="me">GitHub</a>
       <a class="link-quiet" href={`mailto:${EMAIL}`}>Email</a>
       <a class="link-quiet" href="/rss.xml">RSS</a>
+      {/* Back to top — target=_self so the page's <base target=_blank> doesn't
+          open it in a new tab; #top scrolls to the document top (glides via
+          scroll-behavior: smooth). */}
+      <a class="link-quiet site-footer__top" href="#top" target="_self">Top &uarr;</a>
     </nav>
     <p class="site-footer__colophon annotation">
       <span class="site-footer__fleuron" aria-hidden="true">&#10086;</span>

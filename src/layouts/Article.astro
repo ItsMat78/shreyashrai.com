@@ -70,6 +70,14 @@ const SECTION = {
   blog: { href: '/blog', label: 'Writing' },
 } as const;
 const back = SECTION[collection];
+
+// The older/newer adjacency walks the whole section by date. When a piece is in
+// a series, its date-neighbours are usually the previous/next PART — already
+// listed in the series nav — so drop any adjacency link that points at a series
+// part to avoid a confusing duplicate ("← Older: <the part above>").
+const seriesUrls = new Set(seriesParts.map((p) => p.url));
+const olderAdj = older && !seriesUrls.has(older.url) ? older : undefined;
+const newerAdj = newer && !seriesUrls.has(newer.url) ? newer : undefined;
 ---
 
 <Base
@@ -101,26 +109,29 @@ const back = SECTION[collection];
       </div>
     </div>
     <p class="article__end" aria-hidden="true">&#10086;</p>
+    {series && (
+      <SeriesNav name={series} parts={seriesParts} currentId={id} variant="end" />
+    )}
     <div class="article__trail">
       <RelatedList items={related} />
       <Backlinks links={backlinks} />
     </div>
     <nav class="article-nav" aria-label={`More in ${back.label}`}>
       <a class="article-nav__back" href={back.href}>&larr; All {back.label}</a>
-      {(older || newer) && (
+      {(olderAdj || newerAdj) && (
         <div class="article-nav__pair">
-          {older ? (
-            <a class="article-nav__adj" href={older.url}>
+          {olderAdj ? (
+            <a class="article-nav__adj" href={olderAdj.url}>
               <span class="annotation">&larr; Older</span>
-              <span class="article-nav__adj-title">{older.title}</span>
+              <span class="article-nav__adj-title">{olderAdj.title}</span>
             </a>
           ) : (
             <span />
           )}
-          {newer && (
-            <a class="article-nav__adj article-nav__adj--next" href={newer.url}>
+          {newerAdj && (
+            <a class="article-nav__adj article-nav__adj--next" href={newerAdj.url}>
               <span class="annotation">Newer &rarr;</span>
-              <span class="article-nav__adj-title">{newer.title}</span>
+              <span class="article-nav__adj-title">{newerAdj.title}</span>
             </a>
           )}
         </div>

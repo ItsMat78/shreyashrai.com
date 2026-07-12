@@ -1,5 +1,5 @@
 ---
-title: "Linked Lists"
+title: "What are Linked Lists?"
 date: 2026-06-22
 tags: ["C++", "DSA"]
 featured: true

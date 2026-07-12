@@ -13,9 +13,12 @@ interface Props {
   showDescription?: boolean;
   // Show a small "til" / "blog" marker (used on mixed lists like tag pages).
   showKind?: boolean;
+  // Prefix each row with a tabular numeral (01, 02…) — used on series pages
+  // where the list is an ordered "read in order" sequence.
+  numbered?: boolean;
 }
 
-const { items, showDescription = false, showKind = false } = Astro.props;
+const { items, showDescription = false, showKind = false, numbered = false } = Astro.props;
 
 // Friendly kind markers so mixed lists read as "TIL / Writing", not "til / blog".
 const KIND_LABEL: Record<EntryItem['collection'], string> = {
@@ -26,10 +29,15 @@ const KIND_LABEL: Record<EntryItem['collection'], string> = {
 };
 ---
 
-<ul class="entry-list">
+<ul class:list={['entry-list', numbered && 'entry-list--numbered']}>
   {
-    items.map((item) => (
+    items.map((item, i) => (
       <li class="entry">
+        {numbered && (
+          <span class="entry__num tabular" aria-hidden="true">
+            {String(i + 1).padStart(2, '0')}
+          </span>
+        )}
         <div class="entry__meta">
           <FormattedDate date={item.date} />
           {showKind && <span class="annotation entry__kind">{KIND_LABEL[item.collection]}</span>}
