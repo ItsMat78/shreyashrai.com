@@ -5,8 +5,6 @@ tags: [C++, Neetcode, 'DSA']
 series: "Neetcode 150"
 part: 2
 ---
-
-## Two pointers
 The two pointer approach is useful when you are tired of O(n2) solutions and multiple passes over the same data. You use two different pointers, and converge to the solution based on the problem. But the problem with it, is that the approach is same but framing is different for each problem. These can be categorized in three buckets:
 1. **Scan & Verify:** When you use two pointers just for checking a condition (such as in [Valid Palindrome](#1-valid-palindrome)).
 2. **Comparing against a target:** When you use two pointers to look for a solution that satisfies a target. Whatever brings you closer to the target, go there (such as in [Two Sum II](#2-two-sum-ii---sorted-array)).
