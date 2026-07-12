@@ -8,9 +8,9 @@ part: 2
 
 ## Two pointers
 The two pointer approach is useful when you are tired of O(n2) solutions and multiple passes over the same data. You use two different pointers, and converge to the solution based on the problem. But the problem with it, is that the approach is same but framing is different for each problem. These can be categorized in three buckets:
-1. **Scan & Verify:** When you use two pointers just for checking a condition (such as in [[B) Two pointers#1. Valid Palindrome|Valid Palindromes]]).
-2. **Comparing against a target:** When you use two pointers to look for a solution that satisfies a target. Whatever brings you closer to the target, go there (such as in [[B) Two pointers#2. Two Sum II - sorted array|Two Sum II]]).
-	1. **Exchange-argument optimization:** When you have no fixed target, but you're optimizing a solution, such as looking for a maximum. Used in both ([[B) Two pointers#4. Container With Most Water|Container with most water]] and [[B) Two pointers#5. Trapping rain water|Trapping Rain Water]]).
+1. **Scan & Verify:** When you use two pointers just for checking a condition (such as in [Valid Palindrome](#1-valid-palindrome)).
+2. **Comparing against a target:** When you use two pointers to look for a solution that satisfies a target. Whatever brings you closer to the target, go there (such as in [Two Sum II](#2-two-sum-ii---sorted-array)).
+3. **Exchange-argument optimization:** When you have no fixed target, but you're optimizing a solution, such as looking for a maximum. Used in both [Container with most water](#4-container-with-most-water) and [Trapping Rain Water](#5-trapping-rain-water). 
 ### 1. Valid Palindrome
 ```cpp title:"My solution"
 class Solution {
