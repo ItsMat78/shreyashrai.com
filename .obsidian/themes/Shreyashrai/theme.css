@@ -1,0 +1,337 @@
+/* ==========================================================================
+   SHREYASHRAI — an Obsidian theme matching shreyashrai.com
+   Cream paper · royal-blue Didone display · uppercase letterspaced labels
+   hairline rules · beige tag chips · hard drop-shadows on images
+   ========================================================================== */
+
+/* Fonts load from Google when online; system fallbacks apply offline. */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap');
+
+body {
+  /* ---- palette (site tokens) ---- */
+  --sr-royal: #2b2bee;          /* the Lagrange-Lock blue            */
+  --sr-royal-soft: #5252f0;
+  --sr-paper: #f5f2e9;          /* page cream                        */
+  --sr-paper-deep: #edeadd;     /* panels / sidebars                 */
+  --sr-chip: #e0dbc6;           /* tag chip beige                    */
+  --sr-ink: #1c1c1a;            /* body text                         */
+  --sr-ink-muted: #8f8b7d;      /* contents-list gray                */
+  --sr-hairline: #d9d4c2;       /* thin rules                        */
+
+  /* ---- type ---- */
+  --sr-display: 'Fraunces', 'Didot', Georgia, serif;
+  --sr-body: 'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --font-text-theme: var(--sr-body);
+  --font-monospace-theme: 'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+
+  --h1-line-height: 1.05;
+  --h2-line-height: 1.15;
+  --bold-weight: 700;
+
+  --h1-size: 2.4em;
+  --h2-size: 1.9em;
+  --h3-size: 1.5em;
+  --h4-size: 1.25em;
+  --inline-title-size: 3.4em;
+}
+
+/* ==========================================================================
+   LIGHT — the site itself
+   ========================================================================== */
+.theme-light {
+  --background-primary: var(--sr-paper);
+  --background-primary-alt: var(--sr-paper-deep);
+  --background-secondary: var(--sr-paper-deep);
+  --background-secondary-alt: #e7e3d4;
+  --background-modifier-border: var(--sr-hairline);
+  --background-modifier-hover: rgba(43, 43, 238, 0.06);
+  --divider-color: var(--sr-hairline);
+
+  --text-normal: var(--sr-ink);
+  --text-muted: var(--sr-ink-muted);
+  --text-faint: #b0ac9d;
+  --text-accent: var(--sr-royal);
+  --text-accent-hover: #1717c9;
+  --text-on-accent: #f5f2e9;
+  --text-selection: rgba(43, 43, 238, 0.16);
+  --link-color: var(--sr-royal);
+  --link-external-color: var(--sr-royal);
+  --link-unresolved-color: #9a5b3c;
+
+  --interactive-accent: var(--sr-royal);
+  --interactive-accent-hover: #1717c9;
+
+  --code-background: var(--sr-chip);
+  --code-normal: #35332c;
+
+  --h1-color: var(--sr-royal);
+  --h2-color: var(--sr-royal);
+  --h3-color: var(--sr-ink);
+  --h4-color: var(--sr-ink);
+  --h5-color: var(--sr-ink);
+  --h6-color: var(--sr-ink-muted);
+
+  --tag-background: var(--sr-chip);
+  --tag-color: #4a483f;
+
+  --checkbox-color: var(--sr-royal);
+  --checkbox-color-hover: #1717c9;
+  --checkbox-marker-color: var(--sr-paper);
+
+  --scrollbar-thumb-bg: rgba(28, 28, 26, 0.14);
+  --scrollbar-active-thumb-bg: rgba(28, 28, 26, 0.28);
+}
+
+/* ==========================================================================
+   DARK — same identity flipped onto warm near-black
+   ========================================================================== */
+.theme-dark {
+  --sr-royal: #8a8aff;          /* periwinkle keeps contrast on dark  */
+  --sr-chip: #34322a;
+  --sr-hairline: #3b392f;
+  --sr-ink-muted: #97937f;
+
+  --background-primary: #1b1a15;
+  --background-primary-alt: #211f19;
+  --background-secondary: #211f19;
+  --background-secondary-alt: #171612;
+  --background-modifier-border: var(--sr-hairline);
+  --background-modifier-hover: rgba(138, 138, 255, 0.08);
+  --divider-color: var(--sr-hairline);
+
+  --text-normal: #ece8da;
+  --text-muted: var(--sr-ink-muted);
+  --text-faint: #6e6a5b;
+  --text-accent: var(--sr-royal);
+  --text-accent-hover: #a9a9ff;
+  --text-on-accent: #14131c;
+  --text-selection: rgba(138, 138, 255, 0.22);
+  --link-color: var(--sr-royal);
+  --link-external-color: var(--sr-royal);
+
+  --interactive-accent: #5b5bf0;
+  --interactive-accent-hover: #7676ff;
+
+  --code-background: var(--sr-chip);
+  --code-normal: #d8d4c4;
+
+  --h1-color: var(--sr-royal);
+  --h2-color: var(--sr-royal);
+  --h3-color: #ece8da;
+  --h4-color: #ece8da;
+  --h5-color: #ece8da;
+  --h6-color: var(--sr-ink-muted);
+
+  --tag-background: var(--sr-chip);
+  --tag-color: #c9c5b2;
+}
+
+/* ==========================================================================
+   HEADINGS — Didone display, tight leading (editor + preview)
+   ========================================================================== */
+.markdown-rendered h1, .markdown-rendered h2, .markdown-rendered h3,
+.markdown-rendered h4, .markdown-rendered h5,
+.markdown-preview-view h1, .markdown-preview-view h2, .markdown-preview-view h3,
+.markdown-preview-view h4, .markdown-preview-view h5,
+.cm-header, .inline-title {
+  font-family: var(--sr-display);
+  letter-spacing: -0.01em;
+  font-variation-settings: 'opsz' 72, 'SOFT' 0, 'WONK' 0;
+}
+
+.markdown-rendered h1, .markdown-preview-view h1, .cm-header-1 { font-weight: 900; }
+.markdown-rendered h2, .markdown-preview-view h2, .cm-header-2 { font-weight: 700; }
+
+/* Note title styled like the site masthead */
+.inline-title {
+  color: var(--h1-color);
+  font-weight: 900;
+  font-size: 2.9em;
+  line-height: 1.02;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid var(--sr-hairline);
+  margin-bottom: 0.5em;
+}
+
+/* h6 as an "eyebrow": ABOUT THE PROJECT ——— */
+.markdown-rendered h6, .markdown-preview-view h6, .cm-header-6 {
+  font-family: var(--sr-body);
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sr-royal);
+  display: flex;
+  align-items: center;
+  gap: 0.9em;
+}
+.markdown-rendered h6::after, .markdown-preview-view h6::after {
+  content: '';
+  flex: 0 0 56px;
+  height: 1px;
+  background: var(--sr-royal);
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   BODY DETAILS
+   ========================================================================== */
+.markdown-rendered, .markdown-preview-view, .markdown-source-view {
+  font-size: 1.02em;
+  line-height: 1.65;
+}
+
+/* hairline rules, site-style */
+.markdown-rendered hr, .markdown-preview-view hr {
+  border: none;
+  border-top: 1px solid var(--sr-hairline);
+  margin: 2.2em 0;
+}
+
+/* links: keep the blue, underline on hover only */
+.markdown-rendered a, .markdown-preview-view a, .cm-link, .cm-url {
+  text-decoration: none;
+}
+.markdown-rendered a:hover, .markdown-preview-view a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* external links get the site's ↗ */
+.markdown-rendered a.external-link, .markdown-preview-view a.external-link {
+  background-image: none;
+  padding-right: 0;
+}
+.markdown-rendered a.external-link::after,
+.markdown-preview-view a.external-link::after {
+  content: ' \2197';
+  font-family: var(--sr-body);
+  font-size: 0.85em;
+}
+
+/* tags as beige uppercase chips (preview + editor) */
+.markdown-rendered a.tag, .markdown-preview-view a.tag {
+  font-family: var(--sr-body);
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tag-color);
+  background: var(--tag-background);
+  border-radius: 0;
+  padding: 0.35em 0.8em;
+}
+.cm-s-obsidian span.cm-hashtag {
+  font-family: var(--sr-body);
+  font-size: 0.85em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tag-color);
+  background: var(--tag-background);
+  border-radius: 0;
+}
+.cm-s-obsidian span.cm-hashtag-begin { padding-left: 0.7em; }
+.cm-s-obsidian span.cm-hashtag-end { padding-right: 0.7em; }
+
+/* blockquote: quiet, hairline bar, display italic */
+.markdown-rendered blockquote, .markdown-preview-view blockquote {
+  border-left: 2px solid var(--sr-royal);
+  background: transparent;
+  padding: 0.2em 0 0.2em 1.2em;
+  font-family: var(--sr-display);
+  font-style: italic;
+  font-size: 1.08em;
+}
+
+/* code chips & blocks */
+.markdown-rendered code, .markdown-preview-view code {
+  border-radius: 0;
+  padding: 0.1em 0.4em;
+}
+.markdown-rendered pre, .markdown-preview-view pre {
+  border: 1px solid var(--sr-hairline);
+  border-radius: 0;
+}
+
+/* callouts squared off */
+.callout { border-radius: 0; }
+
+/* images: the site's hard drop-shadow */
+.markdown-rendered img, .markdown-preview-view img {
+  filter: drop-shadow(6px 6px 0 rgba(28, 28, 26, 0.18));
+}
+.theme-dark .markdown-rendered img, .theme-dark .markdown-preview-view img {
+  filter: drop-shadow(6px 6px 0 rgba(0, 0, 0, 0.45));
+}
+
+/* ==========================================================================
+   <figure> / <figcaption> — semantic figures shared with the site
+   ========================================================================== */
+.markdown-rendered figure,
+.markdown-preview-view figure {
+  display: block;
+  margin: 1.8em auto;
+  text-align: center;
+}
+.markdown-rendered figcaption,
+.markdown-preview-view figcaption {
+  display: block;
+  margin-top: 0.9em;
+  font-family: var(--sr-body);
+  font-size: 0.76em;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-ink-muted);
+}
+
+/* ==========================================================================
+   FRONTMATTER / PROPERTIES — quiet, guide-like
+   ========================================================================== */
+.metadata-container {
+  border-top: 1px solid var(--sr-hairline);
+  border-bottom: 1px solid var(--sr-hairline);
+  border-radius: 0;
+  padding-top: 0.4em;
+  padding-bottom: 0.4em;
+}
+.metadata-property-key .metadata-property-key-input {
+  font-family: var(--sr-body);
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-ink-muted);
+}
+
+/* ==========================================================================
+   CHROME — sidebars, tabs, status bar
+   ========================================================================== */
+.workspace-tab-header-inner-title,
+.nav-file-title-content, .nav-folder-title-content {
+  font-family: var(--sr-body);
+}
+.workspace-tab-header.is-active .workspace-tab-header-inner-title {
+  color: var(--text-accent);
+  font-weight: 600;
+}
+.nav-folder-title-content {
+  font-size: 0.8em;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-ink-muted);
+}
+.status-bar {
+  font-family: var(--sr-body);
+  font-size: 0.75em;
+  letter-spacing: 0.06em;
+  border-top: 1px solid var(--sr-hairline);
+}
+
+/* focus visibility */
+:focus-visible { outline: 2px solid var(--sr-royal); outline-offset: 1px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

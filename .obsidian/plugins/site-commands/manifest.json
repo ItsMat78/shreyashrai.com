@@ -1,0 +1,10 @@
+{
+  "id": "site-commands",
+  "name": "Site Commands",
+  "version": "1.0.1",
+  "minAppVersion": "1.4.0",
+  "description": "Slash commands for shreyashrai.com content: /figure, /til, /blog, /link, /quote, /project.",
+  "author": "Mat",
+  "authorUrl": "https://shreyashrai.com",
+  "isDesktopOnly": false
+}

@@ -133,6 +133,64 @@ and edges aren't clipped), kept **under ~300 KB**.
 
 ---
 
+## Writing with Obsidian
+
+This repository can be opened directly as an [Obsidian](https://obsidian.md/)
+vault. It includes two site-specific additions so Markdown looks closer to the
+published website and common content blocks are easier to author:
+
+- **Shreyashrai theme** — `.obsidian/themes/Shreyashrai/`. Styles reading view
+  and Live Preview, including semantic `<figure>` and `<figcaption>` blocks.
+- **Site Commands plugin** — `.obsidian/plugins/site-commands/`. Adds authoring
+  commands and makes site-root image paths such as `/images/photo.png` resolve
+  from `public/images/photo.png` in Obsidian's rendered preview.
+
+Both require Obsidian **1.4.0 or newer**. The bundled theme is version **1.0.0**
+and Site Commands is version **1.0.1**; their manifests are the authoritative
+source for current compatibility information.
+
+Only these maintained additions are committed. Personal Obsidian settings,
+workspace layout, caches, and third-party plugin data remain ignored.
+
+### Set up the vault
+
+1. Install Obsidian and choose **Open folder as vault**.
+2. Select the repository root—the folder containing this README and
+   `src/content/`.
+3. Open **Settings → Appearance → Themes**, then select **Shreyashrai**.
+4. Open **Settings → Community plugins**, turn off **Restricted mode** if
+   prompted, and enable **Site Commands** under **Installed plugins**.
+5. If the theme or plugin is not listed immediately, use **Reload app without
+   saving** from Obsidian's command palette or restart Obsidian.
+
+The plugin is local to this repository and is not installed from Obsidian's
+community marketplace. Its source is available at
+`.obsidian/plugins/site-commands/main.js` for review before enabling it.
+
+### Site Commands
+
+Open the command palette (`Ctrl/Cmd+P`) and search for **Site Commands**, or use
+Obsidian's slash-command interface when enabled:
+
+| Command | Purpose |
+|---------|---------|
+| Figure | Insert a semantic `<figure>`, `<img>`, and `<figcaption>` block |
+| TIL | Fill an empty note with valid TIL frontmatter |
+| Blog | Fill an empty note with valid blog frontmatter |
+| Link | Fill an empty note with valid link frontmatter |
+| Quote | Fill an empty note with valid quote frontmatter |
+| Project | Fill an empty note with valid project frontmatter |
+
+The content templates only operate on empty notes. Figure insertion works at
+the current cursor position. Keep website image URLs rooted at `/images/` or
+`/header/`; the plugin translates them for Obsidian preview without changing
+the Markdown used by Astro.
+
+After pulling updates to either addition, restart Obsidian or reload the app so
+its CSS and plugin code are refreshed.
+
+---
+
 ## Deploy (Cloudflare Pages)
 
 1. Push this repo to GitHub.

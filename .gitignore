@@ -25,8 +25,17 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 
-# Obsidian vault config — local editor state, not published
-.obsidian/
+# Obsidian vault config — keep local editor state private, but publish the
+# site-specific theme and companion authoring plugin maintained in this repo.
+.obsidian/*
+!.obsidian/themes/
+!.obsidian/plugins/
+.obsidian/themes/*
+.obsidian/plugins/*
+!.obsidian/themes/Shreyashrai/
+!.obsidian/themes/Shreyashrai/**
+!.obsidian/plugins/site-commands/
+!.obsidian/plugins/site-commands/**
 
 # Initial planning docs — kept on disk, never tracked/published
 /instructions.md

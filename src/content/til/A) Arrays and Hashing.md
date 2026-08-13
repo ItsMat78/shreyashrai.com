@@ -4,7 +4,6 @@ date: 2026-07-04
 tags: ["C++", "DSA", "Neetcode"]
 series: "Neetcode 150"
 part: 1
-featured: true
 ---
 ## Arrays and Hashing
 
