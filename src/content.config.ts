@@ -12,6 +12,9 @@ const baseFields = {
   title: z.string(),
   date: z.coerce.date(),
   tags: z.array(z.string()).default([]),
+  // Optional photograph used on generated social share cards. Paths are rooted
+  // at public/, e.g. /images/my-post/share.jpg.
+  ogPhoto: z.string().startsWith('/').optional(),
   // Drafts are excluded from every build, list, and feed. Present on both
   // collections so a half-written TIL can't ship by accident.
   draft: z.boolean().default(false),

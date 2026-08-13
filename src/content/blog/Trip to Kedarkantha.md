@@ -4,6 +4,7 @@ date: 2026-04-05
 description: After a long stretch of exhausting days and unexpected turns, our journey culminated at the summit of Kedarkantha, a 12,500-foot mountain in Uttarakhand’s Shivalik Hills. Before the trek, we explored Haridwar, Rishikesh, and Mussoorie—and along the way, I learned a great deal about myself, my friends, and the world.
 tags: ["Trip", "Mountains", "Friends"]
 featured: true
+ogPhoto: /images/Trip to Kedarkantha/Pasted image 20260406140445.png
 ---
 # Introduction
 <figure>
