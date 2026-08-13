@@ -4,7 +4,7 @@ blurb: "A management and member-access app designed for my family's self-study h
 outcome: "200+ users and ~100k daily DB queries, live on the Play Store."
 tech: ["Next.js", "React", "TypeScript", "Firebase", "Android"]
 order: 3
-cover: /images/admin-dashboard.png
+cover: /images/taxshila-companion/admin-dashboard.png
 live: https://taxshilacompanion.vercel.app/home
 source: https://github.com/ItsMat78/taxshila-companion
 ---
@@ -33,7 +33,7 @@ This isn't a demo. It runs a real library, in production, every day.
 
 
 <figure>
-<img src="/images/admin-dashboard.png" alt="Taxshila App">
+<img src="/images/taxshila-companion/admin-dashboard.png" alt="Taxshila App">
 <figsub>The app</figsub>
 </figure>
 
@@ -43,7 +43,7 @@ This isn't a demo. It runs a real library, in production, every day.
 There is a **single printed QR code** taped to the reception desk. A member opens the app, taps **"Scan to check in,"** points the camera, and they are marked present, a short buzz confirms it. Checking out is one tap. That is the whole loop, and everything else exists to make that loop honest and keep people coming back tomorrow.
 
 <div align="center">
-  <img src="/images/QR_on_desk.png" alt="The check-in QR stand on the reception desk" width="280" />
+  <img src="/images/taxshila-companion/QR_on_desk.png" alt="The check-in QR stand on the reception desk" width="280" />
   <br />
   <sub>The check-in QR stand on the reception desk</sub>
 </div>
@@ -55,7 +55,7 @@ The scanner reads the code with the phone's built-in `BarcodeDetector` when it e
 A new person from Google Maps/JustDial meets a landing page built to *sell the room*, a bold **"Focus on Demand"** hero, amenities, pricing, reviews and FAQs, in a punchy editorial style that looks nothing like a templated dashboard.
 
 <div align="center">
-  <img src="/images/main_homepage.png" alt="Marketing landing page" width="600" />
+  <img src="/images/taxshila-companion/main_homepage.png" alt="Marketing landing page" width="600" />
   <br />
   <sub>Marketing landing page - Focus on Demand hero</sub>
 </div>
@@ -63,7 +63,7 @@ A new person from Google Maps/JustDial meets a landing page built to *sell the r
 And a **house-rules page**, "The Code of Conduct", that turns thirteen library rules into something people actually read: quiet-hours and monitoring badges up top, then plain-spoken, color-coded cards.
 
 <div align="center">
-  <img src="/images/rules_page.png" alt="House rules page" width="600" />
+  <img src="/images/taxshila-companion/rules_page.png" alt="House rules page" width="600" />
   <br />
   <sub>House rules - The Code of Conduct</sub>
 </div>
@@ -81,24 +81,24 @@ A member lives on **one screen**: a live session timer the moment they check in,
 <table align="center">
   <tr>
     <td align="center">
-      <img src="/images/member-dashboard-full.png" alt="Member dashboard" width="165" />
+      <img src="/images/taxshila-companion/member-dashboard-full.png" alt="Member dashboard" width="165" />
       <br />
       <sub>Member dashboard</sub>
     </td>
     <td align="center">
-      <img src="/images/member-payments.png" alt="Member payments page" width="165" />
+      <img src="/images/taxshila-companion/member-payments.png" alt="Member payments page" width="165" />
       <br />
       <sub>Fees &amp; payment history</sub>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="/images/member-attendance.png" alt="Attendance calendar" width="165" />
+      <img src="/images/taxshila-companion/member-attendance.png" alt="Attendance calendar" width="165" />
       <br />
       <sub>Attendance calendar</sub>
     </td>
     <td align="center">
-      <img src="/images/member_alerts.png" alt="Notifications & alerts inbox" width="165" />
+      <img src="/images/taxshila-companion/member_alerts.png" alt="Notifications & alerts inbox" width="165" />
       <br />
       <sub>Notifications &amp; alerts</sub>
     </td>
@@ -117,13 +117,13 @@ The admin side is built for someone standing at a desk being asked questions all
 - **One-click CSV import/export** of the whole dataset for backups and migrations.
 
 <div align="center">
-  <img src="/images/admin-dashboard2.png" alt="Admin dashboard" width="600" />
+  <img src="/images/taxshila-companion/admin-dashboard2.png" alt="Admin dashboard" width="600" />
   <br />
   <sub>Admin dashboard - headcount, revenue &amp; live activity</sub>
 </div>
 <br />
 <div align="center">
-  <img src="/images/admin-students.png" alt="Student management" width="600" />
+  <img src="/images/taxshila-companion/admin-students.png" alt="Student management" width="600" />
   <br />
   <sub>Student &amp; shift management</sub>
 </div>
@@ -170,4 +170,3 @@ Designed, built, and shipped by **[Shreyash Rai](mailto:contact@shreyashrai.com)
 <sub>Questions, feedback, or just want to say hi → contact@shreyashrai.com</sub>
 
 </div>
-

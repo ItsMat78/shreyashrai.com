@@ -5,7 +5,7 @@ outcome: "Hybrid semantic + recency-weighted retrieval over an Obsidian corpus, 
 tech: ["Python", "sentence-transformers", "ChromaDB"]
 order: 4
 source: https://github.com/ItsMat78/journal-advisory
-cover: "/images/journal-advisory.png"
+cover: "/images/journal-advisory/journal-advisory.png"
 ---
 ## I built a tool that let's me talk to my journal. Actually.
 
@@ -18,7 +18,7 @@ So I built something that does it for me. I call it **journal-advisory**. You as
 The one rule I gave it: **tell me the truth.** Every answer is grounded in what I actually wrote. If I ask how I've been doing and the entries say I've been avoiding something, I want it to say that- not hand me a pep talk. Grounding it in real text is also what keeps it honest. It can't speculate about my life because it only ever sees my life.
 
 <figure>
-<img src="/images/journal-advisory.png" alt="journal advisory">
+<img src="/images/journal-advisory/journal-advisory.png" alt="journal advisory">
 <figsub>A powershell window running journal-advisory</figsub>
 </figure>
 

@@ -20,7 +20,6 @@ const { title, description, type, ogImage } = Astro.props;
 <html lang="en">
   <head>
     <BaseHead title={title} description={description} type={type} ogImage={ogImage} />
-    <base target="_blank" />
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const blocks = document.querySelectorAll('pre[data-language="mermaid"]');

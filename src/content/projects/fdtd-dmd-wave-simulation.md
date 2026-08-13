@@ -4,7 +4,7 @@ blurb: "An electromagnetic wave simulation sped up ~10× using Dynamic Mode Deco
 outcome: "~10× speedup over direct FDTD at ~96% accuracy."
 tech: ["Python", "NumPy", "Dynamic Mode Decomposition"]
 source: https://github.com/ItsMat78/fdtd
-cover: "/images/FDTD.png"
+cover: "/images/fdtd-dmd-wave-simulation/FDTD.png"
 order: 2
 ---
 
@@ -21,7 +21,7 @@ Standard explicit FDTD methods are bound by the **Courant–Friedrichs–Lewy (C
 
 
 <figure>
-<img src="/images/FDTD.png" alt="FDTD Simulation">
+<img src="/images/fdtd-dmd-wave-simulation/FDTD.png" alt="FDTD Simulation">
 <figsub>A simple simulation of the Young's double slit experiment.</figsub>
 </figure>
 
