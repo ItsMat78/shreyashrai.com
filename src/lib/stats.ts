@@ -24,9 +24,9 @@ export type MonthCell = {
 export type YearStat = { year: number; count: number; words: number };
 
 export type Stats = {
-  total: number;
-  words: number;
-  minutes: number;
+  total: number; // every piece, quotes included
+  words: number; // MY words only — quote bodies are excluded
+  minutes: number; // reading time of the above, same exclusion
   kinds: KindStat[];
   years: YearStat[];
   months: MonthCell[]; // one row per year, 12 cells each
@@ -73,7 +73,13 @@ export async function getStats(): Promise<Stats> {
     })),
   ];
 
-  const words = dated.reduce((sum, e) => sum + wordCount(e.body), 0);
+  // Quotes are somebody else's words. They still count as pieces published —
+  // choosing and keeping them is the work — but they're excluded from every
+  // word-derived number (total words, reading minutes, per-year words, longest
+  // piece), which would otherwise credit me with writing I didn't write.
+  const mine = dated.filter((e) => e.kind !== 'quotes');
+
+  const words = mine.reduce((sum, e) => sum + wordCount(e.body), 0);
 
   const kinds: KindStat[] = [
     { kind: 'til', label: 'TIL', count: tils.length, words: tils.reduce((s, e) => s + wordCount(e.body), 0) },
@@ -83,13 +89,14 @@ export async function getStats(): Promise<Stats> {
     { kind: 'projects', label: 'Projects', count: projects.length, words: projects.reduce((s, e) => s + wordCount(e.body), 0) },
   ];
 
-  // Per-year totals, oldest first (time reads left to right).
+  // Per-year totals, oldest first (time reads left to right). Every piece is
+  // counted; only quoted words are left out of the word column.
   const yearMap = new Map<number, { count: number; words: number }>();
   for (const e of dated) {
     const y = e.date.getUTCFullYear();
     const cur = yearMap.get(y) ?? { count: 0, words: 0 };
     cur.count += 1;
-    cur.words += wordCount(e.body);
+    if (e.kind !== 'quotes') cur.words += wordCount(e.body);
     yearMap.set(y, cur);
   }
   const years: YearStat[] = [...yearMap.entries()]
@@ -139,7 +146,7 @@ export async function getStats(): Promise<Stats> {
     .map(([tag, count]) => ({ tag, count }))
     .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 
-  const longest = dated
+  const longest = mine
     .map((e) => ({ title: e.title, url: e.url, words: wordCount(e.body) }))
     .sort((a, b) => b.words - a.words)[0];
 
@@ -150,7 +157,7 @@ export async function getStats(): Promise<Stats> {
   return {
     total: dated.length,
     words,
-    minutes: dated.reduce((sum, e) => sum + readingTime(e.body), 0),
+    minutes: mine.reduce((sum, e) => sum + readingTime(e.body), 0),
     kinds,
     years,
     months,

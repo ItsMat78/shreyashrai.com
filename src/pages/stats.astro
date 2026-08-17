@@ -38,7 +38,7 @@ const heading = [
 
 const tiles = [
   { k: 'Pieces published', v: fmt.format(s.total) },
-  { k: 'Words', v: fmt.format(s.words) },
+  { k: 'Words I wrote', v: fmt.format(s.words) },
   { k: 'Minutes of reading', v: fmt.format(s.minutes) },
   { k: 'Distinct tags', v: fmt.format(s.tagTotal) },
   { k: 'Days since the first', v: fmt.format(s.daysSinceFirst) },
@@ -53,7 +53,8 @@ const tiles = [
     <p class="masthead__deck">
       Everything below is counted from the Markdown files that make this site, at
       build time. No reader is measured &mdash; these are numbers about the
-      writing, not about you.
+      writing, not about you. Quotes count as pieces but not as words: those
+      sentences belong to whoever said them.
     </p>
   </PageHeader>
 
