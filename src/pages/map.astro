@@ -1,0 +1,187 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { getGraph, type GraphNode } from '../lib/graph';
+
+// The whole map is computed at build time (see lib/graph.ts) and shipped as a
+// static <svg>. The only client code is the hover highlight in Base.astro.
+const graph = await getGraph();
+
+const heading = [
+  { text: 'The', size: 'l', weight: 380, italic: true, rot: -2, shift: '3rem' },
+  { text: 'constellation', size: 'xl', weight: 640, rot: 1.2, lift: '-2.1rem' },
+] as const;
+
+const KIND_LABEL: Record<GraphNode['kind'], string> = {
+  til: 'TIL',
+  blog: 'Writing',
+  links: 'Link',
+  quotes: 'Quote',
+  projects: 'Project',
+};
+
+// Labels sit beside their dot; long titles are clipped so the field stays
+// readable rather than turning into a wall of text.
+function shortLabel(title: string): string {
+  const t = title.trim();
+  return t.length > 26 ? `${t.slice(0, 25).trimEnd()}…` : t;
+}
+
+// A node's label flips to the left of the dot near the right edge, so it never
+// runs out of the frame.
+function labelAnchor(n: GraphNode): { x: number; anchor: 'start' | 'end' } {
+  return n.x > graph.width * 0.72
+    ? { x: n.x - n.r - 7, anchor: 'end' }
+    : { x: n.x + n.r + 7, anchor: 'start' };
+}
+
+const byKind = (['til', 'blog', 'links', 'quotes', 'projects'] as const).map((kind) => ({
+  kind,
+  label: KIND_LABEL[kind],
+  items: graph.nodes
+    .filter((n) => n.kind === kind)
+    .sort((a, b) => b.degree - a.degree || a.title.localeCompare(b.title)),
+}));
+
+const edgeCount = graph.edges.length;
+const linkEdges = graph.edges.filter((e) => e.kind === 'wikilink').length;
+---
+
+<Base
+  title="Map"
+  description="Every note, link, quote, and project on the site drawn as one connected constellation."
+>
+  <PageHeader eyebrow="Everything, connected" lines={heading}>
+    <p class="masthead__deck">
+      Every piece on this site, drawn as one field. Lines are relationships:
+      an explicit <code>[[wikilink]]</code>, a shared series, or a shared tag.
+      The bigger the dot, the more it connects to.
+    </p>
+  </PageHeader>
+
+  {
+    graph.nodes.length === 0 ? (
+      <p class="annotation">Nothing to map yet.</p>
+    ) : (
+      <>
+        <div class="graph-legend annotation">
+          <span class="graph-legend__group">
+            <span class="graph-key graph-key--til" aria-hidden="true" /> TIL
+            <span class="graph-key graph-key--blog" aria-hidden="true" /> Writing
+            <span class="graph-key graph-key--links" aria-hidden="true" /> Link
+            <span class="graph-key graph-key--quotes" aria-hidden="true" /> Quote
+            <span class="graph-key graph-key--projects" aria-hidden="true" /> Project
+          </span>
+          <span class="graph-legend__group">
+            <span class="graph-key graph-key--edge-wikilink" aria-hidden="true" /> wikilink
+            <span class="graph-key graph-key--edge-series" aria-hidden="true" /> series
+            <span class="graph-key graph-key--edge-tag" aria-hidden="true" /> shared tag
+          </span>
+        </div>
+
+        <div class="graph-plate">
+          <svg
+            class="graph"
+            id="graph"
+            viewBox={`0 0 ${graph.width} ${graph.height}`}
+            role="group"
+            aria-label={`Map of ${graph.nodes.length} entries and ${edgeCount} connections. The same entries are listed below the map.`}
+          >
+            <g class="graph__edges" aria-hidden="true">
+              {graph.edges.map((e) => {
+                const a = graph.nodes.find((n) => n.id === e.a)!;
+                const b = graph.nodes.find((n) => n.id === e.b)!;
+                return (
+                  <line
+                    class={`graph__edge graph__edge--${e.kind}`}
+                    data-a={e.a}
+                    data-b={e.b}
+                    x1={a.x}
+                    y1={a.y}
+                    x2={b.x}
+                    y2={b.y}
+                  />
+                );
+              })}
+            </g>
+
+            <g class="graph__nodes">
+              {graph.nodes.map((n) => {
+                const { x: lx, anchor } = labelAnchor(n);
+                const rel =
+                  n.degree === 1 ? '1 connection' : `${n.degree} connections`;
+                return (
+                  <a href={n.url} class="graph__node" data-id={n.id}>
+                    <title>{`${n.title} — ${KIND_LABEL[n.kind]}, ${rel}`}</title>
+                    {n.kind === 'quotes' ? (
+                      <rect
+                        class="graph__dot graph__dot--quotes"
+                        x={n.x - n.r * 0.8}
+                        y={n.y - n.r * 0.8}
+                        width={n.r * 1.6}
+                        height={n.r * 1.6}
+                        transform={`rotate(45 ${n.x} ${n.y})`}
+                      />
+                    ) : n.kind === 'projects' ? (
+                      <rect
+                        class="graph__dot graph__dot--projects"
+                        x={n.x - n.r * 0.85}
+                        y={n.y - n.r * 0.85}
+                        width={n.r * 1.7}
+                        height={n.r * 1.7}
+                      />
+                    ) : (
+                      <circle
+                        class={`graph__dot graph__dot--${n.kind}`}
+                        cx={n.x}
+                        cy={n.y}
+                        r={n.r}
+                      />
+                    )}
+                    {n.kind === 'blog' && (
+                      <circle class="graph__halo" cx={n.x} cy={n.y} r={n.r + 4.5} />
+                    )}
+                    <text class="graph__label" x={lx} y={n.y + 4} text-anchor={anchor}>
+                      {shortLabel(n.title)}
+                    </text>
+                  </a>
+                );
+              })}
+            </g>
+          </svg>
+        </div>
+
+        <p class="graph-note annotation">
+          {graph.nodes.length} entries · {edgeCount} connections ·{' '}
+          {linkEdges} of them written by hand as <code>[[wikilinks]]</code>.
+          Hover a dot to isolate its neighbourhood.
+        </p>
+
+        <section class="graph-index">
+          <div class="section-head">
+            <h2 class="display display--section">The same map, as a list</h2>
+          </div>
+          <div class="graph-index__grid">
+            {byKind
+              .filter((g) => g.items.length > 0)
+              .map((g) => (
+                <div class="graph-index__col">
+                  <h3 class="annotation graph-index__head">{g.label}</h3>
+                  <ul class="graph-index__list">
+                    {g.items.map((n) => (
+                      <li>
+                        <a class="link-quiet" href={n.url}>
+                          {n.title}
+                        </a>{' '}
+                        <span class="graph-index__deg annotation">{n.degree}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+          </div>
+        </section>
+      </>
+    )
+  }
+</Base>

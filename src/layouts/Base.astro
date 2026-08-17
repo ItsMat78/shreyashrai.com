@@ -375,6 +375,306 @@ const { title, description, type, ogImage } = Astro.props;
         }
       });
 
+      // ---- /map: highlight a node's neighbourhood ---------------------------
+      // The constellation itself is built at BUILD time (lib/graph.ts) and
+      // shipped as static SVG; this only dims what a hovered/focused dot is not
+      // connected to. Bound per page-load because the <svg> node is fresh after
+      // every View Transition swap.
+      function initGraph() {
+        const svg = document.querySelector<SVGSVGElement>('#graph');
+        if (!svg || svg.dataset.ready) return;
+        svg.dataset.ready = '1';
+
+        const nodes = [...svg.querySelectorAll<SVGGElement>('.graph__node')];
+        const edges = [...svg.querySelectorAll<SVGLineElement>('.graph__edge')];
+
+        const neighbours = new Map<string, Set<string>>();
+        for (const e of edges) {
+          const a = e.dataset.a;
+          const b = e.dataset.b;
+          if (!a || !b) continue;
+          if (!neighbours.has(a)) neighbours.set(a, new Set());
+          if (!neighbours.has(b)) neighbours.set(b, new Set());
+          neighbours.get(a)!.add(b);
+          neighbours.get(b)!.add(a);
+        }
+
+        function light(id: string) {
+          const near = neighbours.get(id) ?? new Set<string>();
+          svg!.classList.add('is-focused');
+          for (const n of nodes) {
+            const nid = n.dataset.id ?? '';
+            n.classList.toggle('is-lit', nid === id || near.has(nid));
+          }
+          for (const e of edges) {
+            e.classList.toggle('is-lit', e.dataset.a === id || e.dataset.b === id);
+          }
+        }
+
+        function clear() {
+          svg!.classList.remove('is-focused');
+          for (const n of nodes) n.classList.remove('is-lit');
+          for (const e of edges) e.classList.remove('is-lit');
+        }
+
+        for (const n of nodes) {
+          const id = n.dataset.id ?? '';
+          n.addEventListener('mouseenter', () => light(id));
+          n.addEventListener('focus', () => light(id));
+          n.addEventListener('mouseleave', clear);
+          n.addEventListener('blur', clear);
+        }
+      }
+
+      // ---- /type: the Fraunces specimen lab ---------------------------------
+      // Drives the four variable axes on one preview line and prints the
+      // matching <ScatterHead /> fragment props.
+      type TypeState = {
+        text: string;
+        opsz: number;
+        wght: number;
+        SOFT: number;
+        WONK: number;
+        size: number;
+        rot: number;
+        italic: boolean;
+      };
+
+      function initTypeLab() {
+        const lab = document.getElementById('type-lab');
+        if (!lab || lab.dataset.ready) return;
+        lab.dataset.ready = '1';
+
+        const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
+        const preview = $<HTMLElement>('type-preview');
+        const textInput = $<HTMLInputElement>('type-text');
+        const code = $<HTMLElement>('type-code');
+        if (!preview || !textInput || !code) return;
+
+        const ranges = {
+          opsz: $<HTMLInputElement>('type-opsz'),
+          wght: $<HTMLInputElement>('type-wght'),
+          SOFT: $<HTMLInputElement>('type-SOFT'),
+          WONK: $<HTMLInputElement>('type-WONK'),
+          size: $<HTMLInputElement>('type-size'),
+          rot: $<HTMLInputElement>('type-rot'),
+        };
+        const italic = $<HTMLInputElement>('type-italic');
+
+        function read(): TypeState {
+          return {
+            text: textInput!.value || 'Learning out loud',
+            opsz: Number(ranges.opsz?.value ?? 144),
+            wght: Number(ranges.wght?.value ?? 560),
+            SOFT: Number(ranges.SOFT?.value ?? 0),
+            WONK: Number(ranges.WONK?.value ?? 0),
+            size: Number(ranges.size?.value ?? 96),
+            rot: Number(ranges.rot?.value ?? 0),
+            italic: italic?.checked ?? false,
+          };
+        }
+
+        // The scatter size steps, matched to the rendered px size so the printed
+        // props land in the right bracket.
+        function sizeStep(px: number): 's' | 'm' | 'l' | 'xl' {
+          if (px < 42) return 's';
+          if (px < 58) return 'm';
+          if (px < 84) return 'l';
+          return 'xl';
+        }
+
+        function apply() {
+          const s = read();
+          preview!.textContent = s.text;
+          preview!.style.fontVariationSettings =
+            `'opsz' ${s.opsz}, 'wght' ${s.wght}, 'SOFT' ${s.SOFT}, 'WONK' ${s.WONK}`;
+          preview!.style.fontSize = `${s.size}px`;
+          preview!.style.fontStyle = s.italic ? 'italic' : 'normal';
+          preview!.style.transform = `rotate(${s.rot}deg)`;
+
+          for (const [key, el] of Object.entries(ranges)) {
+            const out = document.getElementById(`type-${key}-out`);
+            if (out && el) out.textContent = el.value;
+          }
+
+          // The fragment props, exactly as a page's `heading` array wants them.
+          const parts = [
+            `text: '${s.text.replace(/'/g, "\\'")}'`,
+            `size: '${sizeStep(s.size)}'`,
+            `weight: ${Math.round(s.wght)}`,
+          ];
+          if (s.italic) parts.push('italic: true');
+          if (s.WONK > 0) parts.push(`wonk: ${s.WONK}`);
+          if (s.rot !== 0) parts.push(`rot: ${s.rot}`);
+
+          let out = `{ ${parts.join(', ')} }`;
+          // opsz and SOFT are fixed for .scatter__line, so a change to them is a
+          // CSS override rather than a fragment prop — say so instead of
+          // printing props that would silently do nothing.
+          if (s.opsz !== 144 || s.SOFT !== 0) {
+            out +=
+              `\n// plus a style override on that line:\n` +
+              `// font-variation-settings: 'opsz' ${s.opsz}, 'SOFT' ${s.SOFT}, 'WONK' ${s.WONK};`;
+          }
+          code!.textContent = out;
+        }
+
+        for (const el of Object.values(ranges)) el?.addEventListener('input', apply);
+        italic?.addEventListener('change', apply);
+        textInput.addEventListener('input', apply);
+
+        // Presets carry a whole state as JSON on the button.
+        for (const btn of lab.querySelectorAll<HTMLButtonElement>('[data-preset]')) {
+          btn.addEventListener('click', () => {
+            let p: Partial<TypeState> & { name?: string };
+            try {
+              p = JSON.parse(btn.dataset.preset ?? '{}');
+            } catch {
+              return;
+            }
+            if (p.text !== undefined) textInput.value = p.text;
+            for (const key of ['opsz', 'wght', 'SOFT', 'WONK', 'size', 'rot'] as const) {
+              const el = ranges[key];
+              if (el && p[key] !== undefined) el.value = String(p[key]);
+            }
+            if (italic) italic.checked = Boolean(p.italic);
+            apply();
+          });
+        }
+
+        const copy = document.getElementById('type-copy');
+        copy?.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(code!.textContent ?? '');
+            const was = copy.textContent;
+            copy.textContent = 'Copied';
+            setTimeout(() => {
+              copy.textContent = was;
+            }, 1600);
+          } catch {
+            /* clipboard unavailable: leave the text selectable */
+          }
+        });
+
+        apply();
+      }
+
+      // ---- /on-this-day: match the archive against the READER's date --------
+      // The site is static, so the server-rendered block uses the build date;
+      // this replaces it with the visitor's own today.
+      type AlmanacItem = {
+        title: string;
+        url: string;
+        kind: string;
+        month: number;
+        day: number;
+        year: number;
+      };
+
+      const MONTH_NAMES = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December',
+      ];
+
+      function initAlmanac() {
+        const holder = document.getElementById('almanac');
+        if (!holder || holder.dataset.ready) return;
+        const raw = document.getElementById('almanac-data')?.textContent;
+        const list = document.getElementById('otd-list');
+        const label = document.getElementById('otd-date');
+        const note = document.getElementById('otd-note');
+        if (!raw || !list || !label) return;
+
+        let items: AlmanacItem[];
+        try {
+          items = JSON.parse(raw);
+        } catch {
+          return;
+        }
+        holder.dataset.ready = '1';
+
+        const now = new Date();
+        const month = now.getMonth() + 1;
+        const day = now.getDate();
+        label.textContent = `${MONTH_NAMES[month - 1]} ${day}`;
+
+        const today = items
+          .filter((i) => i.month === month && i.day === day)
+          .sort((a, b) => b.year - a.year);
+
+        if (today.length > 0) {
+          list.innerHTML =
+            '<ul class="otd__list">' +
+            today
+              .map(
+                (i) =>
+                  `<li class="otd__item"><span class="annotation otd__year">${i.year}</span>` +
+                  `<a class="otd__title" href="${i.url}">${escapeHtml(i.title)}</a>` +
+                  `<span class="annotation otd__kind">${i.kind}</span></li>`,
+              )
+              .join('') +
+            '</ul>';
+          if (note) note.textContent = `${today.length} from this date in earlier years.`;
+          return;
+        }
+
+        // Nothing on the exact date: offer the nearest anniversary either side,
+        // so the page always hands the reader somewhere to go.
+        const distance = (i: AlmanacItem) => {
+          const a = new Date(Date.UTC(2000, month - 1, day)).getTime();
+          const b = new Date(Date.UTC(2000, i.month - 1, i.day)).getTime();
+          const raw = Math.abs(a - b) / 86400000;
+          return Math.min(raw, 365 - raw); // the year wraps
+        };
+        const nearest = [...items].sort((a, b) => distance(a) - distance(b))[0];
+
+        if (nearest) {
+          const days = Math.round(distance(nearest));
+          list.innerHTML =
+            `<p class="annotation otd__empty">Nothing on this exact date. The nearest is ` +
+            `<a href="${nearest.url}">${escapeHtml(nearest.title)}</a>, ` +
+            `${MONTH_NAMES[nearest.month - 1]} ${nearest.day} ${nearest.year} ` +
+            `&mdash; ${days} ${days === 1 ? 'day' : 'days'} away.</p>`;
+        } else {
+          list.innerHTML = '<p class="annotation otd__empty">Nothing on this date yet.</p>';
+        }
+        if (note) note.textContent = 'Checked against your device’s calendar.';
+      }
+
+      function escapeHtml(s: string): string {
+        return s
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // ---- /random: throw the reader somewhere ------------------------------
+      // `replace` keeps /random out of history, so Back goes where the reader
+      // came from instead of bouncing them to another random page.
+      function initRandom() {
+        const holder = document.getElementById('random');
+        if (!holder || holder.dataset.ready) return;
+        holder.dataset.ready = '1';
+        const raw = document.getElementById('random-data')?.textContent;
+        if (!raw) return;
+        try {
+          const doors: { url: string }[] = JSON.parse(raw);
+          if (!doors.length) return;
+          const pick = doors[Math.floor(Math.random() * doors.length)];
+          window.location.replace(pick.url);
+        } catch {
+          /* leave the full index on screen */
+        }
+      }
+
+      // Print button (the zine issues). Delegated, so it survives swaps.
+      document.addEventListener('click', (e) => {
+        const t = e.target;
+        const btn = t instanceof Element ? t.closest('[data-print]') : null;
+        if (btn) window.print();
+      });
+
       // Re-apply the saved theme pre-paint on every transition (no flash).
       document.addEventListener('astro:after-swap', applyTheme);
 
@@ -391,6 +691,10 @@ const { title, description, type, ogImage } = Astro.props;
         initTocSpy();
         initSearch();
         alignSeriesCurrent();
+        initGraph();
+        initTypeLab();
+        initAlmanac();
+        initRandom();
       });
     </script>
   </body>

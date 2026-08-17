@@ -1,0 +1,187 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+
+// The type lab: drive Fraunces' four axes by hand and watch a scatter fragment
+// change. The site already ships the FULL variable font (opsz + wght + SOFT +
+// WONK) for its headlines — this page is that font's specimen sheet.
+// Behaviour lives in the Base.astro client module (`initTypeLab`).
+
+const heading = [
+  { text: 'Set in', size: 'l', weight: 380, italic: true, rot: -2, shift: '2rem' },
+  { text: 'Fraunces', size: 'xl', weight: 700, rot: 1.4, lift: '-2.1rem', wonk: 1 },
+] as const;
+
+// The four axes, with the range the font actually supports. `prop` is the
+// matching ScatterHead fragment prop, printed in the output panel.
+const axes = [
+  {
+    id: 'opsz',
+    label: 'Optical size',
+    min: 9,
+    max: 144,
+    step: 1,
+    value: 144,
+    note: 'Thick/thin contrast. Low = sturdy text cut, high = the display cut.',
+  },
+  {
+    id: 'wght',
+    label: 'Weight',
+    min: 100,
+    max: 900,
+    step: 10,
+    value: 560,
+    note: 'The fragment `weight` prop.',
+  },
+  {
+    id: 'SOFT',
+    label: 'Softness',
+    min: 0,
+    max: 100,
+    step: 1,
+    value: 0,
+    note: 'Rounds the terminals. The site keeps this at 0.',
+  },
+  {
+    id: 'WONK',
+    label: 'Wonk',
+    min: 0,
+    max: 1,
+    step: 0.01,
+    value: 0,
+    note: 'Swaps in the quirky alternates — the `wonk` prop.',
+  },
+] as const;
+
+// Real headlines from the site, so the lab doubles as a reference for how the
+// signature is actually art-directed.
+const presets = [
+  { name: 'Home hero', text: 'out loud.', opsz: 144, wght: 300, SOFT: 0, WONK: 0, italic: true, size: 118, rot: 2 },
+  { name: 'Notebook', text: 'Notebook', opsz: 144, wght: 640, SOFT: 0, WONK: 0, italic: false, size: 100, rot: 1.5 },
+  { name: 'Read in order', text: 'in order', opsz: 144, wght: 640, SOFT: 0, WONK: 0, italic: false, size: 100, rot: 1 },
+  { name: 'Wonky', text: 'Wonk', opsz: 144, wght: 820, SOFT: 60, WONK: 1, italic: false, size: 120, rot: -3 },
+  { name: 'Text cut', text: 'Reading size', opsz: 12, wght: 420, SOFT: 0, WONK: 0, italic: false, size: 44, rot: 0 },
+] as const;
+---
+
+<Base
+  title="Type"
+  description="A specimen sheet for Fraunces — drag the optical size, weight, softness, and wonk axes and watch the site's display type change."
+>
+  <PageHeader eyebrow="Specimen sheet" lines={heading}>
+    <p class="masthead__deck">
+      The headlines on this site are one variable font pushed around: Fraunces,
+      with its optical-size, weight, softness, and <em>wonk</em> axes. Drag them
+      and see what each one actually does.
+    </p>
+  </PageHeader>
+
+  <div class="type-lab" id="type-lab" data-pagefind-ignore>
+    <div class="type-stage">
+      <p class="type-stage__line" id="type-preview">Learning out loud</p>
+    </div>
+
+    <div class="type-controls">
+      <div class="type-field type-field--wide">
+        <label class="annotation" for="type-text">Phrase</label>
+        <input
+          class="type-input"
+          id="type-text"
+          type="text"
+          value="Learning out loud"
+          maxlength="42"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      {
+        axes.map((a) => (
+          <div class="type-field">
+            <label class="annotation" for={`type-${a.id}`}>
+              {a.label} <output class="type-value" id={`type-${a.id}-out`}>{a.value}</output>
+            </label>
+            <input
+              class="type-range"
+              type="range"
+              id={`type-${a.id}`}
+              data-axis={a.id}
+              min={a.min}
+              max={a.max}
+              step={a.step}
+              value={a.value}
+            />
+            <p class="type-note annotation">{a.note}</p>
+          </div>
+        ))
+      }
+
+      <div class="type-field">
+        <label class="annotation" for="type-size">
+          Size <output class="type-value" id="type-size-out">96</output>px
+        </label>
+        <input class="type-range" type="range" id="type-size" min="18" max="180" step="1" value="96" />
+        <p class="type-note annotation">Rendered size — the axes read differently big and small.</p>
+      </div>
+
+      <div class="type-field">
+        <label class="annotation" for="type-rot">
+          Tilt <output class="type-value" id="type-rot-out">0</output>&deg;
+        </label>
+        <input class="type-range" type="range" id="type-rot" min="-8" max="8" step="0.1" value="0" />
+        <p class="type-note annotation">The kinetic tumble — the `rot` prop.</p>
+      </div>
+
+      <div class="type-field type-field--check">
+        <label class="annotation type-check">
+          <input type="checkbox" id="type-italic" />
+          Italic cut
+        </label>
+        <p class="type-note annotation">A separate font file, not a slant.</p>
+      </div>
+    </div>
+
+    <div class="type-presets">
+      <span class="annotation type-presets__label">Presets</span>
+      {
+        presets.map((p) => (
+          <button
+            class="tag type-preset"
+            type="button"
+            data-preset={JSON.stringify(p)}
+          >
+            {p.name}
+          </button>
+        ))
+      }
+    </div>
+
+    <div class="type-output">
+      <div class="type-output__head">
+        <span class="annotation">Fragment props for &lt;ScatterHead /&gt;</span>
+        <button class="type-copy annotation" type="button" id="type-copy">Copy</button>
+      </div>
+      <pre class="type-output__code"><code id="type-code"></code></pre>
+      <p class="type-note annotation">
+        Paste this into any page's <code>heading</code> array — that's exactly how
+        every headline on this site is composed.
+      </p>
+    </div>
+  </div>
+
+  <section class="type-waterfall">
+    <div class="section-head">
+      <h2 class="display display--section">The four size steps</h2>
+    </div>
+    <p class="waterfall-line waterfall-line--s" data-step="s">Small — s</p>
+    <p class="waterfall-line waterfall-line--m" data-step="m">Medium — m</p>
+    <p class="waterfall-line waterfall-line--l" data-step="l">Large — l</p>
+    <p class="waterfall-line waterfall-line--xl" data-step="xl">Extra — xl</p>
+    <p class="annotation type-note">
+      Every headline fragment picks one of these, then bends weight, italic,
+      indent, and tilt on top. See them at work on
+      <a class="link-quiet" href="/notes">/notes</a> or
+      <a class="link-quiet" href="/series">/series</a>.
+    </p>
+  </section>
+</Base>

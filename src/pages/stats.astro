@@ -1,0 +1,254 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import { getStats } from '../lib/stats';
+
+// Numbers about the archive, counted from the content files at build time.
+// Charts here are deliberately one-hue: this site has a single accent, so
+// magnitude is carried by length and depth, and identity always by a written
+// label — never by colour alone.
+
+const s = await getStats();
+
+const MONTHS_SHORT = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+const MONTHS_FULL = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+// The month grid, sliced into one row per year.
+const gridYears = [...new Set(s.months.map((m) => m.year))].sort((a, b) => a - b);
+const grid = gridYears.map((year) => ({
+  year,
+  cells: s.months.filter((m) => m.year === year).sort((a, b) => a.month - b.month),
+}));
+
+const topTags = s.tags.slice(0, 12);
+const tagMax = topTags[0]?.count ?? 1;
+const kindMax = Math.max(...s.kinds.map((k) => k.count), 1);
+const yearMax = Math.max(...s.years.map((y) => y.count), 1);
+
+const fmt = new Intl.NumberFormat('en-GB');
+
+const heading = [
+  { text: 'By the', size: 'l', weight: 380, italic: true, rot: -2, shift: '2rem' },
+  { text: 'numbers', size: 'xl', weight: 640, rot: 1.3, lift: '-2.1rem' },
+] as const;
+
+const tiles = [
+  { k: 'Pieces published', v: fmt.format(s.total) },
+  { k: 'Words', v: fmt.format(s.words) },
+  { k: 'Minutes of reading', v: fmt.format(s.minutes) },
+  { k: 'Distinct tags', v: fmt.format(s.tagTotal) },
+  { k: 'Days since the first', v: fmt.format(s.daysSinceFirst) },
+];
+---
+
+<Base
+  title="Stats"
+  description="What the archive adds up to: how much I've published, when, and about what — counted from the content files themselves."
+>
+  <PageHeader eyebrow="The archive, counted" lines={heading}>
+    <p class="masthead__deck">
+      Everything below is counted from the Markdown files that make this site, at
+      build time. No reader is measured &mdash; these are numbers about the
+      writing, not about you.
+    </p>
+  </PageHeader>
+
+  <section class="stat-strip">
+    <dl class="stat-tiles">
+      {
+        tiles.map((t) => (
+          <div class="stat-tile">
+            <dt class="annotation">{t.k}</dt>
+            <dd class="stat-tile__num display">{t.v}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    {
+      s.first && s.last && (
+        <p class="annotation stat-strip__range">
+          First piece <FormattedDate date={s.first} format="long" />, most recent{' '}
+          <FormattedDate date={s.last} format="long" />.
+        </p>
+      )
+    }
+  </section>
+
+  <section class="chart-block">
+    <div class="section-head">
+      <h2 class="display display--section">What gets published</h2>
+    </div>
+    <p class="annotation chart-note">
+      Count of pieces per kind. One measure, one hue &mdash; the label carries
+      which is which.
+    </p>
+    <ul class="bar-list">
+      {
+        s.kinds.map((k) => (
+          <li class="bar-row">
+            <span class="bar-row__label annotation">{k.label}</span>
+            <span class="bar-row__track" aria-hidden="true">
+              <span class="bar-row__fill" style={`--pct:${(k.count / kindMax) * 100}%`} />
+            </span>
+            <span class="bar-row__value annotation tabular">{k.count}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="chart-block">
+    <div class="section-head">
+      <h2 class="display display--section">When it happened</h2>
+    </div>
+    <p class="annotation chart-note">
+      Pieces per month. Deeper cell = more that month; an empty cell is a month
+      with nothing. Hover any cell for the exact count, or open the table below.
+    </p>
+
+    <div class="heat">
+      <div class="heat__grid" role="presentation">
+        <div class="heat__row heat__row--head">
+          <span class="heat__year annotation" />
+          {MONTHS_SHORT.map((m, i) => (
+            <span class="heat__head annotation" title={MONTHS_FULL[i]}>
+              {m}
+            </span>
+          ))}
+        </div>
+        {
+          grid.map((row) => (
+            <div class="heat__row">
+              <span class="heat__year annotation tabular">{row.year}</span>
+              {row.cells.map((c) => (
+                <span
+                  class={`heat__cell heat__cell--l${c.level}`}
+                  title={`${MONTHS_FULL[c.month - 1]} ${c.year}: ${c.count} ${
+                    c.count === 1 ? 'piece' : 'pieces'
+                  }`}
+                />
+              ))}
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="heat__legend annotation">
+        <span>Fewer</span>
+        <span class="heat__cell heat__cell--l0" aria-hidden="true"></span>
+        <span class="heat__cell heat__cell--l1" aria-hidden="true"></span>
+        <span class="heat__cell heat__cell--l2" aria-hidden="true"></span>
+        <span class="heat__cell heat__cell--l3" aria-hidden="true"></span>
+        <span class="heat__cell heat__cell--l4" aria-hidden="true"></span>
+        <span>More (peak {s.monthMax})</span>
+      </p>
+
+      {/* Its own summary class, not `.disclosure` — that one is forced open and
+          inert on wide screens, which is right for the contents rail and wrong
+          for a table the reader opens on purpose. */}
+      <details class="chart-table">
+        <summary class="chart-table__summary annotation">
+          The same months, as a table
+          <span class="chart-table__chevron" aria-hidden="true"></span>
+        </summary>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Year</th>
+              {MONTHS_FULL.map((m) => (
+                <th scope="col">{m.slice(0, 3)}</th>
+              ))}
+              <th scope="col">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {grid.map((row) => (
+              <tr>
+                <th scope="row">{row.year}</th>
+                {row.cells.map((c) => (
+                  <td>{c.count || '·'}</td>
+                ))}
+                <td class="data-table__total">
+                  {row.cells.reduce((sum, c) => sum + c.count, 0)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
+    </div>
+
+    {
+      s.busiest && (
+        <p class="annotation chart-note">
+          Busiest month so far: {MONTHS_FULL[s.busiest.month - 1]} {s.busiest.year},
+          with {s.busiest.count} {s.busiest.count === 1 ? 'piece' : 'pieces'}.
+        </p>
+      )
+    }
+  </section>
+
+  <section class="chart-block">
+    <div class="section-head">
+      <h2 class="display display--section">Year by year</h2>
+    </div>
+    <ul class="bar-list bar-list--years">
+      {
+        s.years.map((y) => (
+          <li class="bar-row">
+            <span class="bar-row__label annotation tabular">{y.year}</span>
+            <span class="bar-row__track" aria-hidden="true">
+              <span class="bar-row__fill" style={`--pct:${(y.count / yearMax) * 100}%`} />
+            </span>
+            <span class="bar-row__value annotation tabular">
+              {y.count} <span class="bar-row__sub">· {fmt.format(y.words)} words</span>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {
+    topTags.length > 0 && (
+      <section class="chart-block">
+        <div class="section-head">
+          <h2 class="display display--section">What it's about</h2>
+          <a class="annotation link-quiet" href="/tags">
+            all tags &rarr;
+          </a>
+        </div>
+        <ul class="bar-list">
+          {topTags.map((t) => (
+            <li class="bar-row">
+              <a class="bar-row__label annotation link-quiet" href={`/tags/${t.tag}`}>
+                {t.tag}
+              </a>
+              <span class="bar-row__track" aria-hidden="true">
+                <span class="bar-row__fill" style={`--pct:${(t.count / tagMax) * 100}%`} />
+              </span>
+              <span class="bar-row__value annotation tabular">{t.count}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    s.longestPiece && (
+      <p class="annotation chart-note">
+        Longest single piece:{' '}
+        <a class="link-quiet" href={s.longestPiece.url}>
+          {s.longestPiece.title}
+        </a>{' '}
+        at {fmt.format(s.longestPiece.words)} words. The whole map of how these
+        connect is on <a class="link-quiet" href="/map">/map</a>.
+      </p>
+    )
+  }
+</Base>

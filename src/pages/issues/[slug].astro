@@ -1,0 +1,114 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import FrameField from '../../components/FrameField.astro';
+import ScatterHead from '../../components/ScatterHead.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import { getIssueEntries, getIssuePieces } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const issues = await getIssueEntries();
+  return issues.map((issue) => ({ params: { slug: issue.id }, props: { issue } }));
+}
+
+const { issue } = Astro.props;
+const { number, title, date, blurb, entries } = issue.data;
+
+const pieces = await getIssuePieces(entries);
+
+// Every piece's body, rendered in the issue's order. `Content` is a component,
+// so the array is built here and dropped into the template below.
+const rendered = await Promise.all(
+  pieces.map(async (piece) => ({ piece, Content: (await render(piece.entry)).Content })),
+);
+
+// The issue's own body is the editor's note on the cover.
+const { Content: Note } = await render(issue);
+
+const KIND_LABEL = { til: 'TIL', blog: 'Writing', links: 'Link', quotes: 'Quote' } as const;
+
+const num = String(number).padStart(2, '0');
+
+const cover = [
+  { text: 'Issue', size: 'm', weight: 380, italic: true, rot: -2 },
+  { text: num, size: 'xl', weight: 700, shift: '1.5rem', lift: '-0.9rem', rot: 1.2 },
+] as const;
+---
+
+<Base
+  title={`Issue ${num} — ${title}`}
+  description={blurb ?? `Issue ${num} of the zine: ${title}.`}
+  type="article"
+>
+  <article class="zine" data-pagefind-body>
+    <header class="zine__cover">
+      <FrameField />
+      <p class="eyebrow">
+        The zine <span aria-hidden="true">·</span> <FormattedDate date={date} format="long" />
+      </p>
+      <ScatterHead lines={cover} as="h1" />
+      <p class="zine__title display">{title}</p>
+      {blurb && <p class="masthead__deck zine__blurb">{blurb}</p>}
+
+      <div class="prose zine__note">
+        <Note />
+      </div>
+
+      <nav class="zine__contents" aria-label="Contents">
+        <h2 class="annotation zine__contents-head">Contents</h2>
+        <ol class="zine__contents-list">
+          {
+            rendered.map(({ piece }, i) => (
+              <li>
+                <span class="zine__contents-num annotation">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <a class="link-quiet" href={`#piece-${i + 1}`}>
+                  {piece.title}
+                </a>
+                <span class="annotation zine__contents-kind">{KIND_LABEL[piece.kind]}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+
+      <p class="zine__actions">
+        <button class="zine__print annotation" type="button" data-print>
+          Print this issue &#8595;
+        </button>
+        <a class="annotation link-quiet" href="/issues">All issues &rarr;</a>
+      </p>
+    </header>
+
+    {
+      rendered.map(({ piece, Content }, i) => (
+        <section class="zine__piece" id={`piece-${i + 1}`}>
+          <p class="eyebrow zine__piece-eyebrow">
+            {String(i + 1).padStart(2, '0')} <span aria-hidden="true">·</span>{' '}
+            {KIND_LABEL[piece.kind]} <span aria-hidden="true">·</span>{' '}
+            <FormattedDate date={piece.date} />
+          </p>
+          <h2 class="display display--title zine__piece-title">
+            <a class="zine__piece-link" href={piece.url}>
+              {piece.title}
+            </a>
+          </h2>
+          <div class:list={['prose', piece.kind === 'quotes' && 'zine__piece--quote']}>
+            <Content />
+          </div>
+          <p class="article__end" aria-hidden="true">&#10086;</p>
+        </section>
+      ))
+    }
+
+    <footer class="zine__colophon annotation">
+      <p>
+        Issue {num} <span aria-hidden="true">·</span> {title} <span aria-hidden="true">·</span>{' '}
+        <FormattedDate date={date} format="long" /> <span aria-hidden="true">·</span>{' '}
+        shreyashrai.com
+      </p>
+      <p>Set in Fraunces &amp; Schibsted Grotesk.</p>
+    </footer>
+  </article>
+</Base>

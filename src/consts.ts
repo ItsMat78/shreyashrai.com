@@ -9,10 +9,20 @@ export const GITHUB_URL = 'https://github.com/ItsMat78';
 export const LINKEDIN_URL = 'https://linkedin.com/in/shreyash-rai-3aa123251';
 export const EMAIL = 'contact@shreyashrai.com';
 
-// Cloudflare Web Analytics. Paste the site token from the Cloudflare
-// dashboard (Analytics & Logs → Web Analytics → add site) to turn it on;
-// empty string ships no script at all.
-export const CF_ANALYTICS_TOKEN = '';
+// Cloudflare Web Analytics. The site token comes from the Cloudflare dashboard
+// (Analytics & Logs → Web Analytics → add site).
+//
+// It's read from the PUBLIC_CF_ANALYTICS_TOKEN environment variable — set it in
+// the Cloudflare Pages project (Settings → Variables, for Production AND
+// Preview) and locally in a `.env` file, which git ignores. The repo is public,
+// so the token stays out of it. `.env.example` documents the name.
+//
+// The fallback below is a deliberate escape hatch for a token you don't mind
+// committing; leave it empty and no analytics script is shipped at all.
+const CF_ANALYTICS_TOKEN_FALLBACK = '';
+
+export const CF_ANALYTICS_TOKEN =
+  import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN || CF_ANALYTICS_TOKEN_FALLBACK;
 
 // Newsletter (Buttondown). Set to your Buttondown username to render the
 // signup form; empty string ships no form at all. Buttondown's free tier can

@@ -99,4 +99,23 @@ const quotes = defineCollection({
   }),
 });
 
-export const collections = { til, blog, projects, links, quotes };
+// Printed issues ("the zine"): a hand-picked reading order across the other
+// collections, set as one continuous spread meant to be printed. `entries` are
+// "collection/slug" refs (e.g. "til/linked-lists") — the issue holds no prose of
+// its own beyond the body, which is the editor's note on the cover.
+const issues = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/issues' }),
+  schema: z.object({
+    number: z.number(),
+    title: z.string(),
+    date: z.coerce.date(),
+    // One-line teaser for the /issues list and the meta description.
+    blurb: z.string().optional(),
+    entries: z
+      .array(z.string().regex(/^(til|blog|links|quotes)\/[^/]+$/))
+      .min(1),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { til, blog, projects, links, quotes, issues };

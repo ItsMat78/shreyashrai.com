@@ -203,7 +203,24 @@ Every push to main redeploys.
 
 Optional integrations (all gated — empty config ships nothing):
 
-- **Analytics:** set `CF_ANALYTICS_TOKEN` in `src/consts.ts`
+- **Analytics:** Cloudflare Web Analytics, page views, privacy-first. Two ways
+  in — **use one, never both**, or every hit is counted twice:
+  1. *(simplest)* Workers & Pages → this project → **Metrics** → **Enable**
+     under Web Analytics. Cloudflare injects its own beacon on the next build.
+     Leave `PUBLIC_CF_ANALYTICS_TOKEN` unset; the wiring below stays idle.
+     Note the Metrics tab ALSO shows Pages' own request/bandwidth numbers,
+     which are server-side and always on — those are not page views.
+  2. Self-injected: get the site token (dashboard → Analytics & Logs → **Web
+     Analytics**, which is account-level, not inside the domain — direct link
+     `https://dash.cloudflare.com/?to=/:account/web-analytics` → add site →
+     Manage site → the `data-cf-beacon` token in the snippet), then set
+     `PUBLIC_CF_ANALYTICS_TOKEN` in the Pages project under Settings →
+     Variables (Production, plus Preview to count preview traffic) and in a
+     local `.env` for dev. See `.env.example`. The repo is public, so the token
+     is kept out of it; no variable set means no script ships.
+
+  Either way the beacon is JS, so feed readers hitting `/rss.xml` never appear
+  in it — those show up in Cloudflare's server-side traffic view instead.
 - **Newsletter:** set `BUTTONDOWN_USER` (Buttondown auto-sends from RSS)
 - **Comments:** set all four `GISCUS` fields (GitHub Discussions + giscus app)
 

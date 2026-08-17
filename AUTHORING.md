@@ -15,6 +15,7 @@ page — so if the build passes, the page is valid.
 | **Link** | `src/content/links/` | `/links/<slug>` | yes | A pointer OUT at someone else's thing + a line of commentary |
 | **Quote** | `src/content/quotes/` | `/quotes/<slug>` | no (source is the heading) | Commonplace book |
 | **Project** | `src/content/projects/` | `/projects/<slug>` | yes | Things you built |
+| **Issue** | `src/content/issues/` | `/issues/<slug>` | yes | A printed zine issue: a hand-picked reading order over the entries above |
 
 **`/notes` is not a content type** — it's a page that pools the newest TILs,
 Writing, Links, and Quotes into one river. To "post a note," post one of those
@@ -124,6 +125,33 @@ source: https://github.com/you/repo   # optional
 
 The long-form writeup.
 ```
+
+### Issue (the zine) — `src/content/issues/<slug>.md`
+
+An issue holds **no writing of its own** beyond the editor's note in the body.
+`entries` is an ordered list of `collection/slug` refs; the page renders each
+one's full text in that order, and the whole spread is set for printing. A ref
+pointing at a missing or drafted entry is dropped silently, so unpublishing a
+piece never breaks an old issue.
+
+```md
+---
+number: 2
+title: "How I learn in public"
+date: 2026-08-18
+blurb: "One line for the /issues list and the meta description."   # optional
+entries:
+  - blog/how-this-site-works
+  - links/the-original-link-blog
+  - quotes/willison-on-writing
+  - til/linked-lists
+---
+
+The editor's note, printed on the cover.
+```
+
+Only `til`, `blog`, `links`, and `quotes` refs are valid (projects aren't dated
+reading). The slug is the filename, so `01.md` → `/issues/01`.
 
 ---
 

@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { getAllEntries, getProjectEntries } from '../lib/content';
+
+// A door with no handle: land here and you get thrown somewhere in the archive.
+// The pick happens in the browser (`initRandom` in the Base.astro client
+// module) via location.replace, so /random never lands in history and the back
+// button behaves. Without JS the page is just a full index to choose from.
+
+const [entries, projects] = await Promise.all([getAllEntries(), getProjectEntries()]);
+
+const doors = [
+  ...entries.map((e) => ({
+    title: e.collection === 'quotes' ? e.source || 'Quote' : e.title,
+    url: e.url,
+  })),
+  ...projects.map((p) => ({ title: p.data.title, url: `/projects/${p.id}/` })),
+];
+
+const heading = [
+  { text: 'Take me', size: 'l', weight: 380, italic: true, rot: -2, shift: '2.5rem' },
+  { text: 'somewhere', size: 'xl', weight: 640, rot: 1.2, lift: '-2.1rem' },
+] as const;
+---
+
+<Base
+  title="Random"
+  description="A random door into the archive — one of the notes, links, quotes, or projects, picked at random."
+>
+  <PageHeader eyebrow="Shuffle" lines={heading}>
+    <p class="masthead__deck">
+      Sending you to one of {doors.length} pieces at random. If nothing happens,
+      pick one yourself.
+    </p>
+  </PageHeader>
+
+  <div class="random" id="random" data-pagefind-ignore>
+    {/* `<` is escaped so a title can never close this script tag early. */}
+    <script
+      is:inline
+      type="application/json"
+      id="random-data"
+      set:html={JSON.stringify(doors).replace(/</g, '\\u003c')}
+    />
+
+    <div class="section-head">
+      <h2 class="display display--section">Everything, if you'd rather choose</h2>
+    </div>
+    <ul class="random__list">
+      {
+        doors.map((d) => (
+          <li>
+            <a class="link-quiet" href={d.url}>
+              {d.title}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Base>

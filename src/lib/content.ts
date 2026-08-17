@@ -1,4 +1,4 @@
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 
 // Every page and feed pulls entries through this module. Draft filtering,
 // sorting, and tag normalisation live here and nowhere else, so a page can't
@@ -87,7 +87,8 @@ function toItem(
     // Quotes have no title — the source is the heading; the body is the quote.
     return {
       ...base,
-      title: 'source' in d ? d.source : '',
+      // `source` is optional — a sourceless quote carries no title at all.
+      title: ('source' in d ? d.source : undefined) ?? '',
       source: 'source' in d ? d.source : undefined,
       sourceUrl: 'sourceUrl' in d ? d.sourceUrl : undefined,
       via: 'via' in d ? d.via : undefined,
@@ -293,7 +294,12 @@ async function allLinkable(): Promise<
     ...posts.map((e) => ({ id: e.id, collection: 'blog' as const, title: e.data.title, body: e.body })),
     ...projects.map((e) => ({ id: e.id, collection: 'projects' as const, title: e.data.title, body: e.body })),
     ...links.map((e) => ({ id: e.id, collection: 'links' as const, title: e.data.title, body: e.body })),
-    ...quotes.map((e) => ({ id: e.id, collection: 'quotes' as const, title: e.data.source, body: e.body })),
+    ...quotes.map((e) => ({
+      id: e.id,
+      collection: 'quotes' as const,
+      title: e.data.source ?? 'Quote',
+      body: e.body,
+    })),
   ];
 }
 
@@ -385,6 +391,73 @@ export async function getRelatedProjects(
     .sort((a, b) => b.shared - a.shared || a.e.data.order - b.e.data.order)
     .slice(0, limit)
     .map((x) => x.e);
+}
+
+// ---- Issues (the printed zine) -------------------------------------------
+// An issue is a hand-picked reading order across the dated collections. It
+// stores "collection/slug" refs; this resolves them into real entries so a
+// single page can render every piece's body end to end.
+
+export type Issue = CollectionEntry<'issues'>;
+
+export type IssuePiece = {
+  kind: Kind;
+  id: string;
+  title: string;
+  date: Date;
+  url: string;
+  entry: Til | Post | Link | Quote;
+};
+
+export async function getIssueEntries(): Promise<Issue[]> {
+  const entries = await getCollection('issues', ({ data }) => includeDrafts || !data.draft);
+  return entries.sort((a, b) => b.data.number - a.data.number);
+}
+
+// Resolve an issue's refs, in the order the issue lists them. A ref pointing at
+// a missing or drafted entry is dropped rather than failing the build — an
+// issue is a curation, and a piece can be unpublished after it was picked.
+export async function getIssuePieces(refs: string[]): Promise<IssuePiece[]> {
+  const pieces = await Promise.all(
+    refs.map(async (ref): Promise<IssuePiece | null> => {
+      const slash = ref.indexOf('/');
+      if (slash < 0) return null;
+      const kind = ref.slice(0, slash) as Kind;
+      const id = ref.slice(slash + 1);
+
+      // getEntry is called per collection so the union stays typed.
+      const entry =
+        kind === 'til'
+          ? await getEntry('til', id)
+          : kind === 'blog'
+            ? await getEntry('blog', id)
+            : kind === 'links'
+              ? await getEntry('links', id)
+              : kind === 'quotes'
+                ? await getEntry('quotes', id)
+                : undefined;
+
+      if (!entry) return null;
+      if (!includeDrafts && entry.data.draft) return null;
+
+      const title =
+        kind === 'quotes'
+          ? ('source' in entry.data ? entry.data.source : undefined) ?? 'Quote'
+          : 'title' in entry.data
+            ? entry.data.title
+            : '';
+
+      return {
+        kind,
+        id,
+        title,
+        date: entry.data.date,
+        url: `/${kind}/${id}/`,
+        entry,
+      };
+    }),
+  );
+  return pieces.filter((p): p is IssuePiece => p !== null);
 }
 
 // ---- Featured -----------------------------------------------------------

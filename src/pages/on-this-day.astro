@@ -1,0 +1,144 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { getAllEntries } from '../lib/content';
+
+// An almanac for the archive: what got published on today's date in earlier
+// years, plus the whole year laid out month by month.
+//
+// The site is static, so "today" can't be known at build time. The page ships
+// every entry as JSON and the Base.astro client module (`initAlmanac`) fills the
+// top block using the READER's local date. Without JS the block falls back to
+// the build date's matches, which is why it's rendered server-side too.
+
+const entries = await getAllEntries();
+
+const KIND_LABEL = {
+  til: 'TIL',
+  blog: 'Writing',
+  links: 'Link',
+  quotes: 'Quote',
+} as const;
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+// Everything the client needs to re-run the match locally. Dates are read in
+// UTC, matching how FormattedDate renders them everywhere else.
+const almanac = entries.map((e) => ({
+  title: e.collection === 'quotes' ? e.source || 'Quote' : e.title,
+  url: e.url,
+  kind: KIND_LABEL[e.collection],
+  month: e.date.getUTCMonth() + 1,
+  day: e.date.getUTCDate(),
+  year: e.date.getUTCFullYear(),
+}));
+
+// Build-date fallback (replaced client-side with the reader's own date).
+const built = new Date();
+const buildMonth = built.getUTCMonth() + 1;
+const buildDay = built.getUTCDate();
+const buildMatches = almanac.filter((a) => a.month === buildMonth && a.day === buildDay);
+
+// The year, month by month — the always-true half of the page.
+const byMonth = MONTHS.map((name, i) => ({
+  name,
+  index: i + 1,
+  items: almanac
+    .filter((a) => a.month === i + 1)
+    .sort((a, b) => a.day - b.day || b.year - a.year),
+}));
+
+const heading = [
+  { text: 'On this', size: 'l', weight: 600, rot: -1.6 },
+  { text: 'day', size: 'xl', weight: 420, italic: true, shift: '4.2rem', lift: '-0.24em', rot: 1.5 },
+] as const;
+---
+
+<Base
+  title="On this day"
+  description="What I published on today's date in earlier years, plus the whole archive laid out month by month."
+>
+  <PageHeader eyebrow="The almanac" lines={heading}>
+    <p class="masthead__deck">
+      An archive is only useful if it resurfaces. This page checks today's date
+      against everything I've posted, then lays the rest of the year out month by
+      month.
+    </p>
+  </PageHeader>
+
+  <section class="otd" id="almanac">
+    <div class="section-head">
+      <h2 class="display display--section">
+        Today &mdash; <span id="otd-date">{MONTHS[buildMonth - 1]} {buildDay}</span>
+      </h2>
+    </div>
+
+    <div class="otd__body" id="otd-list">
+      {
+        buildMatches.length === 0 ? (
+          <p class="annotation otd__empty">Nothing on this date yet.</p>
+        ) : (
+          <ul class="otd__list">
+            {buildMatches.map((m) => (
+              <li class="otd__item">
+                <span class="annotation otd__year">{m.year}</span>
+                <a class="otd__title" href={m.url}>
+                  {m.title}
+                </a>
+                <span class="annotation otd__kind">{m.kind}</span>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <p class="annotation otd__note" id="otd-note">
+      Dates are checked against your device's calendar.
+    </p>
+
+    {/* `<` is escaped so a title can never close this script tag early. */}
+    <script
+      is:inline
+      type="application/json"
+      id="almanac-data"
+      set:html={JSON.stringify(almanac).replace(/</g, '\\u003c')}
+    />
+  </section>
+
+  <section class="otd-year">
+    <div class="section-head">
+      <h2 class="display display--section">The whole year</h2>
+      <a class="annotation link-quiet" href="/stream">the firehose &rarr;</a>
+    </div>
+
+    <div class="otd-year__grid">
+      {
+        byMonth.map((m) => (
+          <div class:list={['otd-month', m.items.length === 0 && 'otd-month--empty']}>
+            <h3 class="annotation otd-month__name">{m.name}</h3>
+            {m.items.length === 0 ? (
+              <p class="otd-month__blank annotation">&mdash;</p>
+            ) : (
+              <ul class="otd-month__list">
+                {m.items.map((it) => (
+                  <li>
+                    <span class="annotation otd-month__day">
+                      {String(it.day).padStart(2, '0')}
+                    </span>
+                    <a class="link-quiet" href={it.url}>
+                      {it.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Base>

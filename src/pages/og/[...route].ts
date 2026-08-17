@@ -173,7 +173,9 @@ export const GET: APIRoute = async ({ props }) => {
   composites.push({ input: overlay, left: 0, top: 0 });
   const image = await canvas.composite(composites).png({ compressionLevel: 9 }).toBuffer();
 
-  return new Response(image, {
+  // Node's Buffer isn't a BodyInit in the DOM lib the checker uses; the
+  // underlying bytes are, and this copies nothing at runtime.
+  return new Response(new Uint8Array(image), {
     headers: {
       'Content-Type': 'image/png',
       'Cache-Control': 'public, max-age=31536000, immutable',
