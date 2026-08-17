@@ -1,19 +1,27 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import { getTypingParagraphs } from '../lib/paragraphs';
+import { getMonkeytypeProfile } from '../lib/monkeytype';
 
-// The type lab: drive Fraunces' four axes by hand and watch a scatter fragment
-// change. The site already ships the FULL variable font (opsz + wght + SOFT +
-// WONK) for its headlines — this page is that font's specimen sheet.
-// Behaviour lives in the Base.astro client module (`initTypeLab`).
+// Two things share this page, both meanings of the word:
+//   1. a typing test, run on this site's own prose (lib/paragraphs.ts)
+//   2. the Fraunces specimen lab — the four variable axes, driven by hand
+// Behaviour for both lives in the Base.astro client module (`initTypingTest`
+// and `initTypeLab`).
+const paragraphs = await getTypingParagraphs();
+
+// Build-time snapshot of the public Monkeytype profile. Null when no username
+// is configured or the API is unreachable — the section then ships nothing.
+const monkeytype = await getMonkeytypeProfile();
 
 const heading = [
-  { text: 'Set in', size: 'l', weight: 380, italic: true, rot: -2, shift: '2rem' },
+  { text: 'Set in', size: 'l', weight: 380, italic: true, rot: -2, shift: '3rem' },
   { text: 'Fraunces', size: 'xl', weight: 700, rot: 1.4, lift: '-2.1rem', wonk: 1 },
 ] as const;
 
-// The four axes, with the range the font actually supports. `prop` is the
-// matching ScatterHead fragment prop, printed in the output panel.
+// The four axes, with the range the font actually supports.
 const axes = [
   {
     id: 'opsz',
@@ -22,7 +30,7 @@ const axes = [
     max: 144,
     step: 1,
     value: 144,
-    note: 'Thick/thin contrast. Low = sturdy text cut, high = the display cut.',
+    note: 'How much the thick and thin strokes differ. Low is built for reading, high for headings.',
   },
   {
     id: 'wght',
@@ -31,7 +39,7 @@ const axes = [
     max: 900,
     step: 10,
     value: 560,
-    note: 'The fragment `weight` prop.',
+    note: 'How heavy the strokes run.',
   },
   {
     id: 'SOFT',
@@ -40,7 +48,7 @@ const axes = [
     max: 100,
     step: 1,
     value: 0,
-    note: 'Rounds the terminals. The site keeps this at 0.',
+    note: 'Rounds off the ends of strokes. This site leaves it at 0.',
   },
   {
     id: 'WONK',
@@ -49,7 +57,7 @@ const axes = [
     max: 1,
     step: 0.01,
     value: 0,
-    note: 'Swaps in the quirky alternates — the `wonk` prop.',
+    note: 'Swaps in the odder alternate letterforms.',
   },
 ] as const;
 
@@ -66,122 +74,283 @@ const presets = [
 
 <Base
   title="Type"
-  description="A specimen sheet for Fraunces — drag the optical size, weight, softness, and wonk axes and watch the site's display type change."
+  description="A typing test that uses sentences from my own posts, and the sliders for Fraunces, the font this site is set in."
 >
-  <PageHeader eyebrow="Specimen sheet" lines={heading}>
+  <PageHeader eyebrow="Typing and typefaces" lines={heading}>
     <p class="masthead__deck">
-      The headlines on this site are one variable font pushed around: Fraunces,
-      with its optical-size, weight, softness, and <em>wonk</em> axes. Drag them
-      and see what each one actually does.
+      Two things that share a word. A typing test that pulls its sentences from
+      my own posts, and the settings for Fraunces, the font the headings here are
+      set in.
     </p>
   </PageHeader>
 
-  <div class="type-lab" id="type-lab" data-pagefind-ignore>
-    <div class="type-stage">
-      <p class="type-stage__line" id="type-preview">Learning out loud</p>
-    </div>
+  {
+    paragraphs.length > 0 && (
+      <section class="typing-test" id="tt" data-pagefind-ignore>
+        <div class="section-head">
+          <h2 class="display display--section">Typing test</h2>
+        </div>
+        <p class="chart-note annotation">
+          The words are taken at random from my posts. Start typing and the clock
+          starts. Space moves to the next word; Shift+Enter or Escape starts over.
+        </p>
 
-    <div class="type-controls">
-      <div class="type-field type-field--wide">
-        <label class="annotation" for="type-text">Phrase</label>
-        <input
-          class="type-input"
-          id="type-text"
-          type="text"
-          value="Learning out loud"
-          maxlength="42"
-          autocomplete="off"
-          spellcheck="false"
-        />
-      </div>
-
-      {
-        axes.map((a) => (
-          <div class="type-field">
-            <label class="annotation" for={`type-${a.id}`}>
-              {a.label} <output class="type-value" id={`type-${a.id}-out`}>{a.value}</output>
-            </label>
-            <input
-              class="type-range"
-              type="range"
-              id={`type-${a.id}`}
-              data-axis={a.id}
-              min={a.min}
-              max={a.max}
-              step={a.step}
-              value={a.value}
-            />
-            <p class="type-note annotation">{a.note}</p>
+        <div class="tt">
+          <div class="tt__bar">
+            <div class="tt__chips" role="group" aria-label="Test length">
+              <button class="tt__chip is-on" type="button" data-seconds="15">
+                15s
+              </button>
+              <button class="tt__chip" type="button" data-seconds="30">
+                30s
+              </button>
+            </div>
+            <p class="tt__clock display" id="tt-clock">15</p>
+            <p class="tt__source annotation" id="tt-source" />
           </div>
-        ))
-      }
 
-      <div class="type-field">
-        <label class="annotation" for="type-size">
-          Size <output class="type-value" id="type-size-out">96</output>px
-        </label>
-        <input class="type-range" type="range" id="type-size" min="18" max="180" step="1" value="96" />
-        <p class="type-note annotation">Rendered size — the axes read differently big and small.</p>
-      </div>
+          <div class="tt__stage" id="tt-stage">
+            <div class="tt__viewport" id="tt-viewport">
+              <div class="tt__words" id="tt-words" aria-hidden="true" />
+              <span class="tt__caret" id="tt-caret" aria-hidden="true" />
+            </div>
+            <label class="tt__label" for="tt-input">Typing test input</label>
+            <input
+              class="tt__input"
+              id="tt-input"
+              type="text"
+              maxlength="40"
+              autocomplete="off"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+            />
+          </div>
 
-      <div class="type-field">
-        <label class="annotation" for="type-rot">
-          Tilt <output class="type-value" id="type-rot-out">0</output>&deg;
-        </label>
-        <input class="type-range" type="range" id="type-rot" min="-8" max="8" step="0.1" value="0" />
-        <p class="type-note annotation">The kinetic tumble — the `rot` prop.</p>
-      </div>
+          <div class="tt__foot">
+            <p class="tt__hint annotation" id="tt-hint">Click the words to begin</p>
+            <button class="tt__restart annotation" type="button" id="tt-restart">
+              Restart
+            </button>
+          </div>
 
-      <div class="type-field type-field--check">
-        <label class="annotation type-check">
-          <input type="checkbox" id="type-italic" />
-          Italic cut
-        </label>
-        <p class="type-note annotation">A separate font file, not a slant.</p>
-      </div>
-    </div>
+          <div class="tt__results" id="tt-results" role="status" hidden>
+            <dl class="stat-tiles tt__scores">
+              <div class="stat-tile">
+                <dt class="annotation">Words per minute</dt>
+                <dd class="stat-tile__num display" id="tt-wpm">0</dd>
+              </div>
+              <div class="stat-tile">
+                <dt class="annotation">Accuracy</dt>
+                <dd class="stat-tile__num display" id="tt-acc">0%</dd>
+              </div>
+              <div class="stat-tile">
+                <dt class="annotation">Raw</dt>
+                <dd class="stat-tile__num display" id="tt-raw">0</dd>
+              </div>
+            </dl>
+            <p class="chart-note annotation" id="tt-verdict" />
+          </div>
+        </div>
 
-    <div class="type-presets">
-      <span class="annotation type-presets__label">Presets</span>
-      {
-        presets.map((p) => (
-          <button
-            class="tag type-preset"
-            type="button"
-            data-preset={JSON.stringify(p)}
-          >
-            {p.name}
-          </button>
-        ))
-      }
-    </div>
+        {/* `<` is escaped so a paragraph can never close this script early. */}
+        <script
+          is:inline
+          type="application/json"
+          id="tt-data"
+          set:html={JSON.stringify(paragraphs).replace(/</g, '\\u003c')}
+        />
+      </section>
+    )
+  }
 
-    <div class="type-output">
-      <div class="type-output__head">
-        <span class="annotation">Fragment props for &lt;ScatterHead /&gt;</span>
-        <button class="type-copy annotation" type="button" id="type-copy">Copy</button>
-      </div>
-      <pre class="type-output__code"><code id="type-code"></code></pre>
-      <p class="type-note annotation">
-        Paste this into any page's <code>heading</code> array — that's exactly how
-        every headline on this site is composed.
-      </p>
-    </div>
-  </div>
+  {
+    monkeytype && (
+      <section class="mt-stats">
+        <div class="section-head">
+          <h2 class="display display--section">My Monkeytype numbers</h2>
+          <a class="annotation link-quiet" href={monkeytype.url}>
+            Profile &rarr;
+          </a>
+        </div>
+        <p class="chart-note annotation">
+          Read from Monkeytype when this page was last built, on{' '}
+          <FormattedDate date={monkeytype.fetchedAt} format="long" />.
+          {monkeytype.averages
+            ? ` The averages cover my last ${monkeytype.averages.sample.toLocaleString('en-GB')} tests, at ${monkeytype.averages.accuracy}% accuracy; the bests below are single runs, so they flatter me.`
+            : " The bests below are single runs, so they're better than a normal day."}
+        </p>
 
-  <section class="type-waterfall">
+        <dl class="stat-tiles">
+          {monkeytype.averages && (
+            <div class="stat-tile">
+              <dt class="annotation">Average wpm</dt>
+              <dd class="stat-tile__num display">{monkeytype.averages.wpm}</dd>
+            </div>
+          )}
+          {monkeytype.averages && (
+            <div class="stat-tile">
+              <dt class="annotation">Last 10 average</dt>
+              <dd class="stat-tile__num display">{monkeytype.averages.recentWpm}</dd>
+            </div>
+          )}
+          <div class="stat-tile">
+            <dt class="annotation">Tests completed</dt>
+            <dd class="stat-tile__num display">{monkeytype.completedTests.toLocaleString('en-GB')}</dd>
+          </div>
+          <div class="stat-tile">
+            <dt class="annotation">Hours typing</dt>
+            <dd class="stat-tile__num display">{monkeytype.timeTypingHours.toLocaleString('en-GB')}</dd>
+          </div>
+          <div class="stat-tile">
+            <dt class="annotation">Current streak</dt>
+            <dd class="stat-tile__num display">{monkeytype.streak}</dd>
+          </div>
+          <div class="stat-tile">
+            <dt class="annotation">Longest streak</dt>
+            <dd class="stat-tile__num display">{monkeytype.maxStreak}</dd>
+          </div>
+        </dl>
+
+        {monkeytype.timeBests.length > 0 && (
+          <div class="mt-bests">
+            <h3 class="annotation mt-bests__head">By test length</h3>
+            <ul class="bar-list">
+              {monkeytype.timeBests.map((best) => (
+                <li class="bar-row">
+                  <span class="bar-row__label annotation tabular">{best.label}</span>
+                  <span class="bar-row__track" aria-hidden="true">
+                    <span
+                      class="bar-row__fill"
+                      style={`--pct:${Math.min(100, (best.wpm / Math.max(...monkeytype.timeBests.map((b) => b.wpm))) * 100)}%`}
+                    />
+                  </span>
+                  <span class="bar-row__value annotation tabular">
+                    {best.wpm} wpm <span class="bar-row__sub">· {best.acc}% acc</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {monkeytype.wordBests.length > 0 && (
+          <div class="mt-bests">
+            <h3 class="annotation mt-bests__head">By word count</h3>
+            <ul class="bar-list">
+              {monkeytype.wordBests.map((best) => (
+                <li class="bar-row">
+                  <span class="bar-row__label annotation tabular">{best.label}</span>
+                  <span class="bar-row__track" aria-hidden="true">
+                    <span
+                      class="bar-row__fill"
+                      style={`--pct:${Math.min(100, (best.wpm / Math.max(...monkeytype.wordBests.map((b) => b.wpm))) * 100)}%`}
+                    />
+                  </span>
+                  <span class="bar-row__value annotation tabular">
+                    {best.wpm} wpm <span class="bar-row__sub">· {best.acc}% acc</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+    )
+  }
+
+  <section class="type-lab-section">
     <div class="section-head">
-      <h2 class="display display--section">The four size steps</h2>
+      <h2 class="display display--section">The font</h2>
     </div>
-    <p class="waterfall-line waterfall-line--s" data-step="s">Small — s</p>
-    <p class="waterfall-line waterfall-line--m" data-step="m">Medium — m</p>
-    <p class="waterfall-line waterfall-line--l" data-step="l">Large — l</p>
-    <p class="waterfall-line waterfall-line--xl" data-step="xl">Extra — xl</p>
-    <p class="annotation type-note">
-      Every headline fragment picks one of these, then bends weight, italic,
-      indent, and tilt on top. See them at work on
-      <a class="link-quiet" href="/notes">/notes</a> or
-      <a class="link-quiet" href="/series">/series</a>.
+    <p class="chart-note annotation">
+      Fraunces is a variable font, so a few of its properties can be moved
+      continuously rather than picked from a handful of styles. These are the
+      ones the headings on this site use.
     </p>
+
+    <div class="type-lab" id="type-lab" data-pagefind-ignore>
+      <div class="type-stage">
+        <p class="type-stage__line" id="type-preview">Learning out loud</p>
+      </div>
+
+      <div class="type-controls">
+        {/* Phrase and the italic switch share the top row: the checkbox alone in
+            its own box was a stranded half-empty cell. */}
+        <div class="type-field type-field--wide">
+          <div class="type-field__row">
+            <div class="type-field__grow">
+              <label class="annotation" for="type-text">
+                Phrase
+              </label>
+              <input
+                class="type-input"
+                id="type-text"
+                type="text"
+                value="Learning out loud"
+                maxlength="42"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </div>
+            <label class="annotation type-check" for="type-italic">
+              <input type="checkbox" id="type-italic" />
+              Italic cut
+            </label>
+          </div>
+          <p class="type-note annotation">
+            The italic is a separate font file, not a slanted copy of the roman.
+          </p>
+        </div>
+
+        {
+          axes.map((a) => (
+            <div class="type-field">
+              <label class="annotation" for={`type-${a.id}`}>
+                {a.label} <output class="type-value" id={`type-${a.id}-out`}>{a.value}</output>
+              </label>
+              <input
+                class="type-range"
+                type="range"
+                id={`type-${a.id}`}
+                data-axis={a.id}
+                min={a.min}
+                max={a.max}
+                step={a.step}
+                value={a.value}
+              />
+              <p class="type-note annotation">{a.note}</p>
+            </div>
+          ))
+        }
+
+        <div class="type-field">
+          <label class="annotation" for="type-size">
+            Size <output class="type-value" id="type-size-out">96</output>px
+          </label>
+          <input class="type-range" type="range" id="type-size" min="18" max="180" step="1" value="96" />
+          <p class="type-note annotation">The settings above look different at different sizes.</p>
+        </div>
+
+        <div class="type-field">
+          <label class="annotation" for="type-rot">
+            Tilt <output class="type-value" id="type-rot-out">0</output>&deg;
+          </label>
+          <input class="type-range" type="range" id="type-rot" min="-8" max="8" step="0.1" value="0" />
+          <p class="type-note annotation">The slight tilt the headings here use.</p>
+        </div>
+      </div>
+
+      <div class="type-presets">
+        <span class="annotation type-presets__label">Presets</span>
+        {
+          presets.map((p) => (
+            <button class="tag type-preset" type="button" data-preset={JSON.stringify(p)}>
+              {p.name}
+            </button>
+          ))
+        }
+      </div>
+    </div>
   </section>
 </Base>

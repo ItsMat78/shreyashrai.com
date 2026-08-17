@@ -41,7 +41,7 @@ const tiles = [
   { k: 'Words I wrote', v: fmt.format(s.words) },
   { k: 'Minutes of reading', v: fmt.format(s.minutes) },
   { k: 'Distinct tags', v: fmt.format(s.tagTotal) },
-  { k: 'Days since the first', v: fmt.format(s.daysSinceFirst) },
+  { k: 'Days since my first', v: fmt.format(s.daysSinceFirst) },
 ];
 ---
 
@@ -53,8 +53,10 @@ const tiles = [
     <p class="masthead__deck">
       Everything below is counted from the Markdown files that make this site, at
       build time. No reader is measured &mdash; these are numbers about the
-      writing, not about you. Quotes count as pieces but not as words: those
-      sentences belong to whoever said them.
+      writing, not about you. Quotes count as pieces and nothing else &mdash;
+      the words belong to whoever said them, and a quote's date is when the line
+      was said, not when I published anything. So the timeline below is my own
+      writing only.
     </p>
   </PageHeader>
 
@@ -107,8 +109,10 @@ const tiles = [
       <h2 class="display display--section">When it happened</h2>
     </div>
     <p class="annotation chart-note">
-      Pieces per month. Deeper cell = more that month; an empty cell is a month
-      with nothing. Hover any cell for the exact count, or open the table below.
+      Pieces I wrote, per month &mdash; quotes are dated to when they were said,
+      so they'd put marks on the calendar where I published nothing. Deeper cell
+      = more that month; an empty cell is a month with nothing. Hover any cell
+      for the exact count, or open the table below.
     </p>
 
     <div class="heat">

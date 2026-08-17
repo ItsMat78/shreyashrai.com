@@ -112,10 +112,17 @@ const newerAdj = newer && !seriesUrls.has(newer.url) ? newer : undefined;
     {series && (
       <SeriesNav name={series} parts={seriesParts} currentId={id} variant="end" />
     )}
-    <div class="article__trail">
-      <RelatedList items={related} />
-      <Backlinks links={backlinks} />
-    </div>
+    {/* Rendered only when it has something in it. Both children can come back
+        empty (especially now that Read next skips what the page already shows),
+        and an empty wrapper still contributes its margin and gap — which is
+        most of the dead space at the foot of a note. `:empty` can't be relied
+        on here: the whitespace between the two components defeats it. */}
+    {(related.length > 0 || backlinks.length > 0) && (
+      <div class="article__trail">
+        <RelatedList items={related} />
+        <Backlinks links={backlinks} />
+      </div>
+    )}
     <nav class="article-nav" aria-label={`More in ${back.label}`}>
       <a class="article-nav__back" href={back.href}>&larr; All {back.label}</a>
       {(olderAdj || newerAdj) && (

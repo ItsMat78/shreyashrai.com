@@ -448,8 +448,7 @@ const { title, description, type, ogImage } = Astro.props;
         const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
         const preview = $<HTMLElement>('type-preview');
         const textInput = $<HTMLInputElement>('type-text');
-        const code = $<HTMLElement>('type-code');
-        if (!preview || !textInput || !code) return;
+        if (!preview || !textInput) return;
 
         const ranges = {
           opsz: $<HTMLInputElement>('type-opsz'),
@@ -474,15 +473,6 @@ const { title, description, type, ogImage } = Astro.props;
           };
         }
 
-        // The scatter size steps, matched to the rendered px size so the printed
-        // props land in the right bracket.
-        function sizeStep(px: number): 's' | 'm' | 'l' | 'xl' {
-          if (px < 42) return 's';
-          if (px < 58) return 'm';
-          if (px < 84) return 'l';
-          return 'xl';
-        }
-
         function apply() {
           const s = read();
           preview!.textContent = s.text;
@@ -497,26 +487,6 @@ const { title, description, type, ogImage } = Astro.props;
             if (out && el) out.textContent = el.value;
           }
 
-          // The fragment props, exactly as a page's `heading` array wants them.
-          const parts = [
-            `text: '${s.text.replace(/'/g, "\\'")}'`,
-            `size: '${sizeStep(s.size)}'`,
-            `weight: ${Math.round(s.wght)}`,
-          ];
-          if (s.italic) parts.push('italic: true');
-          if (s.WONK > 0) parts.push(`wonk: ${s.WONK}`);
-          if (s.rot !== 0) parts.push(`rot: ${s.rot}`);
-
-          let out = `{ ${parts.join(', ')} }`;
-          // opsz and SOFT are fixed for .scatter__line, so a change to them is a
-          // CSS override rather than a fragment prop — say so instead of
-          // printing props that would silently do nothing.
-          if (s.opsz !== 144 || s.SOFT !== 0) {
-            out +=
-              `\n// plus a style override on that line:\n` +
-              `// font-variation-settings: 'opsz' ${s.opsz}, 'SOFT' ${s.SOFT}, 'WONK' ${s.WONK};`;
-          }
-          code!.textContent = out;
         }
 
         for (const el of Object.values(ranges)) el?.addEventListener('input', apply);
@@ -541,20 +511,6 @@ const { title, description, type, ogImage } = Astro.props;
             apply();
           });
         }
-
-        const copy = document.getElementById('type-copy');
-        copy?.addEventListener('click', async () => {
-          try {
-            await navigator.clipboard.writeText(code!.textContent ?? '');
-            const was = copy.textContent;
-            copy.textContent = 'Copied';
-            setTimeout(() => {
-              copy.textContent = was;
-            }, 1600);
-          } catch {
-            /* clipboard unavailable: leave the text selectable */
-          }
-        });
 
         apply();
       }
@@ -668,6 +624,501 @@ const { title, description, type, ogImage } = Astro.props;
         }
       }
 
+      // ---- /type: the typing test -------------------------------------------
+      // A monkeytype-shaped test running on this site's own prose. The words
+      // come from the page as JSON; everything below is clock, scoring, and
+      // caret. Scored the way monkeytype scores: net WPM = correctly typed
+      // characters / 5 / minutes, so mistakes cost you rather than counting.
+      type TypingPara = { text: string; title: string; url: string };
+
+      function initTypingTest() {
+        const root = document.getElementById('tt');
+        if (!root || root.dataset.ready) return;
+
+        const raw = document.getElementById('tt-data')?.textContent;
+        if (!raw) return;
+        let paras: TypingPara[];
+        try {
+          paras = JSON.parse(raw);
+        } catch {
+          return;
+        }
+        if (!paras.length) return;
+        root.dataset.ready = '1';
+
+        const $ = (id: string) => document.getElementById(id);
+        const wordsEl = $('tt-words');
+        const viewport = $('tt-viewport');
+        const caret = $('tt-caret');
+        const input = $('tt-input') as HTMLInputElement | null;
+        const stage = $('tt-stage');
+        const clock = $('tt-clock');
+        const hint = $('tt-hint');
+        const results = $('tt-results');
+        const sourceEl = $('tt-source');
+        if (!wordsEl || !viewport || !caret || !input || !stage || !clock || !results) return;
+
+        let seconds = 15;
+        let words: string[] = [];
+        let charSpans: HTMLElement[][] = [];
+        let wordSpans: HTMLElement[] = [];
+        let typed: string[] = [];
+        let index = 0;
+        let running = false;
+        let startedAt = 0;
+        let endsAt = 0;
+        let ticker: ReturnType<typeof setInterval> | undefined;
+        let lineHeight = 0;
+
+        // Accuracy is a measure of KEYPRESSES, not of the text you end up with:
+        // a wrong letter you backspace away still happened. These count every
+        // character actually pressed, and are never decremented — which is why
+        // scoring the final string (the first version of this) read high.
+        let keystrokes = 0;
+        let keystrokesRight = 0;
+        let lastValue = '';
+        let typingTimer: ReturnType<typeof setTimeout> | undefined;
+
+        // Enough words that a fast typist can't run out inside 30 seconds, even
+        // if the first paragraph is short. Extra paragraphs are credited too.
+        function build() {
+          const used: TypingPara[] = [];
+          const pool = [...paras];
+          const picked: string[] = [];
+          // 140 words covers a ~250wpm typist for the full 30 seconds; running
+          // out mid-test would strand them on the last word.
+          while (picked.length < 140 && pool.length) {
+            const p = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+            used.push(p);
+            picked.push(...p.text.split(' ').filter(Boolean));
+          }
+          words = picked;
+
+          if (sourceEl) {
+            const first = used[0];
+            const extra = used.length - 1;
+            sourceEl.innerHTML =
+              `From <a href="${first.url}">${escapeHtml(first.title)}</a>` +
+              (extra > 0 ? ` +${extra}` : '');
+          }
+        }
+
+        function render() {
+          wordsEl!.innerHTML = '';
+          charSpans = [];
+          wordSpans = [];
+          for (const word of words) {
+            const wordEl = document.createElement('span');
+            wordEl.className = 'tt-word';
+            const chars: HTMLElement[] = [];
+            for (const ch of word) {
+              const charEl = document.createElement('span');
+              charEl.className = 'tt-char';
+              charEl.textContent = ch;
+              wordEl.appendChild(charEl);
+              chars.push(charEl);
+            }
+            wordsEl!.appendChild(wordEl);
+            wordSpans.push(wordEl);
+            charSpans.push(chars);
+          }
+          lineHeight = wordSpans[0]?.offsetHeight ?? 0;
+          wordsEl!.style.transform = 'translateY(0)';
+        }
+
+        // The caret sits at the current character; the word strip scrolls up a
+        // line at a time so the line being typed stays put (monkeytype's trick —
+        // the text moves, the reader's eye doesn't).
+        function moveCaret() {
+          const chars = charSpans[index];
+          if (!chars || !chars.length) return;
+          const at = Math.min(input!.value.length, chars.length - 1);
+          const atEnd = input!.value.length >= chars.length;
+          const target = chars[at];
+          const x = target.offsetLeft + (atEnd ? target.offsetWidth : 0);
+          const y = target.offsetTop;
+          caret!.style.transform = `translate(${x}px, ${y}px)`;
+          caret!.style.height = `${target.offsetHeight}px`;
+
+          if (lineHeight > 0) {
+            const line = Math.round(y / lineHeight);
+            const shift = Math.max(0, line - 1) * lineHeight;
+            wordsEl!.style.transform = `translateY(${-shift}px)`;
+            caret!.style.marginTop = `${-shift}px`;
+          }
+        }
+
+        function paint() {
+          const value = input!.value;
+          const target = words[index] ?? '';
+          const chars = charSpans[index] ?? [];
+          for (let i = 0; i < chars.length; i++) {
+            chars[i].className =
+              'tt-char' +
+              (i < value.length ? (value[i] === target[i] ? ' is-right' : ' is-wrong') : '');
+          }
+          wordSpans[index]?.classList.toggle('has-extra', value.length > target.length);
+          moveCaret();
+        }
+
+        // A caret that blinks while you're typing is just flicker in your
+        // peripheral vision. Hold it solid on every keystroke and let it start
+        // blinking again only once you've stopped — the blink is there to find
+        // the caret when idle, which is exactly when it's useful.
+        function markTyping() {
+          stage!.classList.add('is-typing');
+          if (typingTimer) clearTimeout(typingTimer);
+          typingTimer = setTimeout(() => stage!.classList.remove('is-typing'), 900);
+        }
+
+        function stopTyping() {
+          if (typingTimer) clearTimeout(typingTimer);
+          typingTimer = undefined;
+          stage!.classList.remove('is-typing');
+        }
+
+        // Strip a word back to untyped. Needed when backspacing OUT of a word:
+        // the colouring it picked up would otherwise stay behind on a word the
+        // reader has abandoned.
+        function clearWord(i: number) {
+          for (const charEl of charSpans[i] ?? []) charEl.className = 'tt-char';
+          wordSpans[i]?.classList.remove('has-extra');
+        }
+
+        function setActive() {
+          for (const w of wordSpans) w.classList.remove('is-active');
+          wordSpans[index]?.classList.add('is-active');
+        }
+
+        function start() {
+          if (running) return;
+          running = true;
+          // Focus mode: everything that isn't the clock and the words fades out
+          // for the duration of the test. Nothing is display:none'd, so the page
+          // doesn't reflow underneath the reader mid-word.
+          document.documentElement.classList.add('tt-focus');
+          startedAt = Date.now();
+          endsAt = startedAt + seconds * 1000;
+          ticker = setInterval(() => {
+            const left = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+            clock!.textContent = String(left);
+            if (left <= 0) finish();
+          }, 100);
+        }
+
+        function finish() {
+          if (ticker) clearInterval(ticker);
+          ticker = undefined;
+          running = false;
+          stopTyping();
+          document.documentElement.classList.remove('tt-focus');
+          // Only record a word still being typed. Assigning unconditionally
+          // overwrote the last COMMITTED word with the now-empty input whenever
+          // the test ended on a space, silently losing it from the score.
+          if (input!.value.length > 0) typed[index] = input!.value;
+          // Drop anything past the word the reader is actually on. Backspacing
+          // out of a word leaves its old text sitting in the array, and scoring
+          // it would credit words that have since been erased.
+          typed.length = index + 1;
+          input!.disabled = true;
+          caret!.hidden = true;
+
+          // WPM is scored on the text as it ended up: a character counts only if
+          // it's the right character in the right place, and a committed word
+          // earns its trailing space only if the whole word came out right.
+          // A word is five characters by the standard convention.
+          let correctChars = 0;
+          let finalChars = 0;
+          for (let i = 0; i < typed.length; i++) {
+            const got = typed[i] ?? '';
+            const want = words[i] ?? '';
+            finalChars += got.length;
+            for (let j = 0; j < got.length; j++) if (got[j] === want[j]) correctChars++;
+            if (i < typed.length - 1) {
+              finalChars += 1;
+              if (got === want) correctChars++;
+            }
+          }
+
+          // Real elapsed time, not the nominal duration: the interval that ends
+          // the test can fire a little late, and dividing by the wrong number
+          // quietly inflates every score.
+          const elapsed = startedAt
+            ? Math.min(seconds, (Date.now() - startedAt) / 1000)
+            : seconds;
+          const minutes = Math.max(elapsed, 1) / 60;
+
+          const wpm = Math.round(correctChars / 5 / minutes);
+          const raw = Math.round(keystrokes / 5 / minutes);
+          const accuracy =
+            keystrokes > 0 ? Math.round((keystrokesRight / keystrokes) * 100) : 0;
+
+          const wpmEl = $('tt-wpm');
+          const accEl = $('tt-acc');
+          const rawEl = $('tt-raw');
+          const verdict = $('tt-verdict');
+          if (wpmEl) wpmEl.textContent = String(wpm);
+          if (accEl) accEl.textContent = `${accuracy}%`;
+          if (rawEl) rawEl.textContent = String(raw);
+          if (verdict) {
+            verdict.textContent =
+              `${correctChars} of ${finalChars} characters correct, from ` +
+              `${keystrokes} keystrokes in ${Math.round(elapsed)} seconds. ` +
+              'WPM counts only the characters you got right, raw counts every one, ' +
+              'and accuracy is per keypress, so a mistake you fixed still counts.';
+          }
+          results!.hidden = false;
+          stage!.classList.add('is-done');
+          if (hint) {
+            hint.textContent = 'Shift+Enter to go again';
+            hint.classList.remove('is-hidden');
+          }
+        }
+
+        function reset() {
+          if (ticker) clearInterval(ticker);
+          ticker = undefined;
+          running = false;
+          stopTyping();
+          document.documentElement.classList.remove('tt-focus');
+          index = 0;
+          typed = [];
+          keystrokes = 0;
+          keystrokesRight = 0;
+          lastValue = '';
+          startedAt = 0;
+          input!.disabled = false;
+          input!.value = '';
+          caret!.hidden = false;
+          results!.hidden = true;
+          stage!.classList.remove('is-done');
+          if (hint) {
+            hint.textContent = 'Click the words to begin';
+            hint.classList.remove('is-hidden');
+          }
+          clock!.textContent = String(seconds);
+          build();
+          render();
+          setActive();
+          paint();
+        }
+
+        input.addEventListener('input', () => {
+          if (input.disabled) return;
+          start();
+          markTyping();
+          // Count only what was ADDED since the last event: a backspace shrinks
+          // the value and must not refund the keystroke it's undoing.
+          const value = input.value;
+          if (value.length > lastValue.length) {
+            const target = words[index] ?? '';
+            for (let i = lastValue.length; i < value.length; i++) {
+              keystrokes++;
+              if (value[i] === target[i]) keystrokesRight++;
+            }
+          }
+          lastValue = value;
+          paint();
+        });
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            reset();
+            input.focus();
+            return;
+          }
+          // Backspace at the start of a word steps back into the previous one
+          // and hands its text back, so a mistake two words ago is still
+          // fixable. Ctrl+Backspace clears the current word first, as it does
+          // in a text field.
+          if (e.key === 'Backspace' && !input.disabled) {
+            if (e.ctrlKey && input.value.length > 0) {
+              e.preventDefault();
+              markTyping();
+              input.value = '';
+              lastValue = '';
+              paint();
+              return;
+            }
+            if (input.value.length === 0 && index > 0) {
+              e.preventDefault();
+              markTyping();
+              clearWord(index);
+              typed[index] = '';
+              index -= 1;
+              input.value = typed[index] ?? '';
+              // Restoring text is not typing it: no keystrokes are credited for
+              // what the reader already pressed once.
+              lastValue = input.value;
+              setActive();
+              paint();
+              return;
+            }
+          }
+
+          if (e.key === ' ') {
+            e.preventDefault();
+            if (input.disabled) return;
+            // A leading space shouldn't skip a word.
+            if (input.value.length === 0) return;
+            start();
+            markTyping();
+            // The space is a keypress too, and it's only the right one when the
+            // word it closes came out right.
+            keystrokes++;
+            if (input.value === words[index]) keystrokesRight++;
+            typed[index] = input.value;
+            input.value = '';
+            lastValue = '';
+            // Out of words: the test is over, rather than pinning the reader on
+            // the last word while the clock runs down.
+            if (index + 1 >= words.length) {
+              finish();
+              return;
+            }
+            index += 1;
+            setActive();
+            paint();
+          }
+        });
+
+        // The input is invisible and covers the whole stage, so a click anywhere
+        // on the words puts the cursor where the reader expects it.
+        stage.addEventListener('click', () => input.focus());
+        // The hint keeps its space and only goes invisible, so focusing the test
+        // doesn't shift the row underneath it.
+        input.addEventListener('focus', () => {
+          stage.classList.add('is-focused');
+          hint?.classList.add('is-hidden');
+        });
+        input.addEventListener('blur', () => {
+          stage.classList.remove('is-focused');
+          // Clicking away brings the rest of the page back, even mid-test — the
+          // page must never be left stuck in a faded state.
+          document.documentElement.classList.remove('tt-focus');
+          if (!input.disabled) hint?.classList.remove('is-hidden');
+        });
+
+        for (const chip of root.querySelectorAll<HTMLButtonElement>('.tt__chip')) {
+          chip.addEventListener('click', () => {
+            seconds = Number(chip.dataset.seconds) || 15;
+            for (const other of root.querySelectorAll('.tt__chip')) {
+              other.classList.toggle('is-on', other === chip);
+            }
+            reset();
+          });
+        }
+
+        $('tt-restart')?.addEventListener('click', () => {
+          reset();
+          input.focus();
+        });
+
+        // Shift+Enter restarts from anywhere on the page — the input is disabled
+        // once the test ends, so a key handler bound to it alone would be dead
+        // exactly when you want to go again.
+        document.addEventListener('keydown', (e) => {
+          if (!root.isConnected) return;
+          if (e.key !== 'Enter' || !e.shiftKey) return;
+          const t = e.target as HTMLElement | null;
+          const tag = t?.tagName ?? '';
+          // Never hijack Shift+Enter inside someone else's field.
+          if (t !== input && (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || t?.isContentEditable)) return;
+          e.preventDefault();
+          reset();
+          input.focus();
+        });
+
+        // A resize rewraps the words, so the caret and the line offset have to
+        // be recomputed against the new layout.
+        window.addEventListener('resize', () => {
+          if (!root.isConnected) return;
+          lineHeight = wordSpans[0]?.offsetHeight ?? lineHeight;
+          paint();
+        });
+
+        reset();
+      }
+
+      // ---- 404: set the address that was actually asked for -----------------
+      // A static host serves one 404.html for every missing path, so the page
+      // can only learn the URL here. Text is set with textContent — the path is
+      // attacker-controlled, and must never be parsed as markup.
+      function init404() {
+        const head = document.getElementById('e404');
+        if (!head || head.dataset.ready) return;
+        head.dataset.ready = '1';
+
+        const line = head.querySelector<HTMLElement>('.scatter__line--xl');
+        const path = decodeURIComponent(window.location.pathname).replace(/\/+$/, '');
+        if (line && path && path !== '') {
+          line.textContent = path.length > 30 ? `${path.slice(0, 29)}…` : path;
+        }
+
+        const raw = document.getElementById('e404-data')?.textContent;
+        const guess = document.getElementById('e404-guess');
+        if (!raw || !guess) return;
+
+        let doors: { title: string; url: string }[];
+        try {
+          doors = JSON.parse(raw);
+        } catch {
+          return;
+        }
+
+        // Compare the last path segment against every real slug, and suggest
+        // the closest one when it's close enough to plausibly be a typo.
+        const want = path.split('/').filter(Boolean).pop() ?? '';
+        if (!want) return;
+
+        let best: { title: string; url: string; d: number } | null = null;
+        for (const door of doors) {
+          const slug = door.url.split('/').filter(Boolean).pop() ?? '';
+          const titleSlug = door.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          // A half-remembered address ("/projects/lagrange") is a containment
+          // match, not a typo — edit distance alone scores it as badly as
+          // gibberish. Four characters is the floor, so "til" can't match
+          // everything it happens to be a substring of.
+          const contained =
+            want.length >= 4 &&
+            (slug.includes(want) ||
+              want.includes(slug) ||
+              titleSlug.includes(want) ||
+              want.includes(titleSlug));
+          const d = contained
+            ? 0
+            : Math.min(editDistance(want, slug), editDistance(want, titleSlug));
+          if (!best || d < best.d) best = { ...door, d };
+        }
+
+        const tolerance = Math.max(3, Math.floor(want.length * 0.5));
+        if (best && best.d <= tolerance) {
+          guess.innerHTML = `Did you mean <a href="${best.url}">${escapeHtml(best.title)}</a>?`;
+          guess.hidden = false;
+        }
+      }
+
+      // Levenshtein, two-row variant — enough for one short slug against a few
+      // dozen others.
+      function editDistance(a: string, b: string): number {
+        if (a === b) return 0;
+        if (!a.length || !b.length) return Math.max(a.length, b.length);
+        let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+        for (let i = 1; i <= a.length; i++) {
+          const row = [i];
+          for (let j = 1; j <= b.length; j++) {
+            row[j] = Math.min(
+              prev[j] + 1,
+              row[j - 1] + 1,
+              prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+            );
+          }
+          prev = row;
+        }
+        return prev[b.length];
+      }
+
       // Print button (the zine issues). Delegated, so it survives swaps.
       document.addEventListener('click', (e) => {
         const t = e.target;
@@ -685,8 +1136,11 @@ const { title, description, type, ogImage } = Astro.props;
         initMediaSkeletons();
         ensureLightbox();
         // A navigation while the lightbox was open discards the overlay; make
-        // sure the scroll lock never survives into the next page.
+        // sure the scroll lock never survives into the next page. Same for the
+        // typing test's focus mode, which lives on <html> and would otherwise
+        // leave the next page faded out.
         document.documentElement.classList.remove('lightbox-open');
+        document.documentElement.classList.remove('tt-focus');
         syncRail();
         initTocSpy();
         initSearch();
@@ -695,6 +1149,8 @@ const { title, description, type, ogImage } = Astro.props;
         initTypeLab();
         initAlmanac();
         initRandom();
+        init404();
+        initTypingTest();
       });
     </script>
   </body>

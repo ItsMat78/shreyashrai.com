@@ -28,13 +28,22 @@ const { entry, older, newer } = Astro.props;
 const { Content, headings } = await render(entry);
 const tags = normalizeTags(entry.data.tags);
 
-// The connected-notebook trail: tag-related entries, reverse [[wikilink]]
-// mentions, and any series this note is part of.
-const [related, backlinks, seriesParts] = await Promise.all([
-  getRelated(entry.id, tags),
+// The connected-notebook trail: reverse [[wikilink]] mentions, any series this
+// note belongs to, and tag-related entries. "Read next" is worked out LAST and
+// told what the page already shows — the series parts and the older/newer
+// links — so nothing gets recommended twice on one screen.
+const [backlinks, seriesParts] = await Promise.all([
   getBacklinks(entry.id),
   entry.data.series ? getSeries(entry.data.series) : Promise.resolve([]),
 ]);
+
+const alreadyShown = [
+  ...seriesParts.map((p) => p.url),
+  ...(older ? [older.url] : []),
+  ...(newer ? [newer.url] : []),
+];
+
+const related = await getRelated(entry.id, tags, 3, alreadyShown);
 ---
 
 <Article

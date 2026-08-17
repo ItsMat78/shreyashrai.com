@@ -28,11 +28,20 @@ const { Content, headings } = await render(entry);
 const tags = normalizeTags(entry.data.tags);
 const readingMinutes = readingTime(entry.body);
 
-const [related, backlinks, seriesParts] = await Promise.all([
-  getRelated(entry.id, tags),
+// "Read next" is resolved last and told what the page already shows (series
+// parts, older/newer), so the same piece is never recommended twice on a page.
+const [backlinks, seriesParts] = await Promise.all([
   getBacklinks(entry.id),
   entry.data.series ? getSeries(entry.data.series) : Promise.resolve([]),
 ]);
+
+const alreadyShown = [
+  ...seriesParts.map((p) => p.url),
+  ...(older ? [older.url] : []),
+  ...(newer ? [newer.url] : []),
+];
+
+const related = await getRelated(entry.id, tags, 3, alreadyShown);
 ---
 
 <Article

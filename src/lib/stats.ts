@@ -28,10 +28,12 @@ export type Stats = {
   words: number; // MY words only — quote bodies are excluded
   minutes: number; // reading time of the above, same exclusion
   kinds: KindStat[];
+  // Everything below is MY pieces only. Quotes carry the date the line was
+  // said, not a publication date, so they'd distort every one of these.
   years: YearStat[];
   months: MonthCell[]; // one row per year, 12 cells each
   monthMax: number;
-  tags: { tag: string; count: number }[];
+  tags: { tag: string; count: number }[]; // tags DO span quotes
   tagTotal: number;
   first?: Date;
   last?: Date;
@@ -89,28 +91,30 @@ export async function getStats(): Promise<Stats> {
     { kind: 'projects', label: 'Projects', count: projects.length, words: projects.reduce((s, e) => s + wordCount(e.body), 0) },
   ];
 
-  // Per-year totals, oldest first (time reads left to right). Every piece is
-  // counted; only quoted words are left out of the word column.
+  // Per-year totals, oldest first (time reads left to right). Quotes are out of
+  // this too — see the note on the timeline below.
   const yearMap = new Map<number, { count: number; words: number }>();
-  for (const e of dated) {
+  for (const e of mine) {
     const y = e.date.getUTCFullYear();
     const cur = yearMap.get(y) ?? { count: 0, words: 0 };
     cur.count += 1;
-    if (e.kind !== 'quotes') cur.words += wordCount(e.body);
+    cur.words += wordCount(e.body);
     yearMap.set(y, cur);
   }
   const years: YearStat[] = [...yearMap.entries()]
     .map(([year, v]) => ({ year, ...v }))
     .sort((a, b) => a.year - b.year);
 
-  // Month grid: every year between the first and last piece gets a full row of
-  // twelve cells, so gaps are visible instead of collapsed away.
-  const dates = dated.map((e) => e.date).sort((a, b) => a.getTime() - b.getTime());
+  // The timeline runs on MY pieces only. A quote's `date` is when the line was
+  // said or written down, not when anything was published here — the oldest one
+  // predates the site by years, which would stretch the grid over empty rows and
+  // make "days since the first" measure someone else's sentence.
+  const dates = mine.map((e) => e.date).sort((a, b) => a.getTime() - b.getTime());
   const first = dates[0];
   const last = dates[dates.length - 1];
 
   const counts = new Map<string, number>();
-  for (const e of dated) {
+  for (const e of mine) {
     const k = `${e.date.getUTCFullYear()}-${e.date.getUTCMonth() + 1}`;
     counts.set(k, (counts.get(k) ?? 0) + 1);
   }

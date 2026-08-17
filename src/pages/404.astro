@@ -1,19 +1,51 @@
 ---
 import Base from '../layouts/Base.astro';
-import PageHeader from '../components/PageHeader.astro';
+import FrameField from '../components/FrameField.astro';
+import ScatterHead from '../components/ScatterHead.astro';
+import { getAllEntries, getProjectEntries } from '../lib/content';
+
+// The 404 sets the address you actually typed as the headline, then tries to
+// work out what you meant. A static host serves this file for every missing
+// path, so it can't know the URL at build time — `init404` in the Base client
+// module fills the headline from location.pathname and picks the nearest match
+// out of the index below. Without JS it still reads as a finished page.
+
+const [entries, projects] = await Promise.all([getAllEntries(), getProjectEntries()]);
+
+const doors = [
+  ...entries.map((e) => ({
+    title: e.collection === 'quotes' ? e.source || 'Quote' : e.title,
+    url: e.url,
+  })),
+  ...projects.map((p) => ({ title: p.data.title, url: `/projects/${p.id}/` })),
+];
 
 const heading = [
-  { text: 'Nothing', size: 'l', weight: 400, rot: -1.5 },
-  { text: 'here,', size: 'xl', weight: 700, shift: '3rem', rot: 1.5 },
+  { text: 'Nothing at', size: 'l', weight: 400, rot: -1.5 },
+  // Replaced client-side with the path that was actually requested.
+  { text: 'this address', size: 'xl', weight: 700, shift: '2.6rem', rot: 1.5 },
   { text: 'sorry.', size: 'l', weight: 360, italic: true, shift: '8rem', rot: -2 },
 ] as const;
 ---
 
 <Base title="Not found" description="That page doesn't exist.">
-  <PageHeader eyebrow="Error 404" lines={heading}>
+  <header class="masthead">
+    <FrameField />
+    <p class="eyebrow">Error 404</p>
+    <ScatterHead lines={heading} as="h1" id="e404" />
+    <p class="masthead__deck" id="e404-guess" hidden></p>
     <p class="masthead__deck">
-      That page doesn't exist. Try the <a href="/til">TILs</a>, the
-      <a href="/blog">blog</a>, or head <a href="/">home &rarr;</a>
+      Nothing lives there. Try the <a href="/notes">notes</a>, the
+      <a href="/map">map</a>, a <a href="/search">search</a>, or roll the dice
+      with <a href="/random">random &rarr;</a>
     </p>
-  </PageHeader>
+  </header>
+
+  {/* `<` is escaped so a title can never close this script tag early. */}
+  <script
+    is:inline
+    type="application/json"
+    id="e404-data"
+    set:html={JSON.stringify(doors).replace(/</g, '\\u003c')}
+  />
 </Base>

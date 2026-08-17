@@ -247,16 +247,25 @@ export function readingTime(body: string | undefined): number {
 // ---- Related entries ----------------------------------------------------
 // Other entries (either collection) that share the most tags with a given one,
 // newest first as the tiebreak. Used for the "Read next" block on articles.
+// `exclude` takes the URLs of entries the page ALREADY shows elsewhere — the
+// series index and the older/newer links. Recommending something the reader can
+// see two inches above is noise, and on a short series it made the same title
+// appear three times on one page. Filtered before the limit, so excluding one
+// candidate promotes the next instead of leaving a gap.
 export async function getRelated(
   id: string,
   tags: string[],
   limit = 3,
+  exclude: string[] = [],
 ): Promise<EntryItem[]> {
   const target = new Set(normalizeTags(tags));
   if (target.size === 0) return [];
+  // Trailing slashes vary between how pages build links and how toItem does.
+  const trim = (url: string) => url.replace(/\/+$/, '');
+  const blocked = new Set(exclude.map(trim));
   const entries = await getAllEntries();
   return entries
-    .filter((e) => e.id !== id)
+    .filter((e) => e.id !== id && !blocked.has(trim(e.url)))
     .map((e) => ({ e, shared: e.tags.filter((t) => target.has(t)).length }))
     .filter((x) => x.shared > 0)
     .sort((a, b) => b.shared - a.shared || b.e.date.getTime() - a.e.date.getTime())

@@ -1,4 +1,4 @@
-// Single source of truth for site-wide constants (used in meta tags, header,
+﻿// Single source of truth for site-wide constants (used in meta tags, header,
 // footer, feeds). Change a link or the tagline here, not in ten places.
 
 export const SITE_TITLE = 'Shreyash Rai';
@@ -6,14 +6,17 @@ export const SITE_DESCRIPTION =
   'Things I learn and projects I build, a running log of TILs and writeups by Shreyash Rai.';
 
 export const GITHUB_URL = 'https://github.com/ItsMat78';
+// The repo this site is built from — used to link the footer's build hash to
+// the exact commit that produced the page you're reading.
+export const REPO_URL = 'https://github.com/ItsMat78/shreyashrai.com';
 export const LINKEDIN_URL = 'https://linkedin.com/in/shreyash-rai-3aa123251';
 export const EMAIL = 'contact@shreyashrai.com';
 
 // Cloudflare Web Analytics. The site token comes from the Cloudflare dashboard
-// (Analytics & Logs → Web Analytics → add site).
+// (Analytics & Logs â†’ Web Analytics â†’ add site).
 //
-// It's read from the PUBLIC_CF_ANALYTICS_TOKEN environment variable — set it in
-// the Cloudflare Pages project (Settings → Variables, for Production AND
+// It's read from the PUBLIC_CF_ANALYTICS_TOKEN environment variable â€” set it in
+// the Cloudflare Pages project (Settings â†’ Variables, for Production AND
 // Preview) and locally in a `.env` file, which git ignores. The repo is public,
 // so the token stays out of it. `.env.example` documents the name.
 //
@@ -40,7 +43,17 @@ export const GISCUS = {
   categoryId: '',
 } as const;
 
-// Primary navigation — three intent-level anchors, not the content taxonomy.
+// Monkeytype username, for the stats summary on /type. Empty string ships no
+// section and makes no network call at build.
+//
+// This reads the PUBLIC profile endpoint, so it needs no API key: the username
+// is all that's required, and everything shown is already public on the
+// Monkeytype profile page. (An ApeKey would have to sit in the build env to
+// reach the private endpoints, and could never be used client-side on a static
+// site without handing it to every visitor.)
+export const MONKEYTYPE_USER = 'ItsMat78';
+
+// Primary navigation â€” three intent-level anchors, not the content taxonomy.
 // "Notes" is the hub that gathers TILs, writing, links, stream, and quotes;
 // search + the theme toggle ride alongside as utilities (see Header.astro).
 export const NAV = [

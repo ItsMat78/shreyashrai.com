@@ -201,6 +201,13 @@ its CSS and plugin code are refreshed.
 
 Every push to main redeploys.
 
+The footer carries a build stamp — the date and the short commit hash, linked to
+that commit on GitHub. **There is nothing to bump:** the hash comes from
+`CF_PAGES_COMMIT_SHA` on Cloudflare (or `git rev-parse` locally), so every deploy
+restamps it automatically. If you ever want to mark a design generation on top of
+it, add a name by hand in `src/lib/version.ts` — but the hash alone can never go
+stale, which a hand-maintained version number will.
+
 Optional integrations (all gated — empty config ships nothing):
 
 - **Analytics:** Cloudflare Web Analytics, page views, privacy-first. Two ways
@@ -221,6 +228,20 @@ Optional integrations (all gated — empty config ships nothing):
 
   Either way the beacon is JS, so feed readers hitting `/rss.xml` never appear
   in it — those show up in Cloudflare's server-side traffic view instead.
+- **Monkeytype stats on /type:** set `MONKEYTYPE_USER` in `src/consts.ts` to
+  your Monkeytype username. It reads the **public** profile endpoint, so there's
+  no API key involved and nothing secret to leak — everything shown is already
+  public on your Monkeytype profile. The numbers are a **build-time snapshot**:
+  they move when the site rebuilds, not live. Empty username = no section and no
+  network call. A failed or slow API call is caught, logged, and skipped, so the
+  build never breaks because Monkeytype is down.
+  **Average wpm** is the one figure the public profile does not carry — it holds
+  totals and personal bests only. To show averages, set `MONKEYTYPE_APE_KEY`
+  (Monkeytype → Settings → Ape Keys) as an **encrypted** variable in the Pages
+  project, or in a local `.env`. It has no `PUBLIC_` prefix on purpose: `PUBLIC_`
+  variables are inlined into the JavaScript sent to browsers, which would give
+  the key away. It is read at build time only, and nothing but the computed
+  averages reaches the HTML. Without it, the section simply omits the averages.
 - **Newsletter:** set `BUTTONDOWN_USER` (Buttondown auto-sends from RSS)
 - **Comments:** set all four `GISCUS` fields (GitHub Discussions + giscus app)
 

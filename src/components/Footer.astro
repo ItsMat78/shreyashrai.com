@@ -1,28 +1,99 @@
 ---
 import { GITHUB_URL, EMAIL } from '../consts';
+import FormattedDate from './FormattedDate.astro';
+import { getSiteVersion } from '../lib/version';
+
+const version = getSiteVersion();
+
+// Back matter, set the way a book sets it: grouped and labelled, then the
+// colophon on the last line. Twelve links in one flat row read as noise on
+// desktop and broke into ragged rows on anything narrower, so they're sorted
+// by what they're FOR — pages you'd read, side doors into the archive, and
+// where to find me elsewhere.
+type FooterLink = { href: string; text: string; rel?: string };
+type FooterGroup = { label: string; links: FooterLink[] };
+
+const groups: FooterGroup[] = [
+  {
+    label: 'More pages',
+    links: [
+      { href: '/now', text: 'What I\'m thinking' },
+      { href: '/uses', text: 'What I use' },
+      { href: '/series', text: 'All Series' },
+      { href: '/issues', text: 'All Issues' },
+    ],
+  },
+  {
+    label: 'Ways in',
+    links: [
+      { href: '/map', text: 'Graph view' },
+      { href: '/stats', text: 'How much have I written?' },
+      { href: '/on-this-day', text: 'On this day' },
+      { href: '/type', text: 'Typing test?' },
+      { href: '/random', text: 'Read random' },
+    ],
+  },
+  {
+    label: 'Elsewhere',
+    links: [
+      { href: GITHUB_URL, text: 'GitHub', rel: 'me' },
+      { href: `mailto:${EMAIL}`, text: 'Email' },
+      { href: '/rss.xml', text: 'RSS' },
+    ],
+  },
+];
 ---
 
 <footer class="site-footer">
-  <div class="container site-footer__inner">
-    <nav class="site-footer__links annotation" aria-label="Footer">
-      <a class="link-quiet" href="/now">Now</a>
-      <a class="link-quiet" href="/uses">What I use</a>
-      <a class="link-quiet" href="/series">Series</a>
-      <a class="link-quiet" href="/map">Map</a>
-      <a class="link-quiet" href="/type">Type</a>
-      <a class="link-quiet" href="/issues">Issues</a>
-      <a class="link-quiet" href="/on-this-day">On this day</a>
-      <a class="link-quiet" href="/stats">Stats</a>
-      <a class="link-quiet" href="/random">Random</a>
-      <a class="link-quiet" href={GITHUB_URL} rel="me">GitHub</a>
-      <a class="link-quiet" href={`mailto:${EMAIL}`}>Email</a>
-      <a class="link-quiet" href="/rss.xml">RSS</a>
-      {/* #top scrolls smoothly to the top of the current document. */}
-      <a class="link-quiet site-footer__top" href="#top">Top &uarr;</a>
+  <div class="container">
+    <nav class="site-footer__groups" aria-label="Footer">
+      {
+        groups.map((group) => (
+          <div class="footer-group">
+            <h2 class="annotation footer-group__head">{group.label}</h2>
+            <ul class="footer-group__list">
+              {group.links.map((link) => (
+                <li>
+                  <a class="link-quiet" href={link.href} rel={link.rel}>
+                    {link.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
     </nav>
-    <p class="site-footer__colophon annotation">
-      <span class="site-footer__fleuron" aria-hidden="true">&#10086;</span>
-      Fonts: <span class="display">Fraunces</span> &amp; Schibsted Grotesk
-    </p>
+
+    <div class="site-footer__base">
+      <p class="site-footer__colophon annotation">
+        <span class="site-footer__fleuron" aria-hidden="true">&#10086;</span>
+        Fonts: <span class="display">Fraunces</span> &amp; Schibsted Grotesk
+      </p>
+
+      {/* The build that produced this page. The hash is the version — see
+          lib/version.ts. Hidden entirely if it can't be determined, rather
+          than printing a hedge. */}
+      <p class="site-footer__version annotation">
+        Built <FormattedDate date={version.builtAt} />
+        {version.commit && (
+          <>
+            <span aria-hidden="true"> · </span>
+            {version.commitUrl ? (
+              <a class="link-quiet" href={version.commitUrl}>
+                {version.commit}
+              </a>
+            ) : (
+              <span>{version.commit}</span>
+            )}
+          </>
+        )}
+      </p>
+      {/* #top scrolls smoothly to the top of the current document. target=_self
+          keeps it out of any inherited new-tab behaviour. */}
+      <a class="link-quiet annotation site-footer__top" href="#top" target="_self">
+        Top &uarr;
+      </a>
+    </div>
   </div>
 </footer>

@@ -6,13 +6,23 @@ import Newsletter from '../components/Newsletter.astro';
 import { getTils, getPosts, getFeatured, getAllTags } from '../lib/content';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
-const [tils, posts, allTags] = await Promise.all([getTils(), getPosts(), getAllTags()]);
+const [tils, posts, allTags, featured] = await Promise.all([
+  getTils(),
+  getPosts(),
+  getAllTags(),
+  getFeatured(),
+]);
 const tags = allTags.slice(0, 5);
+
+// Featured is resolved first and Latest skips whatever it already shows — a
+// recent entry that's also featured would otherwise sit in both columns, side
+// by side. The cap is applied AFTER the filter, so dropping a duplicate pulls
+// the next entry up instead of leaving the column one short.
+const featuredUrls = new Set(featured.map((entry) => entry.url));
 const latest = [...tils, ...posts]
   .sort((a, b) => b.date.getTime() - a.date.getTime() || a.id.localeCompare(b.id))
+  .filter((entry) => !featuredUrls.has(entry.url))
   .slice(0, 6);
-
-const featured = await getFeatured();
 
 // The home thesis: two breaths, roman then italic — learning in public.
 const hero = [
