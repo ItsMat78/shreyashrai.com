@@ -748,16 +748,42 @@ const { title, description, type, ogImage } = Astro.props;
           }
         }
 
+        // Show what was actually TYPED, not what was expected. A wrong letter
+        // used to render as the target letter in red, which told you that you'd
+        // erred but not what you'd hit; characters typed past the end of a word
+        // weren't drawn at all, so they vanished as you typed them.
         function paint() {
           const value = input!.value;
           const target = words[index] ?? '';
           const chars = charSpans[index] ?? [];
-          for (let i = 0; i < chars.length; i++) {
-            chars[i].className =
-              'tt-char' +
-              (i < value.length ? (value[i] === target[i] ? ' is-right' : ' is-wrong') : '');
+          const wordEl = wordSpans[index];
+
+          // Overflow characters get real spans, appended and removed as the
+          // input grows and shrinks.
+          while (chars.length > target.length && chars.length > value.length) {
+            chars.pop()?.remove();
           }
-          wordSpans[index]?.classList.toggle('has-extra', value.length > target.length);
+          for (let i = chars.length; i < value.length; i++) {
+            const extra = document.createElement('span');
+            extra.className = 'tt-char is-extra';
+            wordEl?.appendChild(extra);
+            chars.push(extra);
+          }
+
+          for (let i = 0; i < chars.length; i++) {
+            if (i >= target.length) {
+              chars[i].textContent = value[i] ?? '';
+              chars[i].className = 'tt-char is-extra';
+            } else if (i < value.length) {
+              const right = value[i] === target[i];
+              chars[i].textContent = right ? target[i] : value[i];
+              chars[i].className = `tt-char ${right ? 'is-right' : 'is-wrong'}`;
+            } else {
+              // Not reached yet: put the expected letter back.
+              chars[i].textContent = target[i];
+              chars[i].className = 'tt-char';
+            }
+          }
           moveCaret();
         }
 
@@ -781,8 +807,16 @@ const { title, description, type, ogImage } = Astro.props;
         // the colouring it picked up would otherwise stay behind on a word the
         // reader has abandoned.
         function clearWord(i: number) {
-          for (const charEl of charSpans[i] ?? []) charEl.className = 'tt-char';
-          wordSpans[i]?.classList.remove('has-extra');
+          const target = words[i] ?? '';
+          const chars = charSpans[i] ?? [];
+          // Drop the overflow spans and put the expected letters back, so an
+          // abandoned word reads as untouched rather than keeping the text that
+          // was typed over it.
+          while (chars.length > target.length) chars.pop()?.remove();
+          for (let j = 0; j < chars.length; j++) {
+            chars[j].textContent = target[j];
+            chars[j].className = 'tt-char';
+          }
         }
 
         function setActive() {

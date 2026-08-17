@@ -4203,11 +4203,14 @@ samp {
   text-underline-offset: 0.18em;
 }
 
-/* Typed past the end of a word: flag the whole word, since there's no character
-   under those keystrokes to colour. */
-.tt-word.has-extra {
-  text-decoration: underline wavy var(--tt-wrong);
-  text-underline-offset: 0.25em;
+/* Characters typed past the end of a word. They're real letters the reader
+   pressed, so they're drawn rather than flagged on the word — dimmed a little
+   so they stay distinguishable from a plain wrong letter. */
+.tt-char.is-extra {
+  color: var(--tt-wrong);
+  opacity: 0.72;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
 }
 
 .tt__caret {
