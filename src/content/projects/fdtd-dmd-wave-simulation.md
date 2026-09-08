@@ -3,7 +3,7 @@ title: Predicting FDTD Wave Behaviour via DMD Method
 blurb: "An electromagnetic wave simulation sped up ~10× using Dynamic Mode Decomposition."
 outcome: "~10× speedup over direct FDTD at ~96% accuracy."
 tech: ["Python", "NumPy", "Dynamic Mode Decomposition"]
-source: https://github.com/ItsMat78/fdtd
+source: [[github/ItsMat78/fdtd]] [🔗](https://github.com/ItsMat78/fdtd)
 cover: "/images/fdtd-dmd-wave-simulation/FDTD.png"
 order: 2
 ---
@@ -38,7 +38,7 @@ Discretized via central finite differences over space ($\Delta x$) and time ($\D
 ### 2. Dynamic Mode Decomposition (DMD)
 Rather than marching the grid sequentially from $t=0 \rightarrow T$, we partition the collected snapshot data into two time-shifted matrices:
 
-$$\mathbf{X}_1 = \begin{bmatrix} \mathbf{x}_1 & \mathbf{x}_2 & \dots & \mathbf{x}_{m-1} \end{bmatrix}, \quad \mathbf{X}_2 = \begin{bmatrix} \mathbf{x}_2 & \mathbf{x}_3 & \dots & \mathbf{x}_{m} \endbmatrix$$
+$$\mathbf{X}_1 = \begin{bmatrix} \mathbf{x}_1 & \mathbf{x}_2 & \dots & \mathbf{x}_{m-1} \end{bmatrix}, \quad \mathbf{X}_2 = \begin{bmatrix} \mathbf{x}_2 & \mathbf{x}_3 & \dots & \mathbf{x}_{m} \end{bmatrix}$$
 
 We compute the locally linear operator $\mathbf{A}$ mapping $\mathbf{X}_2 \approx \mathbf{A}\mathbf{X}_1$. Utilizing the truncated Singular Value Decomposition ($\mathbf{X}_1 \approx \mathbf{U}\mathbf{\Sigma}\mathbf{V}^*$), the reduced-order operator is projected as:
 
@@ -87,7 +87,7 @@ $$\mathbf{x}_k = \sum_{i=1}^{r} \phi_i \lambda_i^k b_i = \mathbf{\Phi}\mathbf{\L
 Ensure you have Python 3.8+ installed on your local machine.
 
 ```bash
-git clone [https://github.com/](https://github.com/)<your-username>/FDTD-DMD-Prediction.git
+git clone [https://github.com/]([[github/)%3Cyour-username%3E/FDTD-DMD-Prediction.git]] [🔗](https://github.com/)%3Cyour-username%3E/FDTD-DMD-Prediction.git)
 cd FDTD-DMD-Prediction
 pip install -r requirements.txt
 ```

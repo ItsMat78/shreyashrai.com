@@ -7,9 +7,6 @@ entries:
   - blog/how-this-site-works
   - links/the-original-link-blog
   - quotes/willison-on-writing
-  - til/linked-lists
-  - til/a-arrays-and-hashing
-  - til/b-two-pointers
 ---
 
 The first issue gathers the pieces that explain the rest of the site: how this
