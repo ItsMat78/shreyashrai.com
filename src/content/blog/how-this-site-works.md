@@ -26,4 +26,4 @@ Because the content is the product. A personal site that's mostly text doesn't n
 
 Everything is available as a feed. There's a [combined feed](/rss.xml) of TILs and posts, and if you only want one or the other, each has its own. Feeds carry the full text, so you can read without ever visiting the site that's the point of them.
 
-If you want to see how the sausage is made, the source is on [GitHub]([[github/ItsMat78/shreyashrai.com).]] [🔗](https://github.com/ItsMat78/shreyashrai.com).)
+If you want to see how the sausage is made, the source is on [GitHub]([[github/ItsMat78/shreyashrai.com)

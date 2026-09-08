@@ -3,7 +3,7 @@ title: Predicting FDTD Wave Behaviour via DMD Method
 blurb: "An electromagnetic wave simulation sped up ~10× using Dynamic Mode Decomposition."
 outcome: "~10× speedup over direct FDTD at ~96% accuracy."
 tech: ["Python", "NumPy", "Dynamic Mode Decomposition"]
-source: [[github/ItsMat78/fdtd]] [🔗](https://github.com/ItsMat78/fdtd)
+source: https://github.com/ItsMat78/fdtd
 cover: "/images/fdtd-dmd-wave-simulation/FDTD.png"
 order: 2
 ---
