@@ -1,9 +1,12 @@
 ---
-title: "My College Blocked the Genshin Launcher, So I Split My Network in Two"
+title: My College Blocked the Genshin Launcher, So I Split My Network in Two
 date: 2026-09-25
-description: "The firewall blocked a few KB of launcher traffic but not the GB of updates, so I sent just the blocked part through my phone."
-tags: ["networking", "python", "windows"]
-ogPhoto: /images/genshin wifi fix/genshin wifi.png
+description: The firewall blocked a few KB of launcher traffic but not the GB of updates, so I sent just the blocked part through my phone.
+tags:
+  - networking
+  - python
+  - windows
+ogPhoto: /images/genshin wifi fix/genshin wifi.jpg
 featured: true
 ---
 
